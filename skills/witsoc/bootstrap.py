@@ -75,7 +75,7 @@ def restore(root: Path, *, package: str = PACKAGE, replace: bool = False, upgrad
     pkg = cache / "witsoc"
     copy_tree(pkg / "scripts", root / "scripts", replace=replace)
     copy_package_modules(pkg, root / "src" / "witsoc", replace=replace)
-    for name in ("references", "witsoc-explorer", "witsoc-generator", "witsoc-research-lovasz"):
+    for name in ("references", "witsoc-explorer", "witsoc-generator", "witsoc-research-lovasz", "witsoc-flow"):
         src = pkg / name
         dst = root / name
         if src.exists() and (replace or not dst.exists()):

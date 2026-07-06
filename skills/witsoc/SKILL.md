@@ -8,572 +8,19 @@ category: research
 
 # Witsoc
 
-Witsoc is the mathematics skill for the orchestrator. It owns mathematical
-contracts, route advice, evidence standards, validators, diagnostics, and
-artifact/report discipline. The orchestrator remains in charge of strategy:
-fanout, ordering, budget, agent assignment, reframing, and which Witsoc
-recommendations to use. Witsoc recommendations are defaults and affordances, not
-commands, except where they enforce claim honesty.
+Witsoc is the top-level mathematics workflow. It owns three internal subskills and decides which one runs, in what order, and when to stop. **Read this whole file before a serious run; it is the operating contract.** Deep detail lives in `references/`; load a reference only when the step below sends you there.
 
-## Toolbox Boundary
+- `witsoc-explorer/SKILL.md` — intake, target freeze, status triage, search, premise/lemma discovery, counterexample pressure, proof-path selection, and **final arbitration** of whether Lovasz or Generator may proceed.
+- `witsoc-research-lovasz/SKILL.md` — barrier attack on OPEN/blocked targets as a verification-driven research director (proof-DAG decomposition, parallel workers, one-axis mutations, computational search). Returns to Explorer; never routes itself to Generator.
+- `witsoc-generator/SKILL.md` — `.wit` artifact generation/repair, structural checks, verifier context, receipts, optional Lean. Never upgrades claim status.
 
-Witsoc is not the mind of the run. Witsoc is a mathematical toolbox and
-instrument panel for the orchestrator. It should expose sharp tools, candidate
-routes, checks, packets, and specialist opinions; the orchestrator decides which
-tool to use, in what order, with what budget, and whether to invent a route that
-Witsoc did not propose.
-
-When Witsoc emits advice, prefer menus over scripts:
-
-```json
-{
-  "available_tools": ["explorer", "lovasz", "generator", "validator", "search", "report"],
-  "candidate_moves": [],
-  "tradeoffs": [],
-  "evidence_gates": [],
-  "creative_openings": [],
-  "orchestrator_decision_needed": "choose sequence, fanout, budget, or reframe"
-}
-```
-
-The only hard Witsoc veto is mathematical honesty: unsupported status upgrades,
-target drift, hidden assumptions, or final reports that overclaim evidence. It
-must not veto creative search, extra workers, alternate ordering, speculative
-ideation, analogies, or orchestrator reframing when those are labeled honestly.
-
-## AI-Native Witsoc Loop
-
-For serious mathematical work, Witsoc must behave like a compact decision and
-artifact loop, not a prose manual. The default loop is:
-
-```text
-route -> freeze target -> update memory -> find current gap -> choose next action -> create/check artifact -> report packet
-```
-
-For proving work, keep the specialist loop explicit:
-
-```text
-Explorer freeze/retrieve/stress-test
--> Lovasz if the target is open, blocked, or barrier-heavy
--> Explorer review of Lovasz products
--> Generator WIT artifact
--> verifier/Lean/receipt repair loop
--> final report or honest blocker
-```
-
-Use the proof workflow packet to expose where the proof is in this pipeline:
-
-```bash
-python3 ~/.openscientist/skills/witsoc/witsoc.py proof-workflow runs/<task> --write
-```
-
-The packet is advisory. It names the current phase, missing obligations, next
-specialist owner, expected artifact, and gates, while the orchestrator remains
-free to reorder, parallelize, or add creative routes.
-
-At every serious run checkpoint, Witsoc should leave a machine-usable product:
-
-```text
-proofs/<task>.wit            # or proofs/main.wit, unless mathematically blocked
-proofs/<task>.soc            # compact run memory and failed-route record
-reports/witsoc_status.md     # short human report
-runs/<task>/witsoc_next_action.json
-runs/<task>/proof_workflow.json
-runs/<task>/explorer_target_model.json      # when Explorer is active
-runs/<task>/generator_obligation_graph.json # when Generator is active
-runs/<task>/lovasz_barrier_autopsy.json     # when Lovasz is active
-runs/<task>/witsoc_scorecard.json           # before final report or deep-run checkpoint
-runs/<task>/witsoc_ui_summary.json          # UI/report cockpit for plugin and orchestrator
-runs/<task>/reports/witsoc_preview.md       # plain-English preview report
-runs/<task>/reports/report.md               # UI-facing report.md mirror
-```
-
-If WIT is blocked, write `proofs/<task>_blocker.md` with the exact missing
-lemma, failed method, falsification/evaluator status, and next experiment. Do
-not let serious Witsoc use end as prose only.
-
-The orchestrator-facing packet must answer:
-
-```json
-{
-  "target_status": "DIRECT|UNKNOWN|OPEN|PARTIAL|CHECKED|VERIFIED|BLOCKED",
-  "current_gap": "the exact missing lemma, precondition, or artifact failure",
-  "next_action": "explorer|lovasz|generator|repair|stop",
-  "evaluator": "the measurable check that decides progress",
-  "artifact": "path to .wit/.soc/report/blocker",
-  "success_condition": "what would count as progress",
-  "failure_route": "where to send the problem if this fails"
-}
-```
-
-Use the cheap packet command whenever a run needs a tactical state update:
-
-```bash
-python3 ~/.openscientist/skills/witsoc/witsoc.py next-action runs/<task> --write
-python3 ~/.openscientist/skills/witsoc/witsoc.py scorecard runs/<task> --write
-python3 ~/.openscientist/skills/witsoc/witsoc.py ui-summary runs/<task> --write
-```
-
-For deep runs and long open-problem campaigns, use the deep UI scan:
-
-```bash
-python3 ~/.openscientist/skills/witsoc/witsoc.py ui-summary runs/<task> --write --deep
-```
-
-`--write` materializes the default `proofs/`, `reports/`, `.soc`, status report,
-and `witsoc_next_action.json` scaffolds if they are missing. This packet is
-advisory: the orchestrator stays in charge and may choose a more creative route.
-
-Use this skill for all mathematical tasks. For simple questions, answer directly with a clear derivation. For serious proof work, coordinate the internal subskills:
-
-- `witsoc-research-lovasz/SKILL.md`: Lovasz-mode research-program orchestration for named open problems, unsolved conjectures, Erdős-style questions, frontier theorem discovery, barrier analysis, source/status triage, conjecture mining, disproof-first search, and verified partial research products.
-- `witsoc-explorer/SKILL.md`: search, premise selection, lemma discovery, counterexample hunting, proof automation planning, open-problem research ledgers, and general mathematical exploration.
-- `witsoc-generator/SKILL.md`: `.wit` proof generation, repair, structural checking, verifier-context construction, receipt tracking, and optional Lean formalization.
-
-Treat each subskill as a specialist tool, not a replacement orchestrator:
-
-- Explorer specializes in target freeze, route discovery, status arbitration, theorem search, and handoffs.
-- Lovasz specializes in open-problem barrier attack, actual barrier lemmas, proof-DAG pressure, worker packets, and failure memory.
-- Generator specializes in WIT/Lean artifact construction, repair, receipts, and exact verifier reporting.
-
-The orchestrator may combine these specialists nonlinearly: Explorer and
-Lovasz can run in parallel, Generator can inspect an existing artifact while
-Explorer audits target drift, and outside tools can be added whenever the
-orchestrator believes they improve the run.
-
-These subskills live inside this folder. If you need their full instructions, read the relevant nested `SKILL.md`; do not look for sibling top-level skill directories.
-
-## Codex/Claude Contract
-
-For Codex, Claude Code, and other shell-capable orchestrators, Witsoc is a
-packet-first mathematical decision-support layer. The orchestrator stays in
-charge of strategy, fanout, worker assignment, budget, reframing, and final
-decisions. Witsoc provides routing advice, evidence gates, target-freeze
-discipline, worker templates, recovery commands, and report standards.
-
-Use the root launcher from any working directory:
-
-```bash
-python3 ~/.openscientist/skills/witsoc/witsoc.py llm-contract
-python3 ~/.openscientist/skills/witsoc/witsoc.py subskills
-python3 ~/.openscientist/skills/witsoc/witsoc.py route --field json "<task>"
-python3 ~/.openscientist/skills/witsoc/witsoc.py next-action runs/<task> --write
-python3 ~/.openscientist/skills/witsoc/witsoc.py proof-workflow runs/<task> --write
-python3 ~/.openscientist/skills/witsoc/witsoc.py spawn-template explorer --target "<problem>"
-```
-
-Read `references/core/llm_contract.md` only when the task needs the detailed
-agent contract. Witsoc recommends; the orchestrator decides. Witsoc may block
-unsupported claim-status upgrades, but must not block creative search,
-reframing, alternate strategies, or extra worker fanout.
-
-## Runtime Preflight
-
-Before using any Witsoc script command, check that the local runtime exists in
-the Witsoc skill folder:
-
-```text
-scripts/witsoc.py
-src/witsoc/cli.py
-```
-
-If either file is missing, do not treat Witsoc as ready just because `SKILL.md`
-exists. Restore the runtime first with the canonical absolute command:
-
-```bash
-python3 ~/.openscientist/skills/witsoc/bootstrap.py --replace
-```
-
-The safest local entrypoint is the root launcher, which performs this preflight
-and restore automatically before delegating to `scripts/witsoc.py`:
-
-```bash
-python3 ~/.openscientist/skills/witsoc/witsoc.py --help
-python3 ~/.openscientist/skills/witsoc/witsoc.py route "deep run prove or disprove this open conjecture"
-```
-
-After restore, verify:
-
-```bash
-python3 ~/.openscientist/skills/witsoc/scripts/witsoc.py --help
-python3 ~/.openscientist/skills/witsoc/witsoc.py --help
-```
-
-Only proceed with Witsoc script-based routing, validators, decision packets, or
-Lovasz/Explorer/Generator tooling after this preflight passes. If `bootstrap.py`
-is missing too, install the PyPI package and materialize the skill runtime:
-
-```bash
-python3 -m pip install -U witsoc
-python3 -m witsoc restore-skill --target ~/.openscientist/skills/witsoc --replace
-```
-
-The canonical OpenScientist skill directory is:
-
-```text
-~/.openscientist/skills/witsoc
-```
-
-If the local `scripts/` tree, `src/` package, or `scripts/witsoc.py` entrypoint
-is missing in that folder, restore Witsoc from PyPI before trying to recreate
-the scripts manually:
-
-```bash
-python3 -m pip install -U witsoc
-python3 -m witsoc restore-skill --target ~/.openscientist/skills/witsoc --replace
-```
-
-If this root-level `bootstrap.py` file is still present, it also survives
-deletion of `scripts/` and `src/`:
-
-```bash
-python3 ~/.openscientist/skills/witsoc/bootstrap.py --replace
-```
-
-PyPI page:
-
-```text
-https://pypi.org/project/witsoc/
-```
-
-After installation, verify with:
-
-```bash
-python3 ~/.openscientist/skills/witsoc/scripts/witsoc.py --help
-python3 ~/.openscientist/skills/witsoc/scripts/witsoc.py install-help
-python3 -m witsoc restore-skill --target ~/.openscientist/skills/witsoc --check
-```
-
-When a task routes through Lovasz, the user-facing progress message must include:
+The subskills are nested here; read the nested `SKILL.md` directly, do not look for sibling top-level skills. When a task routes through Lovasz the user-facing progress line must read exactly:
 
 ```text
 Using witsoc with witsoc-explorer -> witsoc-research-lovasz -> witsoc-explorer.
 ```
 
-Shared protocols live under `references/core/`. Load only the protocol needed for the current task:
-
-- `references/core/routing.md`: fast path, subskill responsibility boundaries, and recovery routing.
-- `references/core/routing_tests.md`: worked routing examples and the `test_route.py` regression cases.
-- `references/core/target_freeze.md`: canonical target records, target hashes, and explicit target mutation records.
-- `references/core/claim_acceptance.md`: evidence requirements and legal acceptance of mathematical claims.
-- `references/core/artifact_policy.md`: artifact registry, proof worktrees, stale artifact rules, and metadata requirements.
-- `references/core/generator_gate.md`: rules for when Generator may and may not run.
-- `references/core/production_gates.md`: before-final-answer checklist, production-complete criteria, and quality levels.
-- `references/core/orchestrator_fit.md`: boundary between orchestrator strategy and Witsoc math affordances.
-- `references/core/algorithmic_strategy.md`: advisory scoring algorithms for lanes, barriers, products, stop/continue, and portfolios.
-- `references/core/interactive_intake.md`: optional user questions, deep-run preview, and mission-menu guidance.
-- `references/core/plugin_integration.md`: registry-aware Witsoc plugin behavior and iframe activation.
-- `references/core/status.md`: canonical status labels and verification discipline.
-- `references/core/handoff.md`: state-machine routing and structured `handoff.json`.
-- `references/core/failure_recovery.md`: failure records, diversification, and stop conditions.
-- `references/core/open_problem.md`: common open-problem rules.
-- `references/core/exploration_strategy.md`: Phase 0 profiling, solved-problem reconstruction, ontology mapping, theorem retrieval ranking, backward chaining, falsification hierarchy, barrier analysis, conjecture mining, proof objects, theorem replacement, mutation tracking, and lemma economics.
-- `references/core/research_machinery.md`: Lovasz proof-DAG decomposition, subproblem scoring, counterexample engines, theorem precondition audit, proof-style workers, skeptic workers, verified lemma library, failure memory, and final assembly checks.
-- `references/core/repair.md`: failure diagnosis and repair classes.
-- `references/core/goal_cache.md`: reusable subgoal/tactic cache rules.
-- `references/core/safeverify.md`: target freezing and anti-cheating checks.
-- `references/core/lean_verification.md`: Lean LSP/REPL/cache-aware checking loop.
-- `references/core/tooling.md`: deterministic tool/API discipline and CLI consolidation target.
-- `references/schemas/handoff.schema.json`: strict Explorer-to-Generator handoff schema.
-- `references/schemas/witsoc-handoff-schema.json`: strict Generator blueprint schema for `handoff_v1.json`.
-- `references/examples/handoff_solved_problem.json` and `references/examples/handoff_open_problem.json`: concrete valid handoff examples.
-- `references/examples/handoff_v1_blueprint.json`: minimal Generator blueprint example.
-- `scripts/validate_handoff.py`: deterministic handoff validation and arithmetic checks, including the Lovasz proof-DAG and worker-result invariants.
-- `scripts/init_lovasz_run.py`: create the standard Lovasz run ledger skeleton before worker dispatch.
-- `scripts/validate_lovasz_run.py`: reject incomplete Lovasz runs missing required ledgers, DAG, worker results, skeptic reviews, or partial-result closure fields.
-- `scripts/validate_spawn_packet.py`: validate Lovasz spawn requests and worker result packets.
-- `scripts/test_route.py`: deterministic routing regression tests.
-- `scripts/witsoc.py`: unified CLI entrypoint for route/init/check/verify/status/artifacts/validation.
-- `scripts/witsoc_next_action.py`: compact top-level run product and next-action packet; use `--write` to materialize default `.soc`, status report, and packet scaffolds.
-- `scripts/proof_workflow.py`: compact proof-state packet; identifies Explorer/Lovasz/Generator phase, missing proof obligations, gates, next owner, and expected artifact.
-- `scripts/witsoc_scorecard.py`: unified Explorer/Generator/Lovasz/proof-workflow readiness scorecard for deep-run checkpoints and final-report gating.
-- `scripts/witsoc_ui_summary.py`: single UI-facing run cockpit; writes `witsoc_ui_summary.json`, `reports/witsoc_preview.md`, `reports/witsoc_report.md`, and `reports/report.md`; use `--deep` to scan all WIT/Lean/SOC/JSON/receipt/report artifacts.
-- `scripts/explorer_target_model.py`: Explorer target model, variant/status audit, theorem-candidate ledger, falsification state, and handoff readiness packet.
-- `scripts/generator_obligation_graph.py`: Generator proof-obligation graph with dependencies, missing premises, repair blockers, and next obligation.
-- `scripts/lovasz_barrier_autopsy.py`: Lovasz failure clustering and barrier autopsy for repeated theorem-precondition gaps, target drift, counterexample pressure, formalization bottlenecks, and genuine mathematical barriers.
-- `scripts/artifacts.py`: session artifact registry for generated WIT, Lean, SOC, logs, receipts, and proof worktrees.
-- `scripts/validate_route_state.py`: reject invalid phase jumps or completion with required route phases still pending.
-- `scripts/validate_generator_handoff.py`: reject Generator starts without a valid Explorer handoff and route authorization.
-- `scripts/lint_wit_quality.py`: WIT quality lint for vague justifications, unresolved gaps, missing references, placeholders, and circular/self references.
-- `scripts/generator_manifest.py`: create `generator_artifacts.json`, enforce target-hash consistency, and register Generator outputs.
-- `scripts/score_lovasz_results.py`: score worker results by evidence quality, target fidelity, artifact status, and composability.
-- `scripts/summarize_lovasz_run.py`: generate `lovasz_summary.json` and extract/update `barriers.md`.
-- `scripts/validate_open_problem_run.py`: enforce actual lemma queue, disproof-first pressure, theorem-precondition audit, product selection, mutation ledger, failure memory, and dependency paths.
-- `scripts/open_problem_report.py`: generate a human-readable open-problem report from Lovasz/Witsoc ledgers.
-- `scripts/synthesize_open_ledgers.py`: synthesize draft actual-lemma, theorem-audit, mutation, product, and failure ledgers from research notes before validation.
-- `scripts/decompose_problem.py`: break a frozen target into smaller proof-DAG nodes and actual-lemma queue entries while preserving target hash and dependency paths.
-- `scripts/validate_proof_dag_integrity.py`: reject cyclic, dependency-missing, target-drifting, or unsupported accepted proof-DAG nodes.
-- `scripts/spawn_workers_from_dag.py`: generate deterministic Lovasz worker spawn packets from the proof DAG and actual lemma queue.
-- `scripts/lovasz_worker_dispatch.py`: enrich spawn packets with `.soc` repeat-risk checks and write a dispatch manifest.
-- `scripts/lovasz_soc_memory.py`: initialize/query/update/context-pack `lovasz.soc` with current state, barriers, failed approaches, reusable insights/tools, orchestrator notes, and imported failure JSONL.
-- `scripts/result_ladder.py`: generate a tractable result ladder and `product_selection.json` for open-problem campaigns.
-- `scripts/formalization_feasibility.py`: score WIT/Lean readiness and route weak targets back to Explorer/Lovasz repair.
-- `scripts/counterexample_search.py`: generate bounded counterexample-search packets for graph, finite-model, SAT/SMT, number-theory, additive, Ramsey/extremal, finite-algebra, analysis, algebra, topology, and probability domains.
-- `scripts/rank_mission_menu.py`, `scripts/select_barrier.py`, `scripts/select_best_product.py`, `scripts/stop_continue.py`, and `scripts/allocate_portfolio.py`: advisory decision-support algorithms. They rank options and explain tradeoffs; they never upgrade claim status or override the orchestrator.
-- `scripts/rank_lovasz_dag.py`, `scripts/select_lovasz_mutation.py`, `scripts/rank_lovasz_results.py`, `scripts/lovasz_next_action.py`, and `scripts/lovasz_orchestrator_packet.py`: Lovasz advisory algorithms for proof-DAG priority, one-axis mutation choice, worker-result reportability, next action, and combined orchestrator state.
-- `scripts/explorer_decision_packet.py` and `scripts/generator_decision_packet.py`: Explorer/Generator advisory packets for theorem/sketch/handoff ranking and artifact/repair ranking.
-- `scripts/grade_witsoc_report.py`: grade report production quality from ledgers, artifacts, proof DAG, worker evidence, skeptic reviews, and formalization readiness.
-- `scripts/lovasz_run_manifest.py`: create/update `lovasz_run.json`, the authoritative Lovasz phase manifest.
-- `scripts/validate_lovasz_phase.py`: enforce Lovasz phase gates and allowed phase transitions.
-- `scripts/status_lattice.py`: validate claim/product statuses and reject unsupported status upgrades.
-- `scripts/explorer_return_packet.py`: generate `explorer_return_packet.json` with accepted products, demotions, remaining barriers, and recommended Explorer action.
-- `references/schemas/lovasz-spawn-worker.schema.json`: strict schema for Lovasz worker spawn requests.
-- `references/schemas/lovasz-worker-result.schema.json`: strict schema for Lovasz worker result packets.
-
-## Routing
-
-Use this WITSOC-specific routing table before choosing a subskill, model, or tool. Intake always starts at top-level `witsoc`; serious mathematical work then starts with Explorer.
-
-| Task | WITSOC route |
-|---|---|
-| Simple math answer | Top-level `witsoc`; answer directly with a clear derivation. |
-| Hard proof exploration | `witsoc-explorer`; Phase 0 profile the problem, freeze the exact target, triage solved/open/unconfirmed/false/under-specified status, map ontology, rank theorem candidates, run backward chaining, run falsification hierarchy, test obstructions/barriers, compare proof objects, EV-rank sketches, and produce `runs/<task>/handoff.json` plus strict `runs/<task>/handoff_v1.json` when Generator is needed. |
-| Open problem / Erdős-style research problem | `witsoc-explorer` first. Explorer freezes the statement and status, then writes a Lovasz barrier packet if the target is open, unsolved, unconfirmed, frontier-level, or blocked. Lovasz attacks that packet and returns claims/barriers/gaps to Explorer. Explorer reviews and either sends a new barrier packet to Lovasz, demotes the target, stops honestly, or authorizes Generator for a narrow accepted result. |
-| Deep run proving/disproving an open-style target | `witsoc-explorer` first, then mandatory `witsoc-research-lovasz`, then return to `witsoc-explorer` if Explorer cannot settle the target as solved/false/routine. A report that only says "open/unsupported by known results" is not complete unless Lovasz has already attempted barrier breaking and Explorer has reviewed Lovasz output, or the run records a concrete blocker preventing Lovasz dispatch. |
-| Counterexample search | `witsoc-explorer` plus computation where useful; minimize and verify the counterexample before presenting it. |
-| Premise / lemma discovery | `witsoc-explorer`; supply search and dependency planning. |
-| WIT generation | `witsoc-explorer` first for nontrivial theorem targets, then `witsoc-generator` after Explorer accepts the frozen target and proof plan. Existing `.wit` inspection/repair can start at Generator. |
-| User explicitly asks for WIT code | Explorer freezes and judges the target first unless this is an existing `.wit` repair. Generator is mandatory after Explorer accepts the target; it must produce a `.wit` artifact or report a concrete blocker. Do not answer with only exploration, prose, or Lean. |
-| User asks for WIT code plus Lean proof | Explorer first, Generator second for routine accepted targets. For open/blocked targets, route Explorer -> Lovasz -> Explorer -> Generator. Generator must generate/check WIT, generate Lean from that frozen WIT target, attempt Lean verification, and report artifact paths plus exact WIT/Lean status. |
-| Deep run proving a theorem with WIT/Lean requested | Explorer starts the run; Lovasz is inserted for open/blocked barriers; Generator runs only after Explorer accepts the assembled target and any Lovasz verification gate has passed. The run is not complete until Generator has produced a `.wit` artifact, run structural checks/context generation, and attempted Lean if requested. |
-| WIT repair after rejection | `witsoc-generator` for edits; call `witsoc-explorer` when rejected steps need new premises, lemmas, or a different strategy. |
-| Lean build error / failed formal proof | `witsoc-generator` Repair Diagnosis Protocol first; classify the failure, cite compiler/verifier evidence, propose the minimal repair, then retry without changing the frozen theorem target. If the same failure class repeats, use `references/core/failure_recovery.md` before reporting final failure. |
-| Multiple partial proof sketches | `witsoc-explorer` structured Proof Sketch Protocol with EV ranking in `handoff.json`; `witsoc-generator` artifacts only for the selected sketch or precise subresult. |
-| Repeated subgoal or familiar failure | Use Goal Cache Protocol if available; otherwise record the reusable subgoal/tactic or failure pattern in proof sketch notes. |
-| External theorem blocks progress | `witsoc-explorer` External Theorem Replacement Policy; pin the exact needed statement and preconditions, search for formal availability or a local replacement, then hand a precise obligation to Generator. |
-| Sketch ranking / prioritization | `witsoc-explorer` Rater Mode; rank sketches for search priority only, never for verification. |
-| Structural checking | Deterministic `wit check` or WITSOC `check.sh`; no LLM. |
-| Verifier context building | Deterministic `wit verify` or WITSOC `verify.sh`; context only, not proof. |
-| Semantic verification | Skeptical external verifier output plus `wit receipt`; never treat `wit check` or `wit verify` as semantic proof. |
-| Lean/formalization planning | `witsoc-generator` with Explorer handoff when needed; prefer Lean LSP/REPL/per-file checks during repair, run final `lake build`, then SafeVerify. |
-| Tool execution | Prefer explicit WITSOC API tools when available; otherwise deterministic WITSOC scripts or native `wit` CLI. Do not use an LLM for structural checks, context building, target-freeze checks, status, or receipt parsing. |
-
-Operating principles:
-
-- Prefer deterministic tooling where possible.
-- Use strong models for discovery and repair, skeptical models for verification.
-- Never substitute confidence for receipts.
-- Freeze the target before serious proof work and reject unexplained target-hash drift.
-- Accept claims only through the claim acceptance contract.
-- State the achieved quality level before final reporting.
-
-Use internal `witsoc-explorer` first when the task is serious proof work, theorem proving, WIT/Lean generation, an open problem, an unsolved conjecture, or a research-like target. Explorer owns problem freezing, status triage, source trail, theorem-candidate ranking, counterexample pressure, proof-path selection, and final arbitration of whether Lovasz or Generator may proceed.
-
-Use internal `witsoc-research-lovasz` only after Explorer has produced a barrier packet for an open, unsolved, unconfirmed, frontier-level, or blocked target. Lovasz owns barrier attack as a formal-verification-driven research director: barrier classification, proof-dependency DAG decomposition, worker dispatch for independent subproblems, WIT-before-Lean verification requirements, one-axis mutations, conjecture/lemma mining, reductions, special cases, conditional theorems, obstruction results, computational certificates, verification gates, and honest demotion of unsupported claims. Lovasz may spawn as many independent agents as the runtime, budget, and task warrant, provided each spawned agent has an exact DAG node or audit obligation and target-drift guardrails. Lovasz returns to Explorer; it does not decide that Generator may solve an open problem.
-
-Use internal `witsoc-explorer` for:
-
-- definitions and theorem lookup,
-- supply search or premise selection,
-- lemma discovery,
-- example/counterexample testing,
-- proof strategy comparison,
-- decomposition into subgoals,
-- automation/tactic planning.
-
-Use internal `witsoc-generator` when the task needs:
-
-- a `.wit` artifact,
-- explicit WIT code in the final answer,
-- proof, disproof, formalization, or audit,
-- checking or repairing an existing `.wit`,
-- verifier contexts or receipts,
-- Lean generation from a WIT proof.
-
-Generator is forbidden when the target is open/blocked and no Lovasz return packet exists, the accepted product is only a conjecture, target hashes disagree without a mutation record, Explorer has not authorized artifact generation, formalization feasibility is `POOR_FORMALIZATION_TARGET`, or the proof DAG has an open dependency needed for the claimed theorem. Load `references/core/generator_gate.md` before invoking Generator on nontrivial targets.
-
-## Discovery Attempt Requirement
-
-For prompts that ask to prove, disprove, solve, make progress on, or deep-run an open-style mathematical target, Witsoc must not stop after literature/status classification alone.
-
-If Explorer concludes:
-
-- `OPEN`,
-- `UNSOLVED`,
-- `UNCONFIRMED`,
-- unsupported by known results,
-- blocked by a structural gap,
-- "requires a new theorem,"
-- or "not proved by standard asymptotics,"
-
-then Explorer must create a Lovasz barrier packet and route to Lovasz before the run can be called complete.
-
-A completion critic must reject the run as incomplete if all of the following hold:
-
-- the original user asked for a proof/disproof/deep research attempt,
-- Explorer or workers classified the problem as open/unsupported,
-- no Lovasz proof-DAG/barrier attack was attempted,
-- no concrete operational blocker prevented Lovasz dispatch.
-
-Acceptable final states after Lovasz are: formally verified solution, verified partial/special/conditional result, verified obstruction/counterexample/reduction, conjecture with evidence, failed attempt with failure memory, or still open after documented barrier attacks. "Known results do not prove it" is a finding, not a complete discovery run.
-
-For targets classified as equivalent to a known open conjecture, "open by literature" is not a completed prove/disprove run. Witsoc must either run a Lovasz campaign against the actual barrier lemmas or record a concrete operational blocker. A single prose barrier artifact does not satisfy the Lovasz campaign requirement; require `actual_lemma_queue`, proof-DAG, barrier attack records, worker evidence when available, skeptic review, and retry ledger.
-
-## Target And Claim Contracts
-
-For serious mathematical work, load `references/core/target_freeze.md` and maintain a frozen target statement plus target hash. If the target changes, record the change in `target_mutation.json` or `target_mutations.jsonl` with old hash, new hash, mutation kind, reason, authorization, and whether it weakens the original.
-
-A claim is accepted only if it satisfies `references/core/claim_acceptance.md`:
-
-- exact statement,
-- stable claim or DAG node id,
-- matching target hash,
-- dependency path to target,
-- legal status transition,
-- evidence receipt or checked artifact,
-- skeptic review for strong claims,
-- registered artifact when an artifact is cited.
-
-Anything else is `OPEN`, `GAP`, `CONJECTURE`, `FAILED_ATTEMPT`, `REJECTED`, `PARTIAL`, or `CONDITIONAL`; do not report it as a full solution.
-
-## Quality Levels
-
-Use the quality levels from `references/core/production_gates.md`:
-
-- `L0_DIRECT`: direct answer with reasoning.
-- `L1_SKETCH`: informal proof/disproof sketch.
-- `L2_CHECKED_DERIVATION`: deterministic calculation, bounded check, or structural check.
-- `L3_WIT_ARTIFACT`: WIT artifact produced.
-- `L4_WIT_LEAN_ATTEMPTED`: WIT plus Lean attempted.
-- `L5_WIT_LEAN_VERIFIED`: WIT plus Lean/SafeVerify verified.
-- `L6_RESEARCH_PRODUCT`: Lovasz research product with checked/verified artifacts and Explorer review.
-
-The final answer must not imply a higher level than the run actually achieved.
-
-## Open-Solution Discipline
-
-For open, unsolved, unconfirmed, frontier-level, or blocked targets, load
-`references/core/open_problem.md` and enforce its Open-Solution Protocol.
-Lovasz campaigns must include statement freezing, adversarial proof breaking,
-computational search where applicable, a proof-dependency DAG, separated worker
-modes, failure taxonomy, and novelty accounting. A run that produces only a
-polished partial sketch without these ledgers should be demoted to
-`FAILED_ATTEMPT`, `CONJECTURE`, or `PARTIAL` rather than treated as an open
-solution.
-
-Before Lovasz worker dispatch, initialize a run directory:
-
-```bash
-INIT="$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/init_lovasz_run.py)"
-python3 "$INIT" "$PLANE_SESSION_DIR/lovasz-run" --target "$FROZEN_TARGET"
-```
-
-## Witsoc Preflight
-
-Before a mathematics, proof, WIT, Lean, open-problem, or research-style run is
-reported complete, run the Witsoc route and handoff validators when the scripts
-are available:
-
-```bash
-resolve_witsoc_script() {
-  local rel="witsoc/scripts/$1"
-  local resolved=""
-  if [ -n "${PLANE_TOOL_BIN:-}" ]; then
-    resolved="$("$PLANE_TOOL_BIN" skill-which "$rel" 2>/tmp/witsoc_skill_which.err || true)"
-    if [ -n "$resolved" ] && [ -e "$resolved" ]; then
-      printf "%s\n" "$resolved"
-      return 0
-    fi
-  fi
-  for base in \
-    "${WITSOC_SKILL_DIR:-}" \
-    "${KIMI_WORK_DIR:-}/.openscientist/skills/witsoc" \
-    "${KIMI_WORK_DIR:-}/.openscientist/strings/skills/witsoc" \
-    "${HOME:-}/.openscientist/strings/skills/witsoc"; do
-    [ -n "$base" ] || continue
-    if [ -e "$base/scripts/$1" ]; then
-      printf "%s\n" "$base/scripts/$1"
-      return 0
-    fi
-  done
-  if [ -s /tmp/witsoc_skill_which.err ]; then
-    printf "Witsoc script resolution failed for %s; skill-which stderr: %s\n" "$rel" "$(cat /tmp/witsoc_skill_which.err)" >&2
-  fi
-  return 1
-}
-
-WITSOC_PREFLIGHT_DIR="${PLANE_SESSION_DIR:-${KIMI_WORK_DIR:-$PWD}}"
-ROUTER="$(resolve_witsoc_script route.py || true)"
-if [ -n "$ROUTER" ]; then
-  python3 "$ROUTER" --field json --state-out "$WITSOC_PREFLIGHT_DIR/witsoc_route_state.json" "${ORIGINAL_USER_TASK:-}" > "$WITSOC_PREFLIGHT_DIR/witsoc_route.json"
-fi
-VALIDATOR="$(resolve_witsoc_script validate_handoff.py || true)"
-LOVASZ_RUN_VALIDATOR="$(resolve_witsoc_script validate_lovasz_run.py || true)"
-ROUTE_STATE_VALIDATOR="$(resolve_witsoc_script validate_route_state.py || true)"
-[ -z "$ROUTE_STATE_VALIDATOR" ] || [ ! -f "$WITSOC_PREFLIGHT_DIR/witsoc_route_state.json" ] || python3 "$ROUTE_STATE_VALIDATOR" "$WITSOC_PREFLIGHT_DIR/witsoc_route_state.json" --for-final-report > "$WITSOC_PREFLIGHT_DIR/witsoc_route_state.validate.log"
-for HANDOFF in "$WITSOC_PREFLIGHT_DIR"/handoff*.json "${KIMI_WORK_DIR:-}"/runs/*/handoff*.json; do
-  [ -f "$HANDOFF" ] || continue
-  [ -z "$VALIDATOR" ] || python3 "$VALIDATOR" "$HANDOFF" > "$HANDOFF.validate.log"
-done
-for LOVASZ_RUN in "$WITSOC_PREFLIGHT_DIR"/lovasz-run "${KIMI_WORK_DIR:-}"/runs/*/lovasz-run; do
-  [ -d "$LOVASZ_RUN" ] || continue
-  [ -z "$LOVASZ_RUN_VALIDATOR" ] || python3 "$LOVASZ_RUN_VALIDATOR" "$LOVASZ_RUN" --mode deep > "$LOVASZ_RUN/validate_lovasz_run.log"
-done
-```
-
-If `witsoc_route.json` contains `required_followup:
-"witsoc-research-lovasz"`, do not complete a status-only open-problem report.
-The run must contain Lovasz evidence such as `proof_dependency_dag`,
-`worker_results`, or `lovasz_barrier_attack`, or a concrete
-`lovasz_dispatch_blocker`, and Explorer must review Lovasz output before final
-reporting or Generator authorization. If `witsoc_route_state.json` has
-`generator_authorized: false`, Generator may not write a new artifact yet. If
-WIT/Lean artifacts were generated, every proof must record the session-scoped
-proof worktree used to generate it.
-
-Every generated WIT, Lean, SOC, receipt, Lake log, proof worktree record, and
-final report should be registered in `witsoc_artifacts.json`. Prefer:
-
-```bash
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/witsoc.py)" artifacts register path/to/artifact.wit --type wit --owner-phase witsoc-generator
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/witsoc.py)" artifacts list
-```
-
-The Witsoc plugin reads this registry first and uses filesystem scanning only
-as fallback.
-
-For Generator production readiness, run:
-
-```bash
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/generator_obligation_graph.py)" runs/<task> --write
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/validate_generator_handoff.py)" runs/<task>/handoff_v1.json --route-state "$PLANE_SESSION_DIR/witsoc_route_state.json"
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/lint_wit_quality.py)" path/to/artifact.wit --json
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/generator_manifest.py)" --manifest runs/<task>/generator_artifacts.json --artifact path/to/artifact.wit --type wit --target-hash "$FROZEN_TARGET_SHA256"
-```
-
-For Lovasz production readiness, run:
-
-```bash
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/lovasz_run_manifest.py)" runs/<task>
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/validate_lovasz_phase.py)" runs/<task>
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/lovasz_soc_memory.py)" init runs/<task>
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/lovasz_soc_memory.py)" context runs/<task>
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/result_ladder.py)" runs/<task> --write
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/decompose_problem.py)" runs/<task> --write --out runs/<task>/problem_decomposition.json
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/synthesize_open_ledgers.py)" runs/<task>
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/counterexample_search.py)" runs/<task> --out runs/<task>/counterexample_search_templates.json
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/validate_proof_dag_integrity.py)" runs/<task> --artifact-registry "$PLANE_SESSION_DIR/witsoc_artifacts.json"
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/spawn_workers_from_dag.py)" runs/<task>
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/lovasz_worker_dispatch.py)" runs/<task> --write
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/status_lattice.py)" runs/<task>
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/score_lovasz_results.py)" runs/<task>/worker_results.json --registry "$PLANE_SESSION_DIR/witsoc_artifacts.json" --out runs/<task>/lovasz_result_scores.json
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/lovasz_barrier_autopsy.py)" runs/<task> --write
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/summarize_lovasz_run.py)" runs/<task>
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/validate_lovasz_run.py)" runs/<task> --artifact-registry "$PLANE_SESSION_DIR/witsoc_artifacts.json"
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/validate_open_problem_run.py)" runs/<task>
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/formalization_feasibility.py)" runs/<task> --out runs/<task>/formalization_feasibility.json
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/open_problem_report.py)" runs/<task>
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/grade_witsoc_report.py)" runs/<task> --out runs/<task>/report_quality_grade.json
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/witsoc_scorecard.py)" runs/<task> --write
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/witsoc_ui_summary.py)" runs/<task> --write --deep
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/explorer_return_packet.py)" runs/<task> --out runs/<task>/explorer_return_packet.json
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/lovasz_run_manifest.py)" runs/<task> --phase EXPLORER_RETURN_READY
-python3 "$("$PLANE_TOOL_BIN" skill-which witsoc/scripts/validate_lovasz_phase.py)" runs/<task>
-```
-
-## Explorer-Lovasz-Generator Loop
-
-For every serious mathematical task, use this state machine:
+## The Loop (run this for every serious task)
 
 ```text
 INTAKE -> EXPLORER_TRIAGE
@@ -584,194 +31,98 @@ GENERATOR_HANDOFF -> GENERATE_WIT -> CHECK_WIT -> BUILD_CONTEXT -> OPTIONAL_LEAN
 GENERATOR_FAILURE -> EXPLORER_REVIEW
 ```
 
-Explorer must create the Lovasz barrier packet before invoking Lovasz. The packet must include:
+Repeat `EXPLORER -> LOVASZ -> EXPLORER` until exactly one stop state holds: solved/routine plan ready · verified partial/special/conditional result ready · checked computational or counterexample result ready · formalizable narrow lemma ready · **no honest progress path remains**. Then, and only then, may Generator run.
 
-- frozen target statement,
-- variant/status ledger,
-- source trail and best-known results,
-- known obstructions and failed methods,
-- theorem-precondition gaps,
-- counterexample families or boundary cases,
-- formalization blockers,
-- smallest tractable research products,
-- proposed success criteria for Lovasz.
+One state per turn. Do not skip a state, do not re-run a state that already produced its artifact, and do not answer while a required state is still pending. `references/core/run_playbook.md` gives the concrete preflight commands and per-state validators; run its preflight at the start and its production-readiness block before reporting.
 
-Lovasz must return to Explorer with:
+## Hard gates (the turn-discipline rules)
 
-- barriers resolved,
-- barriers still open,
-- claims with status: `REJECTED`, `FAILED_ATTEMPT`, `CONJECTURE`, `PARTIAL`, `PROVED_SKETCH`, `CHECKED`, or `VERIFIED`,
-- proof-dependency DAG nodes, worker outcomes, and formal verification evidence when workers were used,
-- evidence and source links,
-- counterexample/search results,
-- proof gaps,
-- next recommended target.
+**Discovery-attempt gate.** For any prompt asking to prove / disprove / solve / make progress on / deep-run an open-style target, classification is NOT a finish. If Explorer (or a worker) concludes `OPEN`, `UNSOLVED`, `UNCONFIRMED`, "unsupported by known results", "requires a new theorem", or "blocked by a structural gap", Explorer MUST write a Lovasz barrier packet and route to Lovasz before the run is complete. "Known results do not prove it" is a *finding*, not a completed run. A single prose barrier artifact does not satisfy this — a real campaign needs `actual_lemma_queue`, a proof-DAG, barrier-attack records, worker evidence when available, skeptic review, and a retry ledger.
 
-Explorer reviews Lovasz output and decides whether the result is enough to assemble a coherent proof/disproof/partial result, whether another barrier packet should be sent back to Lovasz, whether the target must be demoted, or whether Generator may now be invoked.
+The run is INCOMPLETE (reject it) if all hold: the user asked for a proof/disproof/deep attempt · the problem was classified open/unsupported · no Lovasz proof-DAG/barrier attack was attempted · no concrete operational blocker prevented Lovasz dispatch.
 
-Repeat Explorer -> Lovasz -> Explorer until one of these stop states occurs:
+**Generator-forbidden gate.** Generator may NOT run when: the target is open/blocked and no Lovasz return packet exists · the accepted product is only a conjecture · target hashes disagree with no mutation record · Explorer has not authorized artifact generation · formalization feasibility is `POOR_FORMALIZATION_TARGET` · the proof DAG has an open dependency the claimed theorem needs. Load `references/core/generator_gate.md` before invoking Generator on a nontrivial target.
 
-- solved/routine proof plan ready,
-- verified partial result ready,
-- checked computational/counterexample result ready,
-- conditional theorem ready,
-- formalizable narrow lemma ready,
-- no honest progress path remains.
+**Two-stage solve gate.** A solve of the named problem is claimed in two stages, never one: `MATHEMATICAL_SOLVE` (the proof DAG passes `validate_mathematical_solve.py` — complete, gap-free, target-frozen) then `FORMAL_SOLVE` (a Lean receipt validated by `validate_lean_receipt.py`, so placeholder/environment-only Lean cannot stand in). Neither stage self-certifies. Report a solve ONLY when `solve_claim_protocol.py` reaches `SOLVE_ACCEPTED` — which additionally requires an independent re-derivation on the same frozen target hash and a `NOVEL_CANDIDATE` novelty verdict. Until then report the honest partial status; **no agent upgrades a claim to a solve on its own authority.**
 
-Only after Explorer accepts the assembled target and Lovasz verification has passed may Generator run. Generator may not upgrade claim status or decide open-problem truth. If WIT or Lean fails, Generator reports the failure to Explorer; Explorer decides whether to route back to Generator for artifact repair or to Lovasz for a mathematical barrier.
+**Subskill boundaries.** Explorer arbitrates every Lovasz/Generator return and does not write final `.wit` except for very small tasks. Lovasz does not do intake and does not route to Generator. Generator avoids broad theorem search, never upgrades claim status, and returns mathematical blockers to Explorer. Top-level Witsoc coordinates the loop and decides when to return to Explorer.
 
-When Lovasz decomposes a target into multiple subproblems, each worker must generate WIT first, generate Lean from that WIT target, run Lean verification, run SafeVerify/target-freeze checks, preserve required artifacts/logs, and clean up temporary Lean projects according to `references/core/lean_verification.md`. Lovasz may synthesize only verified or honestly classified nodes, and final Generator may run only after the proof DAG composes back to the frozen target or an explicitly narrower target.
+## Routing
 
-Every WIT/Lean proof artifact must be generated inside a session-scoped proof worktree. Use a separate worktree for each proof target or worker node, named from the session id and proof/node id, for example `witsoc-proof-${OSCI_SESSION_ID}-${node_id}`. Preserve WIT, Lean source, logs, receipts, SafeVerify records, and reports in the run artifact directory; delete or mark the proof worktree cleanup status according to `references/core/lean_verification.md`. Handoffs and worker results must record `session_id`, `proof_worktree`, and `worktree_status`.
+Intake always starts at top-level `witsoc`; serious work then starts with Explorer.
 
-Use both Explorer and Generator for substantial formalization problems. The Explorer -> Generator handoff is mandatory before writing WIT on nontrivial problems:
+| Task | Route |
+|---|---|
+| Simple math answer | Answer directly at top-level with a clear derivation. |
+| Hard proof exploration | `witsoc-explorer`: Phase-0 profile, freeze target, triage status, map ontology, rank theorems, backward-chain, run falsification/obstruction checks, EV-rank sketches, emit `runs/<task>/handoff.json` (+ strict `handoff_v1.json` when Generator is needed). |
+| Open / Erdős-style problem | `witsoc-explorer` first → if OPEN/blocked, write a barrier packet → `witsoc-research-lovasz` attacks → Explorer reviews and loops, demotes, stops, or authorizes Generator for a narrow accepted result. |
+| Deep run on an open target | Explorer → **mandatory** Lovasz → Explorer. A "still open/unsupported" report is complete only if Lovasz already attempted barrier-breaking and Explorer reviewed it, or a concrete `lovasz_dispatch_blocker` is recorded. |
+| Counterexample search | `witsoc-explorer` + computation; minimize and verify before presenting. |
+| Premise / lemma discovery | `witsoc-explorer` supply search + dependency planning. |
+| WIT generation | Explorer freezes/accepts the target first (nontrivial), then `witsoc-generator`. Existing `.wit` inspection/repair may start at Generator. |
+| User explicitly asks for WIT / `.wit` | Explorer judges the target first (unless `.wit` repair); Generator is then mandatory and must emit a `.wit` or a concrete blocker. Do not answer with only prose/exploration/Lean. |
+| WIT + Lean requested | Explorer → Generator for routine targets; Explorer → Lovasz → Explorer → Generator for open/blocked. Generator generates/checks WIT, generates Lean from that frozen WIT target, attempts verification, reports exact status. |
+| WIT repair after rejection | `witsoc-generator` for edits; call Explorer when rejected steps need new premises/lemmas/strategy. |
+| Lean build error | `witsoc-generator` repair: classify, cite compiler evidence, minimal fix, retry without changing the frozen target; on repeat, apply `references/core/failure_recovery.md`. |
+| Structural check / verifier context / semantic verify | Deterministic `wit check` / `wit verify` / skeptical verifier + `wit receipt`; **never** treat check/verify as semantic proof; **no LLM** for structural checks, context, target-freeze, status, or receipt parsing. |
 
-1. Explorer pins the problem profile, solved-problem map when relevant, ontology map, ranked theorem candidates, backward chains, falsification results, obstructions/barriers, selected open-product target, conjectures, exact target, hypotheses, definitions, likely counterexamples, proof objects, lemma plan with economics, external verification records, mutation tracker, proof sketches, EV scores, and target-freeze hashes.
-2. Explorer writes `runs/<task>/handoff.json` conforming to `references/schemas/handoff.schema.json`.
-3. Explorer writes `runs/<task>/handoff_v1.json` conforming to `references/schemas/witsoc-handoff-schema.json`.
-4. The orchestrator validates both files before Generator is invoked.
-5. For Lovasz-directed work, `scripts/validate_handoff.py` also enforces the Lovasz proof-DAG and worker-result invariants on `handoff.json`.
-6. Generator reads only `handoff_v1.json`, writes the `.wit` artifact, and runs deterministic checks. Generator must not invent mathematical truth beyond the accepted handoff.
-7. Rejections move the state to Repair or Explorer using `references/core/repair.md` and `references/core/failure_recovery.md`.
-8. Generator records receipts when verifier verdicts are available and uses `references/core/lean_verification.md` if Lean is requested.
+Operating principles: prefer deterministic tooling · strong models for discovery/repair, skeptical models for verification · never substitute confidence for receipts · freeze the target before serious work and reject unexplained hash drift · accept claims only through the claim-acceptance contract · state the achieved quality level before reporting.
 
-## Shared Protocols
+## Contracts
 
-Do not duplicate common rules in task-local prompts. For serious proof work, load the relevant shared protocols:
+**Target freeze** (`references/core/target_freeze.md`): maintain a frozen target statement + target hash; record any change in `target_mutation.json`/`target_mutations.jsonl` with old/new hash, mutation kind, reason, authorization, and whether it weakens the original.
 
-- Routing and subskill boundaries: `references/core/routing.md`.
-- Target freeze and mutation: `references/core/target_freeze.md`.
-- Claim acceptance: `references/core/claim_acceptance.md`.
-- Artifact policy: `references/core/artifact_policy.md`.
-- Generator gate: `references/core/generator_gate.md`.
-- Production gates and quality levels: `references/core/production_gates.md`.
-- Plugin integration: `references/core/plugin_integration.md`.
-- Status and verification: `references/core/status.md`.
-- Structured state and handoffs: `references/core/handoff.md`.
-- Failure recovery and stop conditions: `references/core/failure_recovery.md`.
-- SafeVerify target freezing: `references/core/safeverify.md`.
-- Repair diagnosis: `references/core/repair.md`.
-- Goal cache: `references/core/goal_cache.md`.
-- Exploration strategy: `references/core/exploration_strategy.md`.
-- Research machinery: `references/core/research_machinery.md`.
-- Lean checking loop: `references/core/lean_verification.md`.
-- Tooling: `references/core/tooling.md`.
+**Claim acceptance** (`references/core/claim_acceptance.md`): a claim is accepted only with exact statement, stable claim/DAG-node id, matching target hash, dependency path to target, legal status transition, evidence receipt or checked artifact, skeptic review for strong claims, and a registered artifact when one is cited. Anything else is `OPEN`, `GAP`, `CONJECTURE`, `FAILED_ATTEMPT`, `REJECTED`, `PARTIAL`, or `CONDITIONAL` — never a full solution.
 
-Explicit WIT request contract:
+**Explorer → Generator handoff** is mandatory before writing WIT on nontrivial problems: Explorer pins the full profile (ontology map, ranked theorems, backward chains, falsification results, obstructions, selected target, hypotheses/definitions, likely counterexamples, lemma plan, mutation tracker, sketches, EV scores, freeze hashes), writes `runs/<task>/handoff.json` and strict `runs/<task>/handoff_v1.json`, both validated before Generator runs. Generator reads only `handoff_v1.json` and never invents truth beyond it. For Lovasz work, `validate_handoff.py` also enforces the proof-DAG and worker-result invariants.
 
-- If the user asks for “WIT code”, “.wit”, “provide WIT”, or “WIT + Lean”, producing WIT is mandatory.
-- Do not satisfy such a request with only an exploration summary, natural-language proof, proof sketch, or Lean code.
-- If a deep run delegates work to other agents, the orchestrator must dispatch or require a Generator step that writes the `.wit` artifact.
-- Whenever a `.wit` artifact is generated or updated, activate the Witsoc plugin iframe and open the generated file.
-- If WIT cannot be produced, return `GAP`, `FAILED_ATTEMPT`, or `REJECTED` with the exact blocker and the best partial sketch.
-- If Lean is also requested, Lean must be generated from the WIT target, not from an unrelated informal theorem statement.
-- After a structurally valid `.wit` proof artifact exists and Lean was not already requested, ask the user whether to generate a Lean 4 proof from that WIT proof and verify it with `lake build`.
-- Final output must include either the `.wit` path or an inline WIT code block, plus structural check status.
+## Quality levels (`references/core/production_gates.md`)
 
-Witsoc plugin activation after `.wit` generation:
+`L0_DIRECT` direct answer · `L1_SKETCH` informal sketch · `L2_CHECKED_DERIVATION` deterministic/bounded/structural check · `L3_WIT_ARTIFACT` · `L4_WIT_LEAN_ATTEMPTED` · `L5_WIT_LEAN_VERIFIED` · `L6_RESEARCH_PRODUCT` (Lovasz product with checked/verified artifacts + Explorer review). **The final answer must never imply a higher level than the run achieved.**
 
-The Witsoc UI plugin is external to the strings repo. On a fresh system, check
-the verified plugin index and install it before opening the iframe. Plugin
-installation requires `oras`, `cosign`, and `tar` on the host.
+## Status honesty
 
-```bash
-"$PLANE_TOOL_BIN" plugins available
-"$PLANE_TOOL_BIN" plugins list
-# If witsoc is not listed locally:
-"$PLANE_TOOL_BIN" plugins install witsoc
-```
+`VERIFIED` only with formal/verifier evidence · `CHECKED` only for deterministic computation/structural checks · `PROVED_SKETCH` only for a coherent non-formal sketch · `PARTIAL` for special cases/bounds/reductions/conditionals · `CONJECTURE` for evidence without proof · `FAILED_ATTEMPT`/`REJECTED` when apt.
 
-Then open the generated file in the plugin iframe:
+User-facing verification labels (do not write bare "verified" unless the sentence names one of these):
 
-```bash
-"$PLANE_TOOL_BIN" plugins iframe use witsoc
-"$PLANE_TOOL_BIN" plugins iframe bash witsoc open path/to/generated.wit
-```
+- `STRUCTURE_OK` — `wit check` / structural validation passed.
+- `CONTEXT_BUILT` — verifier context generated (not semantic proof).
+- `RECEIPT_ACCEPTED` — `.wit.receipt.json` exists and accepted verdicts cover the obligations.
+- `LEAN_VERIFIED` — Lean/Lake verification passed and SafeVerify/target-freeze passed.
+- `OPEN` / `GAP` / `PARTIAL` / `CONDITIONAL` / `CONJECTURE` / `FAILED_ATTEMPT` / `REJECTED` — no full verified proof of the frozen target.
 
-If structural checking is run, also push the check action to the iframe:
+## Explicit WIT request contract
 
-```bash
-"$PLANE_TOOL_BIN" plugins iframe bash witsoc check
-```
+If the user asks for "WIT code" / ".wit" / "provide WIT" / "WIT + Lean", producing WIT is mandatory — do not satisfy it with only an exploration summary, prose proof, sketch, or Lean. In a deep run the orchestrator must dispatch a Generator step that writes the `.wit`. Whenever a `.wit` is generated/updated, activate the Witsoc plugin iframe and open the file. If WIT cannot be produced, return `GAP`/`FAILED_ATTEMPT`/`REJECTED` with the exact blocker and the best partial sketch. If Lean is also requested, generate it from the WIT target, not an unrelated statement. After a structurally valid `.wit` exists and Lean was not requested, ask whether to generate and `lake build` a Lean 4 proof from it.
 
-If the plugin command is unavailable, mention that plugin activation failed, but still return the `.wit` artifact and check status. If structural checking, verifier review, or Lean generation fails, use `references/core/failure_recovery.md` before presenting the problem as finally failed.
+## Preflight, scripts, and production readiness
 
-Failure recovery routing:
+The full command sequences live in **`references/core/run_playbook.md`** — its Witsoc-Preflight block (route + handoff validators, `witsoc_route_state.json`, `generator_authorized` check) and its Lovasz/Generator production-readiness blocks. Run preflight at the start of a serious run and the production-readiness block before reporting. The CLI entrypoint is `scripts/witsoc.py` (route/init/check/verify/status/artifacts/validation); register every generated artifact with `witsoc.py artifacts register …` so the plugin reads the registry first. If `witsoc_route.json` sets `required_followup: witsoc-research-lovasz`, a status-only open-problem report is not complete. If `witsoc_route_state.json` has `generator_authorized: false`, Generator may not write yet.
 
-- Lean syntax, import, namespace, or local context failure: Generator repair.
-- WIT lint or structural failure: Generator repair.
-- Missing mathematical lemma: Explorer repair, or Lovasz if it is an open/blocked barrier.
-- DAG integrity failure: Lovasz repair.
-- Target mismatch: Explorer target-freeze repair.
-- Poor formalization feasibility: Explorer/Lovasz decomposition repair.
-- Worker disagreement: skeptic review plus result merger.
-- Repeated same failure class: apply `references/core/failure_recovery.md` before stopping.
+The shared engines and ownership matrix (import-only `services/`, witsoc-owned `bridges/`, no-merge rules) are documented in **`references/core/substrate.md`**. Other shared protocols — load only what the current step needs: `routing.md`, `claim_acceptance.md`, `target_freeze.md`, `artifact_policy.md`, `generator_gate.md`, `production_gates.md`, `status.md`, `handoff.md`, `failure_recovery.md`, `open_problem.md`, `exploration_strategy.md`, `research_machinery.md`, `repair.md`, `goal_cache.md`, `safeverify.md`, `lean_verification.md`, `tooling.md`, `plugin_integration.md` (all under `references/core/`), plus the strict handoff schemas under `references/schemas/`.
 
-Final status honesty:
+## Platform services (probe first, degrade honestly)
 
-- `VERIFIED` only if formal/verifier evidence supports it.
-- `CHECKED` only for deterministic computation or structural checks.
-- `PROVED_SKETCH` only for a coherent but not formal proof sketch.
-- `PARTIAL` for special cases, bounds, reductions, conditionals, or computational products.
-- `CONJECTURE` for evidence without proof.
-- `FAILED_ATTEMPT` or `REJECTED` when appropriate.
+Run `python3 scripts/services/fuel.py --backend` once per session: it enumerates what the platform actually offers this JWT (Herald read/**write**, Loogle, remote E2B Lean, literature pools, budgets via `/auth/usage`) and caches it for every consumer. The mechanical seams that build on it: `scripts/falsification_battery.py` (run against every frozen target BEFORE Lean effort), `scripts/services/lemma_pool.py` (federated verified-lemma pool — local SQLite + kernel-verified-only Herald pushes; premise selection reads it first), `scripts/services/proof_harvest.py` (every kernel-verified proof compounds into proof/pattern/lemma banks — engine paths call it automatically), `scripts/remote_verify.py` + `scripts/remote_lean_burst.py` (E2B soft-signal verification and burst compiles — NEVER certification), `scripts/personas.py --publish` then `scripts/dispatch_prompts.py <run>` (typed worker fleet + duration-aware Agent calls: foreground probes uncapped in one message, background workers within the cap, standing disproof lane), `scripts/graph_memory.py` (cross-run GraphRAG mirror), `scripts/campaign_budget_gate.py check` (now budget-aware: respect its tier recommendation near the daily LLM cap). For harness-enforced campaign loops enter via `/flow:witsoc-flow` (see `witsoc-flow/SKILL.md`; write `runs/current_flow_target.json` first — the entry ignores arguments).
 
-Use user-safe verification labels in final reports:
+## RAM budget
 
-- `STRUCTURE_OK`: `wit check` or equivalent structural validation passed.
-- `CONTEXT_BUILT`: verifier context was generated; this is not semantic proof.
-- `RECEIPT_ACCEPTED`: `.wit.receipt.json` exists and complete accepted verdicts cover the obligations.
-- `LEAN_VERIFIED`: Lean/Lake verification passed and SafeVerify/target-freeze checks passed.
-- `OPEN`, `GAP`, `PARTIAL`, `CONDITIONAL`, `CONJECTURE`, `FAILED_ATTEMPT`, or `REJECTED`: no full verified proof of the frozen target is available.
+The skill is sized for a 16 GB machine: Lean processes stay within **8 GB usual / 10 GB max**, governed by `scripts/services/ram_governor.py` (run it directly for status). All Lean execution flows through ONE shared Mathlib REPL session (`lean_repl.shared_session`, ~7 GB steady) — never spawn extra REPLs or raise thread fanout to "go faster"; concurrent `lake env lean` file builds are slot-gated and heap-capped (`lean -M`), and the shared session recycles itself if it bloats past the ceiling. Tuning knobs (env, all optional): `WITSOC_RAM_BUDGET_GB` (default 8), `WITSOC_LEAN_SLOTS`, `WITSOC_LEAN_PROC_GB` (default 3.5), `WITSOC_REPL_RECYCLE_GB` (default budget+2), `WITSOC_LEAN_MAX_MB` (default 6144). On bigger boxes raise the budget; never disable the governor.
 
-Do not write bare "verified" in user-facing text unless the sentence names the mechanism, such as `RECEIPT_ACCEPTED` or `LEAN_VERIFIED`.
+## Failure-recovery routing
 
-Subskill boundaries:
+Lean syntax/import/namespace/context failure → Generator repair · WIT lint/structural failure → Generator repair · missing lemma → Explorer repair (Lovasz if it is an open/blocked barrier) · DAG integrity failure → Lovasz repair · target mismatch → Explorer target-freeze repair · poor formalization feasibility → Explorer/Lovasz decomposition · worker disagreement → skeptic review + merge · repeated same failure class → apply `references/core/failure_recovery.md` before stopping.
 
-- Explorer does not write final `.wit` except for very small tasks, and it arbitrates all Lovasz and Generator returns.
-- Lovasz does not perform initial intake and does not route directly to Generator unless the top-level coordinator explicitly allows it for a verified narrow target.
-- Generator avoids broad theorem search, does not upgrade claim status, and sends mathematical blockers back to Explorer.
-- Top-level Witsoc coordinates the loop and decides when to return to Explorer.
+## Before final answer
 
-## Before Final Answer
+Apply `references/core/production_gates.md`: route state checked · frozen target + hash stated · hash consistency checked · accepted statuses justified by the claim-acceptance contract · artifacts registered or paths shown · exact WIT/Lean status · Lovasz return packet reviewed when Lovasz ran · Generator authorization checked when artifacts were generated · report grade or gaps stated when Lovasz ran · achieved quality level stated. Production is complete only with no unexplained target mismatch, no illegal status upgrade, no accepted claim without evidence, no unregistered cited artifact, no skipped required Lovasz phase, and no Generator handoff before Explorer authorization.
 
-For serious mathematical, WIT, Lean, Lovasz, or Generator runs, apply `references/core/production_gates.md` before final response:
+## Default output
 
-- route state checked,
-- frozen target and target hash stated,
-- target-hash consistency checked,
-- accepted statuses justified by the claim acceptance contract,
-- artifacts registered or paths shown,
-- WIT/Lean status stated exactly,
-- Lovasz return packet reviewed when Lovasz ran,
-- Generator authorization checked when artifacts were generated,
-- report grade or production gaps stated when Lovasz ran,
-- achieved quality level stated.
+Small answer: result + reasoning. Serious task: exact interpretation · achieved quality level · exploration summary (if used) · open-problem status (if applicable) · sketch/partial/conjecture/failed/gap status (if applicable) · `.wit` path (or inline WIT when requested) · structural-check result · verifier-context path/summary · receipt path (if any) · current status · failure output if stopped · next useful step.
 
-Production complete only if there is no unexplained target mismatch, illegal status upgrade, accepted claim without evidence, unregistered cited artifact, skipped required Lovasz phase, or Generator handoff before Explorer authorization.
-
-## Default Output
-
-For a small math answer, provide the result and reasoning.
-
-For a serious proof task, provide:
-
-- exact theorem/problem interpretation,
-- achieved quality level,
-- exploration summary if used,
-- open-problem status, if applicable,
-- proof-sketch status, partial results, conjectures, failed approaches, or known gaps, if applicable,
-- `.wit` path if generated,
-- inline WIT code or `.wit` path when explicitly requested,
-- structural check result,
-- verifier-context path or summary,
-- receipt path if any,
-- current status,
-- failure output if blocked or stopped,
-- next useful step.
-
-End every serious Witsoc response with this short artifact block, using `none`
-or `not run` explicitly rather than omitting fields:
+End every serious response with this block (use `none`/`not run` explicitly, never omit a field):
 
 ```text
 Artifacts:
@@ -782,4 +133,4 @@ Artifacts:
 - Plugin: <opened/open failed/not attempted>
 ```
 
-If Lean generation is requested, use internal `witsoc-generator`, prefer LSP/REPL/per-file checks during repair, and return Lean only after final `lake build` plus SafeVerify succeeds. If Lean repair is blocked, say `Lean code generation failed`.
+If Lean is requested, use `witsoc-generator`, prefer LSP/REPL/per-file checks during repair, and return Lean only after final `lake build` + SafeVerify succeed. If Lean repair is blocked, say `Lean code generation failed`.
