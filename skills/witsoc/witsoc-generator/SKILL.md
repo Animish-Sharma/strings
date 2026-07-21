@@ -9,6 +9,10 @@ category: research
 # Witsoc Generator
 
 Generator is the artifact engine inside Witsoc. It converts an Explorer-accepted handoff into a `.wit` proof artifact with explicit labels, dependencies, structural checking, verifier contexts, receipts, and optional Lean. It is **not** a chat-proof mode and **not** a truth arbiter.
+Generator must read SOC before repair so it does not repeat failed proof
+decompositions, missing-premise loops, or compiler-chasing strategies. Mechanical
+syntax/import repairs stay local; premise or target gaps return to Explorer or
+Lovasz and are recorded in SOC.
 
 Hard rules:
 - **Generator never upgrades claim status** — Explorer/top-level own status. Generator may report that a structural check passed, context was built, a receipt was accepted, or Lean passed; the mathematical status is assigned elsewhere. If WIT or Lean fails, report the exact failure to Explorer.
@@ -16,8 +20,17 @@ Hard rules:
 - If the user asks for WIT/`.wit`/WIT+Lean, producing WIT is **mandatory** — never return only a plan, prose proof, verifier discussion, or Lean. Either write a `.wit` or report a concrete blocker as `GAP`/`FAILED_ATTEMPT`/`REJECTED`.
 - For nontrivial new targets, require an **Explorer handoff** first; for open/unsolved/unconfirmed targets, require that Explorer accepted a Lovasz-verified result for the narrow artifact target. Existing `.wit` inspection/repair may start here directly.
 - For open problems, never let a partial artifact imply the original problem is solved — title, `-- Status:`, theorem statement, and report must distinguish the open problem from the narrower recorded result.
+- For biological claims, Generator verifies only formal/computable evidence
+  structure: schema validators, provenance receipts, statistical-obligation
+  specs, reproducibility manifests, target hashes, and WIT artifacts for narrow
+  claim gates. It must not "prove biology" or upgrade empirical support.
+- In `formal_locked_artifact` mode, Generator is a proof-body patcher only:
+  no new imports, opens, scoped opens, options, namespace/end edits, global
+  helper declarations, theorem-signature edits, guard-marker edits, or protected
+  whitespace changes. Helper facts must be local `have`/`suffices`/`calc` inside
+  the editable body unless Explorer authorizes a new skeleton.
 
-Load-on-demand: specialized artifact modes (open-problem partials, disproof, reductions, algorithm correctness, audits) in `../references/core/generator_modes.md`; worked Bad/Good WIT in `../references/core/generator_examples.md`; full syntax in `../references/wit.md`; shared substrate in `../references/core/substrate.md` (reach `services/`/`bridges/` only through a bridge as `requester=witsoc-generator`); plus `../references/core/{handoff,failure_recovery,repair,goal_cache,safeverify,lean_verification,tooling}.md` and schemas/examples under `../references/`.
+Load-on-demand: specialized artifact modes (open-problem partials, disproof, reductions, algorithm correctness, audits) in `../references/core/generator_modes.md`; Generator-specific notes and examples under `../references/witsoc-generator/`; worked Bad/Good WIT in `../references/core/generator_examples.md`; full syntax in `../references/wit.md`; shared substrate in `../references/core/substrate.md` (reach `services/`/`bridges/` only through a bridge as `requester=witsoc-generator`); plus `../references/core/{handoff,failure_recovery,repair,goal_cache,safeverify,lean_verification,generator_lean_fix_cycle,protected_artifact,open_problem_acceleration,tooling}.md` and schemas/examples under `../references/`.
 
 ## Tooling
 
@@ -25,14 +38,35 @@ Prefer typed API tools (`run_wit_check`, `run_wit_cycle`, `run_target_freeze_che
 
 | Script | Purpose |
 |---|---|
-| `init.sh --name N --claim X [--given H] [--out f.wit]` | `.wit` skeleton (refuses overwrite) |
-| `check.sh <file|dir>` | structural validation |
-| `audit.sh <file>` | static audit: `GAP`, `CITE`, vague `BY`, receipt issues |
-| `verify.sh <file> [--step N]` | structural gate + verifier context (no LLM) |
-| `cycle.sh <file>` | full prep cycle: check+audit+context+status → `<name>.verify.txt` |
-| `receipt.sh <file> --from verifier.txt` | parse verdicts → `.wit.receipt.json`, update status |
-| `status.sh <file>` | summarize status/receipt/structural result |
+| `../scripts/witsoc-generator/init.sh --name N --claim X [--given H] [--out f.wit]` | `.wit` skeleton (refuses overwrite) |
+| `../scripts/witsoc-generator/check.sh <file|dir>` | structural validation |
+| `../scripts/witsoc-generator/audit.sh <file>` | static audit: `GAP`, `CITE`, vague `BY`, receipt issues |
+| `../scripts/witsoc-generator/verify.sh <file> [--step N]` | structural gate + verifier context (no LLM) |
+| `../scripts/witsoc-generator/cycle.sh <file>` | full prep cycle: check+audit+context+status -> `<name>.verify.txt` |
+| `../scripts/witsoc-generator/receipt.sh <file> --from verifier.txt` | parse verdicts -> `.wit.receipt.json`, update status |
+| `../scripts/witsoc-generator/status.sh <file>` | summarize status/receipt/structural result |
 | `validate_handoff.py <handoff.json>` | validate handoff incl. Lovasz proof-DAG + worker invariants |
+| `../references/witsoc-bio/scripts/validate_bio_evidence_structure.py <run_dir>` | validate biological evidence structure, provenance classes, hashes, and dual-signoff shape |
+| `generator_cycle.py <run_dir> --artifact ...` | local Generator cycle: preflight, manifest/artifact registration, target-protection check, WIT-to-Lean manifest validation |
+| `lean_fix_cycle.py <run_dir> --lean-file ... --record-attempt` | stateful Lean repair controller: failure class, repair hypothesis, same-class budget, expensive-run budget, forbidden-token scan |
+| `validate_wit_lean_manifest.py <manifest>` | require WIT label → Lean declaration mapping and frozen/WIT/Lean target-hash equality |
+| `validate_protected_artifact.py <run_dir>` | prove artifact text outside editable proof-body ranges did not drift |
+| `formal_locked_artifact.py init|validate <run_dir>` | initialize/validate locked Lean skeletons with baseline protected text and drift classification |
+| `protected_body_patcher.py <run_dir> --artifact ... --range-id ... --replacement-file ...` | patch only a declared editable proof range |
+| `validate_no_placeholders.py <files...>` | reject `sorry`/`admit`/TODO/placeholders/Lean holes before final reporting |
+| `validate_lean_api_packet.py <lean_api_availability.json>` | reject guessed/nonexistent Mathlib APIs and unhandled semantic edge cases |
+| `validate_pending_state.py <run_dir>` | block success while critic/verifier/worker state remains nonterminal |
+| `validate_final_receipt_claim.py <final.md> --run-dir <run_dir>` | require terminal receipts for final success wording |
+| `classify_formal_failure.py --text ...` | map failures to Generator/Explorer/Lovasz repair routes |
+
+For biological evidence structure, expect `source_ledger.json`,
+`normalized_bio_sources.json`, `perturbation_design_audit.json`,
+`experimental_unit_classification.json`, `pseudoreplication_sensitivity.json`,
+`claim_denominator_gate.json`, `perturbation_receipt.json` or
+`model_benchmark_receipt.json`, `source_to_claim_trace_validation.json`,
+`lovasz_math_audit.json`, and final `joint_synthesis.json` when a strong status
+is requested. Missing normalized/design/denominator receipts are warnings before
+final synthesis and blockers for strong support.
 
 Fallback native CLI: `wit check|verify|context|receipt`.
 
@@ -74,10 +108,10 @@ Triggers ("provide WIT code", "write a `.wit` proof", "give WIT and Lean", "deep
    ```
    Labels sequential per scope; no forward/self/cross-case refs; bracket local/imported/hyp/step refs (`[lemma]`, `[alias.thm]`, `[hyp]`, `[3]`); `@name`/`@{citation}` for external givens; case hypothesis is `[n.0]`; `GAP` (or `GAP EXPECTING [subproblem]`) beats handwaving; avoid `BY obvious/clearly/standard/Mathlib` and bare `BY [n]` for nontrivial steps; no Lean syntax in WIT.
 7. **Check + lint**: activate the plugin iframe and open the file; run `check.sh`/`lint_wit_quality.py`; build verifier context; register logs. Repair structural failures before semantic contexts. Write the manifest with `generator_manifest.py` (target-hash drift is a hard failure).
-8. **Optional Lean** (ask first unless requested): generate from the WIT target in the same worktree, then `lake build`.
+8. **Optional Lean** (ask first unless requested): generate from the WIT target in the same worktree, write a WIT-to-Lean translation manifest mapping WIT labels to Lean declarations/blocks, ensure frozen/WIT/Lean target hashes match, then create/validate `protected_artifact_contract.json` for theorem skeletons and edit only proof-body ranges through `protected_body_patcher.py`. For nontrivial library facts write `lean_api_availability.json` and validate it before retrying; guessed identifiers are blockers. Run final `lake build`, SafeVerify, `validate_protected_artifact.py`, `formal_locked_artifact.py validate`, and `validate_no_placeholders.py`. Validate any claimed Lean success with `../scripts/validate_lean_receipt.py`; stale receipts, missing command/output, `sorry`, `admit`, `axiom`, `constant`, `opaque`, placeholder text, guessed APIs, skeleton drift, or SafeVerify failure block `LEAN_VERIFIED`.
 9. **Cleanup**: delete temporary Lean projects/worktrees after the worker finishes (unless marked preserved); preserve `.wit`, Lean source, logs, receipts, SafeVerify records, reports; report cleanup status.
 
-**Failure diversification.** Before returning a final `GAP`/`FAILED_ATTEMPT`/`REJECTED` on a nontrivial theorem, write a failure note beside the artifact (frozen target, failed method, artifact path, exact diagnostic, rejected step/missing premise, repairs tried, methods to avoid, two distinct alternate families) and return it to Explorer — which decides Generator-repair vs Lovasz-barrier. Only stop locally without alternates when the failure is purely mechanical and immediately repairable, or spawning is unavailable and ≥2 materially different local methods already failed. Forbidden for explicit WIT requests: stopping after exploration, returning only prose, returning only Lean, saying WIT "could be generated", or passing a sketch off as the artifact.
+**Failure diversification.** Before returning a final `GAP`/`FAILED_ATTEMPT`/`REJECTED` on a nontrivial theorem, write a failure note beside the artifact (frozen target, failed method, artifact path, exact diagnostic, rejected step/missing premise, repairs tried, methods to avoid, two distinct alternate families) and return it to Explorer — which decides Generator-repair vs Lovasz-barrier. If `open_problem_acceleration.json` exists, add the blocker to its formalization plan or next-three-moves feedback: missing definition, library search target, theorem-precondition gap, smallest formalizable subclaim, or target-drift risk. Only stop locally without alternates when the failure is purely mechanical and immediately repairable, or spawning is unavailable and ≥2 materially different local methods already failed. Forbidden for explicit WIT requests: stopping after exploration, returning only prose, returning only Lean, saying WIT "could be generated", or passing a sketch off as the artifact.
 
 ## `.wit` quality + audit
 
@@ -85,13 +119,29 @@ A good file: valid header (`-- Status: UNVERIFIED`/`GAP`/`REJECTED`, or `VERIFIE
 
 ## Check, verify, receipts
 
-Order (typed tools when available): `run_wit_check → run_wit_audit → run_wit_context|run_wit_verify → run_wit_status → run_target_freeze_check`; else `check.sh → audit.sh → verify.sh → status.sh` (or `cycle.sh`). A verifier judges each context skeptically (`[1] ACCEPT`/`[2] REJECT`/`[3.1] GAP`); persist with `receipt.sh`. Before reporting `VERIFIED`: all obligations have verdicts · the final `SHOW` is covered · no `GAP`/`REJECTED` remain · receipt status matches the header · verifier output is not truncated. A suspiciously incomplete receipt is not high assurance.
+Order (typed tools when available): `run_wit_check -> run_wit_audit -> run_wit_context|run_wit_verify -> run_wit_status -> run_target_freeze_check`; else `../scripts/witsoc-generator/check.sh -> ../scripts/witsoc-generator/audit.sh -> ../scripts/witsoc-generator/verify.sh -> ../scripts/witsoc-generator/status.sh` (or `../scripts/witsoc-generator/cycle.sh`). A verifier judges each context skeptically (`[1] ACCEPT`/`[2] REJECT`/`[3.1] GAP`); persist with `../scripts/witsoc-generator/receipt.sh`. Before reporting `VERIFIED`: all obligations have verdicts · the final `SHOW` is covered · no `GAP`/`REJECTED` remain · receipt status matches the header · verifier output is not truncated. A suspiciously incomplete receipt is not high assurance.
 
 ## Repair + Lean
 
 Use `../references/core/repair.md`: before editing after a WIT/structural/Lean/SafeVerify rejection, write a structured repair diagnosis and keep the target frozen (a repair may change proof terms, tactics, helpers, allowed imports, or decomposition — never variables, hypotheses, definitions, or conclusion). Record failed attempts as reusable evidence (attempt id, path, failure class, diagnostic excerpt, repair, outcome, lesson).
 
-Lean loop (`../references/core/lean_verification.md`): prefer LSP/REPL/per-file checks for iterations, full `lake build` for final/dependency-sensitive changes. Never introduce `sorry`, `admit`, `axiom`, `constant`, `opaque`, fake bridge lemmas, or comments-as-proof. When a linear repair stalls, run one breadth scan (`lean_tactic_scan.py --file …`, configured via `WITSOC_LEAN_REPL_CMD`) — guidance only; success still needs a real checker pass + SafeVerify (target-freeze diff/hash of source, canonical target, `GIVEN`, `CLAIM`, definitions; SafeVerify failure is `REJECTED` until repaired). `Lean VERIFIED` = final `lake build` passed + SafeVerify passed + no forbidden placeholders; otherwise say `Lean code generation failed`. Do not claim Lean verification without `lake build`.
+Lean loop (`../references/core/lean_verification.md` and `../references/core/generator_lean_fix_cycle.md`): prefer LSP/REPL/per-file checks for iterations, full `lake build` for final/dependency-sensitive changes. Never introduce `sorry`, `admit`, `axiom`, `constant`, `opaque`, fake bridge lemmas, or comments-as-proof. Record every expensive Lean run with `lean_fix_cycle.py`, including the failure class, repair hypothesis, and whether obligations reduced. When a linear repair stalls, run one breadth scan (`lean_tactic_scan.py --file …`, configured via `WITSOC_LEAN_REPL_CMD`) — guidance only; success still needs a real checker pass + SafeVerify (target-freeze diff/hash of source, canonical target, `GIVEN`, `CLAIM`, definitions; SafeVerify failure is `REJECTED` until repaired). `Lean VERIFIED` = final `lake build` passed + SafeVerify passed + no forbidden placeholders; otherwise say `Lean code generation failed`. Do not claim Lean verification without `lake build`.
+
+Lean repair is proof-body-first. For a fixed user or Explorer statement, do not
+change theorem signatures, domains, hypotheses, definitions, or conclusions.
+For protected Lean files, repair through the declared editable markers and
+reject duplicate/missing markers as target-drift risk.
+If the statement cannot close, return `GAP`/`REJECTED` with the exact diagnostic
+and missing lemma instead of changing the target.
+
+Repair budget (`../references/core/lean_verification.md` Repair Budget): every expensive run (verifier, full `lake build`) needs a stated hypothesis — what changed and why it should fix the previous error; no hypothesis means no run, that is compiler-chasing. 3 consecutive same-class failures without reducing the obligation → stop local repair and return the sketch to Explorer for material revision or rotation. 8 expensive runs on one sketch → sketch exhausted; record the failure entry and rotate. Never edit the frozen statement/definitions to make a proof close, and claim success only from a captured verifier/`lake build` receipt that postdates the last edit (`../references/core/safeverify.md`, `../references/core/status.md`).
+
+For open-problem campaigns, Generator is also a reduction sensor. A formalization
+failure can be useful progress when it identifies the exact missing definition,
+unavailable theorem, bad quantifier order, hidden side condition, or smaller
+subclaim that should be attacked next. Record that feedback in the acceleration
+record and return it to Explorer/Lovasz; do not silently change the statement to
+fit the prover.
 
 ## Reporting
 

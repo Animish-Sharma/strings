@@ -227,15 +227,15 @@ uv build
 This produces:
 
 ```text
-dist/witsoc-0.1.5.tar.gz
-dist/witsoc-0.1.5-py3-none-any.whl
+dist/witsoc-0.2.1.tar.gz
+dist/witsoc-0.2.1-py3-none-any.whl
 ```
 
 Local wheel smoke test:
 
 ```bash
 python3 -m venv /tmp/witsoc-venv
-/tmp/witsoc-venv/bin/pip install --no-deps dist/witsoc-0.1.5-py3-none-any.whl
+/tmp/witsoc-venv/bin/pip install --no-deps dist/witsoc-0.2.1-py3-none-any.whl
 /tmp/witsoc-venv/bin/witsoc route --field route "deep run prove or disprove this open conjecture"
 ```
 
@@ -247,7 +247,7 @@ uv publish
 
 ## Migration Model
 
-Version `0.1.5` packages the existing `scripts/` tree as the compatibility
+Version `0.2.1` packages the existing `scripts/` tree as the compatibility
 surface. The stable entrypoint is `witsoc.cli:main`; old calls through
 `scripts/witsoc.py` delegate to the package CLI. Future releases can move
 individual scripts into importable package modules while keeping the same

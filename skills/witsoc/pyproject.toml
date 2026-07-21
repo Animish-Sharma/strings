@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "witsoc"
-version = "0.1.6"
+version = "0.2.1"
 description = "Witsoc mathematical research orchestration utilities"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -36,7 +36,7 @@ artifacts = ["scripts/witcore.pyc"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/witsoc"]
-force-include = { "bootstrap.py" = "witsoc/bootstrap.py", "witsoc.py" = "witsoc/witsoc.py", "README.md" = "witsoc/README.md", "SKILL.md" = "witsoc/SKILL.md", "pyproject.toml" = "witsoc/pyproject.toml", "scripts" = "witsoc/scripts", "references" = "witsoc/references", "witsoc-explorer" = "witsoc/witsoc-explorer", "witsoc-research-lovasz" = "witsoc/witsoc-research-lovasz", "witsoc-generator" = "witsoc/witsoc-generator", "witsoc-flow" = "witsoc/witsoc-flow" }
+force-include = { "bootstrap.py" = "witsoc/bootstrap.py", "witsoc.py" = "witsoc/witsoc.py", "README.md" = "witsoc/README.md", "SKILL.md" = "witsoc/SKILL.md", "pyproject.toml" = "witsoc/pyproject.toml", "scripts" = "witsoc/scripts", "references" = "witsoc/references", "witsoc-explorer" = "witsoc/witsoc-explorer", "witsoc-research-lovasz" = "witsoc/witsoc-research-lovasz", "witsoc-generator" = "witsoc/witsoc-generator", "witsoc-bio" = "witsoc/witsoc-bio", "witsoc-flow" = "witsoc/witsoc-flow" }
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -46,6 +46,7 @@ include = [
   "witsoc-explorer",
   "witsoc-research-lovasz",
   "witsoc-generator",
+  "witsoc-bio",
   "witsoc-flow",
   "bootstrap.py",
   "witsoc.py",

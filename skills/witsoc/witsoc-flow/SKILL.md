@@ -22,14 +22,23 @@ results.
 ```mermaid
 flowchart TD
     intake["Read runs/current_flow_target.json (write it first if missing: the exact task). Freeze the target: statement, quantifiers, domains, hypotheses, definitions, freeze hashes. Run fuel autowire and state the fuel banner. Never silently strengthen or weaken the statement."]
+    domain_triage["Classify the frozen target domain. Choose exactly one: mathematics (proof/open problem/WIT/Lean/theorem work), biology (perturbation biology, virtual-cell, target validation, omics, model performance, biological mechanism/evidence), or under_specified."]
     explorer_triage["Explorer triage per witsoc-explorer/SKILL.md: classify status with sources, run scripts/falsification_battery.py against the frozen target, run the autoform-vote target gate, select premises (pool, Herald, atlas+Loogle). Then choose: generator_ready (solved/routine/formalizable), needs_research (open/unsolved/blocked -> write the Lovasz barrier packet), or under_specified (ambiguity that must go back to the requester)."]
     lovasz_campaign["Run the Lovasz gated phase machine (witsoc-research-lovasz/SKILL.md): audit packet, triage, disproof-first, proof-DAG, budget-gate check (scripts/campaign_budget_gate.py check — respect its tier recommendation), dispatch via scripts/dispatch_prompts.py (foreground probes in one message; background workers within cap; keep the disproof lane running), score, skeptic, synthesis audit, then write explorer_return_packet.json."]
     explorer_review["Explorer reviews the Lovasz return mechanically (scripts/validate_lovasz_return.py first — a failing return is rejected back). Choose exactly one: lovasz_again (new one-axis-mutated barrier packet), generator_ready (a verified narrow product is WIT-ready), demote (record honest status), or honest_stop (no defensible path; record why)."]
+    bio_claim_freeze["Explorer freezes the Durbin joint claim: organism, cell/tissue/disease context, perturbation, dose, time point, assay, readout, dataset id/version, model, baseline, split, claimed effect, and falsification conditions. Write joint_claim.json and validate with ../references/witsoc-bio/scripts/validate_bio_claim.py."]
+    durbin_campaign["Run Durbin per witsoc-bio/SKILL.md: initialize durbin_run.json, resolve entities, pin sources, preregister analysis, execute the deterministic audit path, record confounders and contradictions, build durbin_evidence_graph.json, and prepare the Lovasz statistical audit packet."]
+    lovasz_bio_audit["Run Lovasz as Durbin's peer statistical/mathematical auditor: estimand, identifiability, replicate structure, pseudoreplication, leakage, baselines, metrics, uncertainty, multiple testing, split validity, calibration, and algorithmic claims. Write lovasz_math_audit.json and cross_domain_challenges.json; return to Durbin, not Generator."]
+    durbin_joint_synthesis["Durbin answers Lovasz challenges, preserves disagreements, writes joint_synthesis.json with Durbin status, Lovasz status, joint status, scope limits, signoffs, and unresolved fatal challenges, validates with ../references/witsoc-bio/scripts/validate_durbin_run.py, then writes explorer_return_packet.json."]
+    bio_explorer_review["Explorer reviews Durbin-Lovasz synthesis. Choose exactly one: joint_again (one-axis repair through Durbin), lovasz_again (statistical audit repair), generator_ready (narrow accepted formal subclaim), bounded_report (honest bounded/conditional/conjectural/failed result), or under_specified."]
     generator["Generator converts the accepted handoff into artifacts per witsoc-generator/SKILL.md: validate handoff, dedicated worktree, obligation graph, WIT, check+audit, optional Lean via the shared REPL for iteration and one final lake build + SafeVerify. Harvest every kernel-verified proof (services/proof_harvest)."]
-    production_gates["Run the production gates: generator_receipt_gate (add --remote when the backend has E2B), fidelity record present, target-freeze hashes match, artifacts registered. Choose: pass, artifact_repair (structural/Lean friction -> Generator), or mathematical_barrier (a genuine barrier -> new Lovasz packet via Explorer)."]
+    production_gates["Run the production gates: generator_receipt_gate (add --remote when the backend has E2B), fidelity record present, target-freeze hashes match, artifacts registered. Choose: pass, artifact_repair (structural/Lean friction -> Generator), mathematical_barrier (a genuine barrier -> new Lovasz packet via Explorer), or biological_barrier (biology/statistical validity gap -> Durbin-Lovasz repair)."]
     report["Write the honest final report: exact status per the claim-acceptance contract, receipts/artifacts listed, remaining gaps, next narrow action. Sync ledgers; harvest the run (lemma pool); update failure memory. An honest OPEN_UNFALSIFIED or FAILED_ATTEMPT is a valid outcome."]
     BEGIN --> intake
-    intake --> explorer_triage
+    intake --> domain_triage
+    domain_triage -->|mathematics| explorer_triage
+    domain_triage -->|biology| bio_claim_freeze
+    domain_triage -->|under_specified| report
     explorer_triage -->|generator_ready| generator
     explorer_triage -->|needs_research| lovasz_campaign
     explorer_triage -->|under_specified| report
@@ -38,9 +47,19 @@ flowchart TD
     explorer_review -->|generator_ready| generator
     explorer_review -->|demote| report
     explorer_review -->|honest_stop| report
+    bio_claim_freeze --> durbin_campaign
+    durbin_campaign --> lovasz_bio_audit
+    lovasz_bio_audit --> durbin_joint_synthesis
+    durbin_joint_synthesis --> bio_explorer_review
+    bio_explorer_review -->|joint_again| durbin_campaign
+    bio_explorer_review -->|lovasz_again| lovasz_bio_audit
+    bio_explorer_review -->|generator_ready| generator
+    bio_explorer_review -->|bounded_report| report
+    bio_explorer_review -->|under_specified| report
     generator --> production_gates
     production_gates -->|pass| report
     production_gates -->|artifact_repair| generator
     production_gates -->|mathematical_barrier| lovasz_campaign
+    production_gates -->|biological_barrier| durbin_campaign
     report --> END
 ```
