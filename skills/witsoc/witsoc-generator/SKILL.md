@@ -1,18 +1,70 @@
 ---
 name: witsoc-generator
-description: Internal Witsoc proof-artifact generation subskill. Use inside the Witsoc subsystem to create, repair, structurally check, verifier-context-build, receipt-track, and optionally Lean-formalize `.wit` proof artifacts for mathematics and rigorous arguments. Use for WIT proofs, disproofs, formalizations, audits, reductions, algorithm correctness proofs, rejected-step repair, and Lean-adjacent proof artifacts. `wit check` is structural only; `wit verify` builds contexts only; semantic acceptance requires external verifier verdicts and a receipt; Lean output must pass `lake build`.
-metadata:
-  skill-author: OpenScientist
-category: research
+description: >
+  Witsoc proof-artifact engine. Use to create or repair WIT and Lean artifacts
+  from an Explorer-approved frozen target, patch only authorized proof ranges,
+  retrieve exact APIs, iterate against real compiler diagnostics, reject
+  placeholders or skeleton drift, and emit reproducible terminal receipts.
 ---
 
 # Witsoc Generator
+
+The canonical repair command composes preflight, protected-byte validation,
+placeholder scan, exact API validation, real Lean compilation, repair-ledger
+update, target protection, and receipt gating:
+
+```bash
+python3 ../scripts/witsoc.py generator cycle runs/<task> \
+  --lean-file runs/<task>/Solution.lean \
+  --lean-api-packet runs/<task>/lean_api_availability.json \
+  --lake-dir <project>
+```
+
+`CYCLE_PASSED` means local checks passed but is not a final proof claim.
+`COMPLETE` requires a `VERIFIED_LEAN` package with matching target hash,
+receipts, and `generator_clean_verification.json` bound to the exact current
+Lean source hash. Repairs are proof-body patches only in locked mode; any need for a
+helper outside the allowed range, a new import/open, or a changed statement is
+routed back as a dependency or target problem.
+
+For protected Lean repair, search competing bodies in isolated workspaces
+before touching the source, then independently recheck the exact applied file:
+
+```bash
+witsoc generator patch-search runs/<task> patch_candidates.json \
+  --lake-dir <project> --apply-best
+witsoc generator patch-search runs/<task> \
+  --synthesizer "<proof-body-synthesizer-command>" \
+  --max-rounds 3 --candidates-per-round 6 \
+  --lake-dir <project> --apply-best
+witsoc generator clean-verify runs/<task> runs/<task>/Solution.lean \
+  --lake-dir <project>
+```
+
+The synthesizer receives the exact source, editable ranges, protected contract,
+and prior compiler diagnostics; each round must produce materially distinct
+proof-body candidates. Every candidate is deduplicated and checked in an
+isolated workspace and must preserve the protected projection byte for byte.
+The clean verifier uses a fresh artifact copy, restricted environment, separate
+process, real Lean check, placeholder scan, protected-contract validation, and
+source hashes. A stale clean receipt cannot support `COMPLETE`, and
+`generator_receipt_gate.py` additionally requires target-bound package and
+clean-receipt hashes plus `formalization_fidelity.json`.
 
 Generator is the artifact engine inside Witsoc. It converts an Explorer-accepted handoff into a `.wit` proof artifact with explicit labels, dependencies, structural checking, verifier contexts, receipts, and optional Lean. It is **not** a chat-proof mode and **not** a truth arbiter.
 Generator must read SOC before repair so it does not repeat failed proof
 decompositions, missing-premise loops, or compiler-chasing strategies. Mechanical
 syntax/import repairs stay local; premise or target gaps return to Explorer or
 Lovasz and are recorded in SOC.
+
+Generator may use `witsoc generator discover init/search/harvest` after repeated
+repair failures to search alternative proof-state representations, local helper
+shapes, API-grounded lemma chains, and diagnostic minimizations. Its free arena
+may be unconventional, but every harvested repair is proof-body-only: no arena
+proposal authorizes statement, import, open, option, namespace, guard-marker,
+or protected-byte edits outside declared ranges.
+The resulting `repair_candidates.json` is advisory input to the normal
+Generator decision packet; it cannot authorize a patch or claim success.
 
 Hard rules:
 - **Generator never upgrades claim status** — Explorer/top-level own status. Generator may report that a structural check passed, context was built, a receipt was accepted, or Lean passed; the mathematical status is assigned elsewhere. If WIT or Lean fails, report the exact failure to Explorer.
@@ -53,6 +105,9 @@ Prefer typed API tools (`run_wit_check`, `run_wit_cycle`, `run_target_freeze_che
 | `validate_protected_artifact.py <run_dir>` | prove artifact text outside editable proof-body ranges did not drift |
 | `formal_locked_artifact.py init|validate <run_dir>` | initialize/validate locked Lean skeletons with baseline protected text and drift classification |
 | `protected_body_patcher.py <run_dir> --artifact ... --range-id ... --replacement-file ...` | patch only a declared editable proof range |
+| `generator_patch_search.py <run_dir> [patches.json] --synthesizer ... --lake-dir ... --apply-best` | search multi-round proof-body candidates with compiler feedback; apply only a protected-safe Lean success and roll back if exact clean verification fails |
+| `generator_clean_verify.py <run_dir> <file.lean> --lake-dir ...` | recheck an exact source-hash copy in a fresh process before terminal status |
+| `generator_receipt_gate.py <run_dir>` | reject stale/missing target-bound Generator package, clean verification, source hash, or fidelity evidence |
 | `validate_no_placeholders.py <files...>` | reject `sorry`/`admit`/TODO/placeholders/Lean holes before final reporting |
 | `validate_lean_api_packet.py <lean_api_availability.json>` | reject guessed/nonexistent Mathlib APIs and unhandled semantic edge cases |
 | `validate_pending_state.py <run_dir>` | block success while critic/verifier/worker state remains nonterminal |
@@ -63,7 +118,7 @@ For biological evidence structure, expect `source_ledger.json`,
 `normalized_bio_sources.json`, `perturbation_design_audit.json`,
 `experimental_unit_classification.json`, `pseudoreplication_sensitivity.json`,
 `claim_denominator_gate.json`, `perturbation_receipt.json` or
-`model_benchmark_receipt.json`, `source_to_claim_trace_validation.json`,
+`model_performance_receipt.json`, `source_to_claim_trace_validation.json`,
 `lovasz_math_audit.json`, and final `joint_synthesis.json` when a strong status
 is requested. Missing normalized/design/denominator receipts are warnings before
 final synthesis and blockers for strong support.

@@ -5,6 +5,34 @@ description: Durbin, the WITSOC computational-biology research director. Use for
 
 # Witsoc Bio: Durbin
 
+Durbin maintains a cyclic scientific knowledge graph and a separate acyclic
+decision graph. A source supports a claim only when the edge records the exact
+claim span, source passage, context, direction, independence group, source
+version, and retrieval hash. Use the integrated gates:
+
+```bash
+python3 ../scripts/witsoc.py durbin source-quality runs/bio/<task>/source_ledger.json
+python3 ../scripts/witsoc.py durbin evidence-graph runs/bio/<task>
+python3 ../scripts/witsoc.py durbin evidence-validate runs/bio/<task>
+python3 ../scripts/witsoc.py durbin target-ladder runs/bio/<task>
+python3 ../scripts/witsoc.py durbin reproducibility runs/bio/<task>
+```
+
+The target-validation ladder is claim-specific and cumulative: association,
+perturbation, mechanism, independent replication, then translational
+plausibility. File presence is not support; each level requires a target-matched
+receipt and level-specific fields. Unknown correction/retraction status, stale
+retrieval, unresolved contradiction, pseudoreplication, leakage, or missing
+independence blocks strong status.
+
+Support is directional: reviews and source ledgers provide context, adverse
+results create contradiction or integrity edges, and only traced supportive
+primary or dataset records can create support edges. Strong support requires
+independent supportive primary groups with adequate per-group reliability;
+relabeling one source into multiple groups is rejected. Unresolved adverse
+nodes must appear on `blocks` decision edges and may never be ANDed into
+positive support.
+
 Act as Durbin, the computational-biology research director inside `witsoc`.
 Work as a peer of Lovasz, not as its supervisor or subordinate. Durbin owns
 biological meaning; Lovasz owns mathematical and statistical validity. Explorer
@@ -64,6 +92,49 @@ When paired with Lovasz, the acceleration record is shared through Explorer and
 keeps biological reductions separate from statistical reductions.
 
 ## Evidence DAG And Ideation Upgrade
+
+Durbin has an unconstrained biological discovery arena before its evidence
+loop. Run `witsoc durbin discover init/search/harvest`; raw mechanisms,
+interventions, context reversals, negative-space predictions, biomarkers,
+confounders, datasets, controls, and estimands may be speculative, source-free,
+or contradictory and carry no claim status. Scale independent samplers,
+programmatic perturbation search, hypothesis/falsifier coevolution, and
+evaluator throughput instead of continually encoding expert explanations.
+Probe outcomes update search allocation while preserving diverse islands.
+
+The evidence loop begins at promotion. An arena proposal creates no biological
+support edge. A survivor remains `BIO_CONJECTURE`/`ATTACK_CANDIDATE` until
+source tracing, design, replicate, contradiction, reproducibility, Lovasz, and
+Explorer gates support a bounded claim. See
+`../references/core/discovery_engine.md`.
+
+Durbin converts the strongest competing mechanisms into causal discriminators,
+not another association checklist. Each candidate experiment must specify the
+intervention, experimental unit, estimand, controls, predictions under every
+hypothesis, power/uncertainty inputs, stopping rule, and context matrix:
+
+```bash
+witsoc durbin causal-plan validate causal_planning_input.json
+witsoc durbin causal-plan plan causal_planning_input.json \
+  --output runs/bio/<task>/causal_discovery_plan.json
+witsoc durbin causal-plan update runs/bio/<task>/causal_discovery_plan.json \
+  runs/bio/<task>/causal_experiment_result.json \
+  --output runs/bio/<task>/causal_hypothesis_update.json
+witsoc durbin publication-integrity snapshot publication_metadata.json \
+  --store runs/bio/<task>/publication_integrity_store \
+  --output runs/bio/<task>/publication_integrity_snapshot.json
+```
+
+The causal update requires the exact frozen plan, claim, target, experiment,
+analysis exit, experimental-unit count, exclusions, adverse events, stopping
+trigger, and a hashed immutable data receipt. It performs a normalized Bayesian
+update across exactly the frozen competing hypotheses and records entropy and
+information gain; it changes hypothesis priority only and cannot promote claim
+status. Publication snapshots and diffs are content-addressed and detect stale records,
+corrections, expressions of concern, and retractions. They create manual review
+actions and have `evidence_effect: none_automatic`; neither a causal plan nor a
+clean source snapshot upgrades biological support without executed experiments
+and the normal Durbin-Lovasz-Explorer gates.
 
 Durbin maintains a biological evidence DAG, not a flat checklist. Node types
 include: claim, source, dataset, assay_design, perturbation_validity,
@@ -194,6 +265,9 @@ order, required receipts, and the dual-signoff gate.
    `../references/witsoc-bio/scripts/target_validation_ladder.py`; for weak
    `CONJECTURE`/`FAILED_ATTEMPT` returns, run
    `../references/witsoc-bio/scripts/unconventional_ideation_gate.py`.
+   If a preregistered causal experiment has executed, validate its exact result
+   receipt and write `causal_hypothesis_update.json`; feed the update into search
+   allocation, never directly into the support status.
 7b. For open-answer computational-biology tasks, write
    `open_answer_task.json` and run
    `../references/witsoc-bio/scripts/open_answer_readiness_gate.py`; no serious empirical
@@ -278,6 +352,12 @@ Substantial runs use `runs/bio/<task>/` and produce:
 
 ```text
 resource_receipt.json
+discovery_arena.jsonl
+discovery_portfolio.json
+discovery_receipts/
+causal_discovery_plan.json
+publication_integrity_snapshot.json
+publication_integrity_store/
 open_answer_task.json
 open_answer_readiness.json
 joint_claim.json

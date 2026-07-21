@@ -1,12 +1,37 @@
 ---
 name: witsoc
-description: General research skill and subsystem for OpenScientist. Use for mathematical work and computational-biology claim auditing: problem solving, proof generation, proof critique, disproof, theorem formalization, premise search, lemma discovery, proof automation, algorithms, complexity reductions, algebra, analysis, topology, number theory, combinatorics, graph theory, geometry, probability, logic, perturbation biology, virtual-cell model evaluation, target validation, single-cell or multi-omics evidence, and scientific arguments whose correctness depends on chained premises. Contains internal subskills `witsoc-research-lovasz` for open-problem research programs and mathematical/statistical audit, `witsoc-bio` for Durbin biological claim auditing, `witsoc-explorer` for exploration and arbitration, and `witsoc-generator` for WIT proof artifacts; can also work directly for small questions.
-metadata:
-  skill-author: OpenScientist
-category: research
+description: >
+  General mathematical and computational-biology research orchestration. Use
+  for target understanding, open-problem reduction, theorem and premise search,
+  proof/disproof, WIT and Lean generation or repair, perturbation biology,
+  target validation, omics evidence, and scientific claims whose correctness
+  depends on chained premises. Coordinates Explorer, Lovasz, Generator, and
+  Durbin with immutable targets, typed memory, evidence graphs, and receipts.
 ---
 
 # Witsoc
+
+## Canonical Runtime
+
+Every serious run uses one immutable target, one typed research graph, one SOC
+store, and one terminal-state contract:
+
+```bash
+python3 scripts/witsoc.py target init --source-file target.txt --output runs/<task>/canonical_target.json
+python3 scripts/witsoc.py research-graph init runs/<task>/research_graph.json --target-sha256 <canonical-sha256>
+python3 scripts/witsoc.py soc-memory init runs/<task>
+python3 scripts/witsoc.py adapt runs/<task> --budget 20 --workers 4 --apply
+python3 scripts/witsoc.py drive runs/<task> --finalize
+python3 scripts/witsoc.py status-lattice runs/<task> --json
+```
+
+`drive` is the completion boundary. Exit `0` means deterministic acceptance
+passed. Exit `3` means external Intelligence Bus replies are required. Exit `4`
+means blocked or budget-exhausted. Waiting workers, critics, or verifiers never
+count as success. Use `python3 scripts/witsoc.py map` for the installed command
+surface and `reference-integrity` before release. Run
+`python3 scripts/witsoc.py regression-audit` before packaging or changing a
+shared gate; it executes domain-neutral trust-boundary and integration fixtures.
 
 Witsoc is the top-level research workflow. It owns four internal subskills and decides which one runs, in what order, and when to stop. **Read this whole file before a serious run; it is the operating contract.** Deep detail lives in `references/`; load a reference only when the step below sends you there.
 
@@ -17,8 +42,9 @@ Witsoc is the top-level research workflow. It owns four internal subskills and d
 
 ## SOC Memory Is Core
 
-SOC is WITSOC's compact working memory. Every serious run initializes and
-validates `lovasz.soc` even when the active route is Explorer-only, Durbin, or
+SOC is WITSOC's compact working memory. `soc_memory.json` is the typed source of
+truth; `lovasz.soc` is its generated readable projection. Every serious run initializes and
+validates SOC even when the active route is Explorer-only, Durbin, or
 Generator repair, because failures, reusable insights, current barriers, and
 queue state must survive across subskill boundaries. Use:
 
@@ -28,9 +54,11 @@ python3 scripts/witsoc.py validate-soc-memory runs/<task>
 ```
 
 All subskills must read SOC before repeating an approach and must append
-failures with `do_not_repeat` conditions. SOC is not proof evidence by itself;
-it is the memory layer that keeps WITSOC from wasting cycles and repeating bad
-methods.
+failures with `do_not_repeat` conditions. Decisions link the SOC insight ids
+that influenced them, and checked outcomes are attributed back to those
+decisions. Scoped opposite insights remain explicit contradictions rather than
+being merged away. SOC is not proof evidence by itself; it ranks attention and
+never certifies a claim.
 
 The subskills are nested here; read the nested `SKILL.md` directly, do not look for sibling top-level skills. When a task routes through Lovasz the user-facing progress line must read exactly:
 
@@ -81,6 +109,23 @@ The run is INCOMPLETE (reject it) if all hold: the user asked for a proof/dispro
 
 **Formal-locked-artifact gate.** If a task supplies a protected skeleton or guard markers, WITSOC enters `formal_locked_artifact` mode (`references/core/protected_artifact.md`). Generator may edit only declared proof bodies. Global helper lemmas, imports, opens, scoped opens, `set_option`, namespace/end edits, theorem-signature edits, guard-marker formatting changes, and protected whitespace drift are forbidden. Nontrivial Mathlib/API dependencies require `lean_api_availability.json`; guessed lemma names are a Lovasz/Explorer premise-search problem, not a Generator retry.
 
+**Evaluator-adversary gate.** An executable command is not a research evaluator
+until `evaluator_factory.py` binds it to the exact target, candidate, and
+evaluator hashes and audits independent authorship, two-sided outcomes,
+semantic measurements, held-out separation, contamination controls, and
+adversarial cases. Trivial or constant-exit probes are rejected.
+`CHECKED_BOUNDED` requires an `INDEPENDENT_HELDOUT` audit; output wording is
+never an oracle.
+
+**Typed acceptance-evidence gate.** Any result-asserting status (`PARTIAL`,
+`CONDITIONAL`, `PROVED_SKETCH`, `CHECKED_*`, or `VERIFIED_*`) requires an
+evidence object with an explicit mechanism and scope, a lowercase target
+SHA-256, and current hashed receipts. Bare `VERIFIED` is forbidden. A
+`VERIFIED_LEAN` claim additionally requires a matching Generator package,
+target freeze, exact-current-source clean verification, kernel result,
+independence fields, protected validation when applicable, and formalization
+fidelity. `status_lattice.py` enforces this and `finalize` invokes it.
+
 **Two-stage solve gate.** A solve of the named problem is claimed in two stages, never one: `MATHEMATICAL_SOLVE` (the proof DAG passes `validate_mathematical_solve.py` — complete, gap-free, target-frozen) then `FORMAL_SOLVE` (a Lean receipt validated by `validate_lean_receipt.py`, so placeholder/environment-only Lean cannot stand in). Neither stage self-certifies. Report a solve ONLY when `solve_claim_protocol.py` reaches `SOLVE_ACCEPTED` — which additionally requires an independent re-derivation on the same frozen target hash and a `NOVEL_CANDIDATE` novelty verdict. Until then report the honest partial status; **no agent upgrades a claim to a solve on its own authority.**
 
 **Biology joint-review gate.** Serious biological claims, perturbation/virtual-cell evaluations, target-validation claims, and omics-derived mechanism claims must not be reported as strongly supported until Durbin and Lovasz both sign off. Durbin owns biological context, endpoint relevance, controls, contradiction/confounder search, and interpretation. Lovasz owns estimand validity, statistics, baselines, leakage, uncertainty, and algorithmic claims. Strong status requires `joint_synthesis.json` plus Explorer arbitration; disagreement stays as a gap.
@@ -116,6 +161,24 @@ Intake always starts at top-level `witsoc`; serious work then starts with Explor
 Operating principles: prefer deterministic tooling · strong models for discovery/repair, skeptical models for verification · never substitute confidence for receipts · freeze the target before serious work and reject unexplained hash drift · accept claims only through the claim-acceptance contract · state the achieved quality level before reporting.
 
 ## Unconventional Idea Policy
+
+Use the two-plane engine in `references/core/discovery_engine.md`. Raw search in
+`discovery_arena.jsonl` is deliberately outside claim acceptance so Lovasz and
+Durbin can explore implausible and serendipitous ideas without first making
+them defensible. Only harvested candidates cross into the typed probe plane;
+unprobed candidates enter the research graph only as `OPEN` hypotheses, while
+receipt-backed survivors may become attack candidates. This separation must
+never be misread as permission to report unchecked mathematics or biology.
+
+Prefer scalable meta-methods over an ever-growing expert rulebook: quality-
+diversity search, recombination, program synthesis, coevolved falsifiers,
+outcome learning, and larger evaluator throughput. Built-in domain operators
+seed the search but do not define its limits. Initialize with `witsoc discover
+init`, expand with `witsoc discover search`, synthesize and audit evaluators
+with `witsoc evaluator-factory`, rank probes with `witsoc explorer
+information-gain`, execute them durably with `witsoc schedule`, and promote
+only reconciled receipts with `witsoc discover promote`. The full contract is
+`references/core/scalable_research_runtime.md`.
 
 WITSOC should actively generate unconventional mathematical and biological
 ideas: odd reductions, ontology pivots, neglected boundary cases, adversarial
@@ -159,7 +222,13 @@ heuristics, statuses, fixtures, and source gates must stay under
 
 ## Status honesty
 
-`VERIFIED` only with formal/verifier evidence · `CHECKED` only for deterministic computation/structural checks · `PROVED_SKETCH` only for a coherent non-formal sketch · `PARTIAL` for special cases/bounds/reductions/conditionals · `CONJECTURE` for evidence without proof · `FAILED_ATTEMPT`/`REJECTED` when apt.
+Use granular `VERIFIED_WIT`/`VERIFIED_LEAN`/`VERIFIED_EXTERNAL` only with the
+matching formal/verifier evidence; bare `VERIFIED` is invalid. Use
+`CHECKED_BOUNDED` only with an independent held-out evaluator audit and
+`CHECKED_SYMBOLIC` only with a symbolic receipt. `PROVED_SKETCH`, `PARTIAL`, and
+`CONDITIONAL` require typed target-bound evidence and independent skeptical
+review; `CONJECTURE`, `FAILED_ATTEMPT`, and `REJECTED` remain honest candidate
+states.
 
 User-facing verification labels (do not write bare "verified" unless the sentence names one of these):
 
@@ -179,7 +248,7 @@ If the user asks for "WIT code" / ".wit" / "provide WIT" / "WIT + Lean", produci
 
 The full command sequences live in **`references/core/run_playbook.md`** — its Witsoc-Preflight block (route + handoff validators, `witsoc_route_state.json`, `generator_authorized` check) and its Lovasz/Generator production-readiness blocks. The efficient default route lives in **`references/core/core_efficiency_map.md`**. Run preflight at the start of a serious run and the production-readiness block before reporting. Durbin runs additionally use `references/witsoc-bio/scripts/init_durbin_run.py`, `validate_bio_claim.py`, `advance_durbin_phase.py`, `validate_durbin_run.py`, and for open-answer biology `open_answer_readiness_gate.py`. The CLI entrypoint is `scripts/witsoc.py` (route/init/check/verify/status/artifacts/validation/production-check); register every generated artifact with `witsoc.py artifacts register …` so the plugin reads the registry first. If `witsoc_route.json` sets `required_followup: witsoc-research-lovasz`, a status-only open-problem report is not complete. If `witsoc_route_state.json` sets `joint_bio_required: true`, a strong biology report is not complete until Durbin-Lovasz synthesis and Explorer arbitration are done. If `witsoc_route_state.json` has `generator_authorized: false`, Generator may not write yet.
 
-The shared engines and ownership matrix (import-only `services/`, witsoc-owned `bridges/`, no-merge rules) are documented in **`references/core/substrate.md`**. Other shared protocols — load only what the current step needs: `routing.md`, `claim_acceptance.md`, `target_freeze.md`, `protected_artifact.md`, `artifact_policy.md`, `generator_gate.md`, `production_gates.md`, `status.md`, `handoff.md`, `failure_recovery.md`, `open_problem.md`, `open_problem_acceleration.md`, `lovasz_deep_research.md`, `exploration_strategy.md`, `research_machinery.md`, `repair.md`, `goal_cache.md`, `safeverify.md`, `lean_verification.md`, `generator_lean_fix_cycle.md`, `core_efficiency_map.md`, `tooling.md`, `plugin_integration.md` (all under `references/core/`), plus the strict handoff schemas under `references/schemas/`.
+The shared engines and ownership matrix (import-only `services/`, witsoc-owned `bridges/`, no-merge rules) are documented in **`references/core/substrate.md`**. Other shared protocols — load only what the current step needs: `routing.md`, `claim_acceptance.md`, `target_freeze.md`, `protected_artifact.md`, `artifact_policy.md`, `generator_gate.md`, `production_gates.md`, `status.md`, `handoff.md`, `failure_recovery.md`, `open_problem.md`, `open_problem_acceleration.md`, `lovasz_deep_research.md`, `scalable_research_runtime.md`, `research_quality_contract.md`, `exploration_strategy.md`, `research_machinery.md`, `repair.md`, `goal_cache.md`, `safeverify.md`, `lean_verification.md`, `generator_lean_fix_cycle.md`, `core_efficiency_map.md`, `tooling.md`, `plugin_integration.md` (all under `references/core/`), plus the strict handoff schemas under `references/schemas/`.
 
 ## Platform services (probe first, degrade honestly)
 
@@ -210,7 +279,7 @@ Lean syntax/import/namespace/context failure → Generator repair · WIT lint/st
 
 ## Before final answer
 
-Apply `references/core/production_gates.md`: route state checked · target-protection validation passed · protected-artifact validation passed when formal artifacts exist · no placeholders in final formal artifacts · no pending critic/verifier/worker state · frozen target + hash stated · hash consistency checked · accepted statuses justified by the claim-acceptance contract · final status wording and receipt claim audited · artifacts registered · exact WIT/Lean status · Lovasz return packet reviewed when Lovasz ran · Durbin-Lovasz joint synthesis reviewed when Durbin ran · Generator authorization checked when artifacts were generated · report grade or gaps stated when Lovasz ran · achieved quality level stated. Production is complete only with no unexplained target mismatch, no illegal status upgrade, no accepted claim without evidence, no unregistered cited artifact, no skipped required Lovasz/Durbin phase, no unresolved placeholders, and no Generator handoff before Explorer authorization.
+Apply `references/core/production_gates.md`: route state checked · target-protection validation passed · protected-artifact validation passed when formal artifacts exist · no placeholders in final formal artifacts · no pending critic/verifier/worker state · frozen target + hash stated · hash consistency checked · typed acceptance-evidence/status-lattice validation passed · final status wording and receipt claim audited · artifacts registered · exact WIT/Lean status and Generator receipt gate · Lovasz return packet reviewed when Lovasz ran · Durbin-Lovasz joint synthesis reviewed when Durbin ran · Generator authorization checked when artifacts were generated · report grade or gaps stated when Lovasz ran · achieved quality level stated. Production is complete only with no unexplained target mismatch, no illegal status upgrade, no accepted claim without evidence, no unregistered cited artifact, no skipped required Lovasz/Durbin phase, no unresolved placeholders, and no Generator handoff before Explorer authorization.
 
 ## Default output
 

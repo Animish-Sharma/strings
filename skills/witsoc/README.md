@@ -117,6 +117,13 @@ witsoc generator-obligations runs/example --write
 witsoc scorecard runs/example --write
 witsoc ui-summary runs/example --write
 witsoc orchestrator-plan route "prove a theorem"
+witsoc map
+witsoc target init --source "forall n, P n" --output runs/example/canonical_target.json
+witsoc research-graph init runs/example/research_graph.json
+witsoc discover init runs/example
+witsoc discover search runs/example --generations 50 --harvest
+witsoc drive runs/example --finalize
+witsoc regression-audit
 ```
 
 Nested aliases are also available:
@@ -128,7 +135,14 @@ witsoc lovasz kernel runs/example --write
 witsoc lovasz judge runs/example --write
 witsoc lovasz autopsy runs/example --write
 witsoc explorer target-model runs/example --write
+witsoc explorer discover init runs/example
+witsoc lovasz discover search runs/example --generations 100 --harvest
 witsoc generator obligations runs/example --write
+witsoc generator discover init runs/example
+witsoc generator cycle runs/example --lean-file runs/example/Solution.lean --lake-dir .
+witsoc durbin evidence-graph runs/bio/example
+witsoc durbin target-ladder runs/bio/example
+witsoc durbin discover init runs/bio/example
 ```
 
 ## Lazy Surface
@@ -227,16 +241,17 @@ uv build
 This produces:
 
 ```text
-dist/witsoc-0.2.1.tar.gz
-dist/witsoc-0.2.1-py3-none-any.whl
+dist/witsoc-0.2.2.tar.gz
+dist/witsoc-0.2.2-py3-none-any.whl
 ```
 
 Local wheel smoke test:
 
 ```bash
 python3 -m venv /tmp/witsoc-venv
-/tmp/witsoc-venv/bin/pip install --no-deps dist/witsoc-0.2.1-py3-none-any.whl
+/tmp/witsoc-venv/bin/pip install --no-deps dist/witsoc-0.2.2-py3-none-any.whl
 /tmp/witsoc-venv/bin/witsoc route --field route "deep run prove or disprove this open conjecture"
+/tmp/witsoc-venv/bin/witsoc regression-audit --quick
 ```
 
 Publish, after configuring PyPI credentials:
@@ -247,8 +262,13 @@ uv publish
 
 ## Migration Model
 
-Version `0.2.1` packages the existing `scripts/` tree as the compatibility
-surface. The stable entrypoint is `witsoc.cli:main`; old calls through
-`scripts/witsoc.py` delegate to the package CLI. Future releases can move
-individual scripts into importable package modules while keeping the same
-console commands.
+Version `0.2.2` adds strict typed acceptance evidence, independent Explorer
+terminal review, held-out information-gain calibration, optional semantic
+retrieval, semantically receipted Lovasz dependency edges, reviewed DAG
+compression, executable CEGIS, multi-round Generator proof-body synthesis with
+clean rollback, direction-aware Durbin evidence, source-independence gates,
+causal hypothesis updates, and a domain-neutral executable regression audit.
+Lovasz and Durbin still search freely in an unconstrained arena; only typed,
+audited, falsifiable candidates cross the promotion boundary into research
+claims.
+The stable entrypoint is `witsoc.cli:main`.

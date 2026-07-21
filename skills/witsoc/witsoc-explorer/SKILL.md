@@ -1,12 +1,30 @@
 ---
 name: witsoc-explorer
-description: Internal Witsoc exploration and arbitration subskill for advanced mathematics and serious computational-biology claim routing. Use inside the Witsoc subsystem for supply search, premise selection, theorem lookup planning, counterexample hunting, example testing, invariant mining, lemma discovery, proof strategy portfolios, reduction design, proof automation planning, Lean/Coq/SMT premise suggestions, biological target freezing, Durbin-Lovasz joint-claim arbitration, and general exploration before or alongside WIT proof generation. It can work independently for exploratory math, route biological claims to `witsoc-bio`, or hand a precise proof plan to `witsoc-generator`.
-metadata:
-  skill-author: OpenScientist
-category: research
+description: >
+  Witsoc discovery and arbitration engine. Use for immutable target modeling,
+  hybrid theorem and premise retrieval, counterexample search, diversified
+  strategy portfolios, executable probes, reduction design, biological claim
+  routing, and deciding whether Lovasz, Durbin, or Generator may proceed.
 ---
 
 # Witsoc Explorer
+
+Explorer works from `canonical_target.json`; translations and reformulations
+are projections, never replacements. For serious work it must run a diverse
+portfolio rather than select one plausible sketch by prose confidence:
+
+```bash
+python3 ../scripts/witsoc.py explorer literature runs/<task>
+python3 ../scripts/witsoc.py explorer tournament runs/<task> --portfolio-size 4
+python3 ../scripts/witsoc.py explorer falsify runs/<task>
+python3 ../scripts/witsoc.py explorer discover init runs/<task>
+python3 ../scripts/witsoc.py explorer discover search runs/<task> --generations 50 --harvest
+```
+
+Historical outcomes influence priority through `calibrate`, but never claim
+status. At least three method families should survive initial ranking when
+available; every promoted route needs a cheap falsifier or executable probe,
+target-hash match, named dependencies, and an explicit kill criterion.
 
 Explorer is the discovery and **arbitration** engine inside Witsoc. It turns an unclear task into a precise frozen target, sourced status, premises, lemmas, counterexamples, barrier packets for Lovasz, biological joint claims for Durbin, and proof plans that survive skeptical verification. It may answer small problems directly; for serious proof work it must hand a validated package to `witsoc-generator` before any final `.wit`.
 
@@ -44,6 +62,40 @@ cross-domain reductions, noncanonical biological mechanisms, and adversarial
 dataset/model failure modes. They remain candidates until the normal source,
 falsification, Durbin, Lovasz, Generator, and Explorer gates accept or demote
 them.
+
+Explorer owns the promotion boundary, not the contents of the free search
+arena. It may let Lovasz and Durbin generate ungrounded, contradictory, or
+serendipitous proposals in `discovery_arena.jsonl`; it judges only which ones
+deserve a falsifier budget or entry into `research_graph.json`. Preserve at
+least one frontier item per operator/representation/evaluator island before
+ranking additional items from the same island. See
+`../references/core/discovery_engine.md`.
+
+## Information-Gain Search
+
+Explorer does not rank candidates by plausibility alone. It computes expected
+uncertainty reduction per cost from explicit observation models when available,
+or from declared research-graph uncertainty with emitted fallback assumptions:
+
+```bash
+witsoc explorer information-gain runs/<task>/discovery_portfolio.json \
+  --graph runs/<task>/research_graph.json \
+  --calibration runs/<task>/outcome_calibration.json \
+  --strict-model --budget 20 --out runs/<task>/explorer_information_gain.json
+witsoc explorer hybrid-retrieval sources-a.jsonl sources-b.json \
+  --query "exact barrier or contradiction" \
+  --embedding-command "<semantic-reranker-command>" \
+  --out runs/<task>/hybrid_retrieval.json
+```
+
+Strict information-gain mode refuses to rank fallback probability assumptions;
+held-out calibration or an explicit observation model is required for a
+decision-ready result. Hybrid retrieval fuses lexical, source, and optional
+semantic rankings by reciprocal-rank fusion, deduplicates by stable identity,
+and preserves source records, identifiers, freshness, provenance, and hashed
+semantic request/response receipts. Retrieval and information gain allocate
+attention only. Explorer still audits theorem preconditions, source roles,
+target hashes, and evaluator quality before promotion.
 
 ## Focus And Ideation Upgrade
 
@@ -104,7 +156,7 @@ source-to-claim mapping before Durbin starts. Explorer must separate and pin:
 primary papers
 reviews/commentary
 dataset accessions and source pages
-model/challenge/leaderboard pages
+model/challenge/evaluation pages
 protocol/tool documentation
 corrections, retractions, and version changes
 ```
@@ -112,7 +164,7 @@ corrections, retractions, and version changes
 Use online metadata first: PubMed/NCBI E-utilities for biomedical literature,
 GEO accession pages/E-utilities for public expression datasets, Europe PMC for
 full-text/open-access checks, DOI/Crossref metadata for publication identity, and
-source URLs for model or benchmark pages. Also use Open Targets, ChEMBL,
+source URLs for model or evaluation pages. Also use Open Targets, ChEMBL,
 UniProt, Ensembl, and Cell Ontology when resolving targets, molecules, proteins,
 genes, and cell types. Store receipts, hashes, byte-limited previews, access
 dates, and exact queries; do not rely on memory or local copies as evidence.
@@ -155,7 +207,7 @@ Then announce `Using witsoc with witsoc-explorer -> witsoc-research-lovasz.` Cre
 
 **6.1 Recovery after failure** (`../references/core/failure_recovery.md`): keep the target frozen, mutate exactly one dimension, avoid repeating a failed method unless a real ingredient changes; a mathematical barrier → new Lovasz packet, artifact/syntax/Lean-friction → back to Generator unchanged.
 
-**6.2 Lovasz/Generator-return review — the decision gate.** Lovasz returns to Explorer (not Generator) with resolved/open barriers, classified claims (`REJECTED`/`FAILED_ATTEMPT`/`CONJECTURE`/`PARTIAL`/`PROVED_SKETCH`/`CHECKED`/`VERIFIED`), evidence/sources, search results, gaps, next target. Generator returns to Explorer when `lean_fix_cycle.json` reports same-class budget exhaustion, sketch exhaustion, target drift, missing external theorem, or proof gap. Explorer chooses **exactly one**:
+**6.2 Lovasz/Generator-return review — the decision gate.** Lovasz returns to Explorer (not Generator) with resolved/open barriers, candidate states (`REJECTED`/`FAILED_ATTEMPT`/`CONJECTURE`/`LEMMA_CANDIDATE`/`REDUCTION_CANDIDATE`/`COUNTEREXAMPLE_CANDIDATE`/`PROOF_SKETCH_CANDIDATE`/`OPEN_UNFALSIFIED`/`DEMOTED`/`GAP`), proposed evidence classes, receipts, sources, search results, gaps, and next target. Explorer never inherits a trust status from Lovasz; the acceptance layer validates target-bound receipts before assigning any `PARTIAL`, `CHECKED_*`, or `VERIFIED_*` result. Generator returns to Explorer when `lean_fix_cycle.json` reports same-class budget exhaustion, sketch exhaustion, target drift, missing external theorem, or proof gap. Explorer chooses **exactly one**:
 - `LOVASZ_AGAIN` — send another barrier packet;
 - `DEMOTE` — mark `CONJECTURE`/`FAILED_ATTEMPT`/`REJECTED`/`OPEN`/`PARTIAL`/`CONDITIONAL`;
 - `GENERATOR_READY` — a solved/routine plan, verified partial, checked computation/counterexample, conditional theorem, or formalizable narrow lemma is ready;
@@ -164,7 +216,11 @@ Then announce `Using witsoc with witsoc-explorer -> witsoc-research-lovasz.` Cre
 Generator may run **only** from `GENERATOR_READY`. Do not choose `HONEST_STOP` on a deep run merely because the literature says the target is open — that requires recorded Lovasz attempts or a concrete inability to dispatch Lovasz.
 Write the choice to `explorer_decision.json` using schema
 `witsoc.explorer_decision.v1` and validate it with
-`../scripts/validate_explorer_decision.py`. If source/status evidence was used,
+`../scripts/validate_explorer_decision.py --strict`. Terminal decisions
+(`DIRECT_ANSWER`, `GENERATOR_READY`, `DEMOTE`, `HONEST_STOP`) require a hashed
+independent review whose author differs from the decision author. Strict
+demotion/stop also requires a passing hashed unconventional-ideation validation,
+exhausted method families, and no pending tasks. If source/status evidence was used,
 also write `source_status_ledger.json` and validate it with
 `../scripts/validate_source_status_ledger.py`.
 
