@@ -4,6 +4,14 @@ A perturbation result competes against a short list of explanations that are
 always available and mostly cheap to check. The list, with the cheap test for
 each, is in `data/confounders.json`.
 
+## The confounder sweep
+
+The `confounder-sweep` gate is what turns this list from a reading exercise into
+a check. It walks every entry in `data/confounders.json`, demands a recorded
+RESULT for each, and enforces the severities below. Three of the twelve are
+computed for you by `scripts/diagnostics.py` and arrive filled in; the rest are
+work, and the gate treats an unfilled one as unaddressed.
+
 ## The rule the gate enforces
 
 **A confounder marked addressed with no recorded result is unaddressed.**

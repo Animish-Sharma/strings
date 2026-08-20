@@ -35,6 +35,24 @@ This is worth checking specifically when a later source is *more* precise than a
 earlier one. Precision that increases with distance from the event is precision
 that was added.
 
+## Dating consistency is a constraint, not a label
+
+The `dating-consistency` gate reads dates as constraints on the graph rather
+than as decoration on each entry. Two things it refuses:
+
+- **A chain that runs backwards.** A source cannot derive from something written
+  after it. This sounds too obvious to check and it is one of the most common
+  defects in an inherited citation list, because the dates and the edges are
+  usually entered by different people at different times.
+- **A late witness called contemporary.** A source dated a century after the
+  event is not a contemporary witness however early it is *relative to the other
+  sources* — and relative earliness is what a bibliography sorted by date
+  actually shows you.
+
+Dates here are ordinal and a range is compared by its bounds. `circa` is an
+admission of uncertainty and not a licence to ignore an ordering violation of two
+hundred years.
+
 ## The direction of borrowing can be wrong
 
 A and B agree. The tradition says B copied A. The dates say otherwise, or the

@@ -19,6 +19,13 @@ The chain:
 Three properties worth stating, because each is a place this could have been built
 worse:
 
+**The run remembers.** Each production opens the campaign's working memory,
+asks whether this blueprint has already failed the same way, records what was
+ruled out with a revival condition, and writes the decision it made about which
+tier to attempt. Attention is the thing a long campaign runs out of first, and a
+run that keeps none spends its twentieth attempt learning what its first one
+knew.
+
 **Attempts compound.** A step that reached the kernel clean is recorded in the
 campaign's lemma pool, and a failing kernel run has its residual goals mined out
 of the diagnostics and proposed as bridging lemmas. Without that, every run
@@ -81,6 +88,9 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 PACK = HERE.parent
+# The frame's own scripts. A pack reaching UP to frame machinery is the allowed
+# direction; the contract forbids the frame reaching DOWN into a pack.
+FRAME_SCRIPTS = PACK.parent.parent / "scripts"
 
 
 def run(cmd: list[str], timeout: int = 900) -> tuple[int, str, str]:
@@ -366,6 +376,24 @@ class Production:
         name = blueprint.get("metadata", {}).get("name", "artifact")
         target = blueprint.get("target_protection", {}).get("frozen_target_sha256", "")
 
+        # 0. working memory, before anything is made ----------------------------------------------------
+        soc = self.dir / "soc.json"
+        if not soc.exists():
+            run([sys.executable, str(FRAME_SCRIPTS / "soc_memory.py"), "init",
+                 "--out", str(soc), "--target", target or "0" * 64,
+                 "--goal", (blueprint.get("target_formalization", {}) or {}).get("claim", "")[:200]])
+        code, out, _ = run([sys.executable, str(FRAME_SCRIPTS / "soc_memory.py"), "check",
+                            "--soc", str(soc), "--json", "--method", f"blueprint:{name}",
+                            "--statement", (blueprint.get("target_formalization", {}) or {})
+                            .get("claim", "")[:300]])
+        risk = as_json(out)
+        if risk.get("repeat_risk") == "HIGH":
+            self.step("repeat check", False,
+                      "this blueprint has already failed this way — "
+                      + "; ".join(m.get("do_not_repeat", "") for m in risk.get("matches", [])[:2]))
+            return self.report("REPEAT_REFUSED", target_sha256=target, repeat=risk)
+        self.step("repeat check", True, "no recorded failure matches this plan")
+
         # 1. render the plan --------------------------------------------------
         wit_path = self.dir / f"{name}.wit"
         code, out, err = run([sys.executable, str(HERE / "generate_wit.py"),
@@ -557,6 +585,14 @@ class Production:
             # WHICH axis to move and refuses a bare retry, and it existed unwired
             # for as long as the pack did — the one component whose whole job is
             # to answer the question the failure path was leaving open.
+            run([sys.executable, str(FRAME_SCRIPTS / "soc_memory.py"), "failure",
+                 "--soc", str(soc), "--method", f"blueprint:{name}",
+                 "--statement", (blueprint.get("target_formalization", {}) or {})
+                 .get("claim", "")[:300],
+                 "--blocker", str(failure_class)[:200],
+                 "--do-not-repeat", "this blueprint unchanged at the kernel tier",
+                 "--revival", "a revised blueprint: a different tactic, a corrected premise, "
+                              "or a decomposition that localizes the failure"])
             advice = self.classify_gap(failure_class, diagnostic, lean_path)
             request = self.write_revision_request(
                 blueprint, blueprint_path, failure_class, str(diagnostic), advice, kernel)

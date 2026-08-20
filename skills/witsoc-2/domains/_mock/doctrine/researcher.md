@@ -1,9 +1,19 @@
 # Mock pack — researcher doctrine
 
-Fixture only. Exists so the per-role doctrine slot is exercised end to end.
+## Attacking an obstruction here
 
-The researcher role, operating over this pack, does what the frame's
-`researcher/SKILL.md` says, with one field-specific addition: the artifact is a
-text file and the frozen `expected_value` is what it must normalize to.
+The fixture's obstructions are deliberately small: a normalization that does not
+do what the claim says, an artifact that differs in a way the comparison cannot
+see, a sampled pass being read as a whole-artifact result.
 
-Nothing here is a real field's instructions.
+## Refutation first
+
+Ask what would make the claim false and check that first. In this field it is
+cheap — construct the artifact that should fail and confirm the adapter refuses
+it. `adapter/check.py --self-test` does exactly this against the registered
+controls, and a checker nobody has watched refuse anything has demonstrated
+nothing.
+
+## Handing back
+
+An obstruction record, not a verdict. Closing a target is Explorer's decision.

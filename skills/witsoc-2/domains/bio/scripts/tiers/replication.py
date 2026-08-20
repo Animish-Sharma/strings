@@ -108,12 +108,44 @@ def main() -> int:
 
     ea = first.get("recomputed", {}).get("difference_in_unit_means")
     eb = second.get("recomputed", {}).get("difference_in_unit_means")
+    ia = (first.get("recomputed", {}) or {}).get("interval") or {}
+    ib = (second.get("recomputed", {}) or {}).get("interval") or {}
     agreement = {}
     if ea is not None and eb is not None:
         same_sign = (ea > 0) == (eb > 0) and ea != 0 and eb != 0
         ratio = abs(eb / ea) if ea else float("inf")
         agreement = {"primary_effect": ea, "replicate_effect": eb,
                      "same_sign": same_sign, "magnitude_ratio": ratio}
+
+        # Overlapping intervals is the question a ratio only gestures at. Two
+        # point estimates differing by 3x may be perfectly compatible if both
+        # are imprecise, and two differing by 1.2x may be incompatible if both
+        # are tight. A magnitude ratio cannot tell those apart and an interval
+        # comparison can, which is why the ratio alone was the wrong test.
+        if ia.get("ran") and ib.get("ran"):
+            overlap = not (ia["upper"] < ib["lower"] or ib["upper"] < ia["lower"])
+            agreement["intervals"] = {
+                "primary": [ia["lower"], ia["upper"]],
+                "replicate": [ib["lower"], ib["upper"]],
+                "overlap": overlap,
+                "reading": ("the intervals overlap, so the two estimates are compatible — which "
+                            "is the question, and a ratio of point estimates cannot answer it"
+                            if overlap else
+                            "the intervals do not overlap. The replication contradicts the "
+                            "primary at the precision both were measured to, and that is a "
+                            "finding rather than a caveat"),
+            }
+            if not overlap:
+                problems.append(
+                    f"the intervals do not overlap: primary [{ia['lower']:.4g}, "
+                    f"{ia['upper']:.4g}] against replicate [{ib['lower']:.4g}, {ib['upper']:.4g}]. "
+                    "Two estimates that exclude each other are not a replication with caveats")
+        else:
+            agreement["intervals"] = {
+                "ran": False,
+                "reading": ("no interval on one side or both, so compatibility was judged by the "
+                            "ratio of point estimates alone — which cannot distinguish two "
+                            "imprecise estimates that agree from two precise ones that do not")}
         if not same_sign:
             problems.append(
                 f"the effects point in opposite directions ({ea:.4g} against {eb:.4g}). That is "

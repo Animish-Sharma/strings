@@ -8,6 +8,8 @@
 #                       refinements refine a status that is real
 #   delivery            context budget, shell entry points, registry accuracy,
 #                       nothing shipped that should not be
+#   doctrine coverage   every blocking gate is named in the doctrine of the
+#                       role whose work it stops
 #   reducer             15 adversarial admissions refused for the stated reason
 #   working memory      the attention/evidence boundary, and the repeat gate
 #   campaign            the loop closes, and the failure ladder engages
@@ -60,6 +62,7 @@ if [[ "$MODE" != "pack" ]]; then
   run_step "doc links"       python3 "$SCRIPTS_DIR/check_doc_links.py"
   run_step "contract shapes" python3 "$SCRIPTS_DIR/check_contract_shapes.py"
   run_step "delivery"        python3 "$SCRIPTS_DIR/check_delivery.py"
+  run_step "doctrine coverage" python3 "$SCRIPTS_DIR/check_doctrine_coverage.py"
   run_step "schema examples" python3 "$SCRIPTS_DIR/check_schema_examples.py"
   run_step "reducer"         python3 "$SCRIPTS_DIR/reducer_selftest.py"
   run_step "working memory"  python3 "$SCRIPTS_DIR/soc_selftest.py"
@@ -75,6 +78,15 @@ for name in $(packs); do
   for entry in "$DOMAINS_DIR/$name/scripts/check.py" "$DOMAINS_DIR/$name/adapter/check.py"; do
     [[ -f "$entry" ]] && run_step "adapter: $name" python3 "$entry" --self-test
   done
+  # A pack's evals ask what it CONCLUDED; its self-test asks whether the adapter
+  # can refuse. Running only the second let one pack ship with no outcome evals
+  # at all, and nothing said so.
+  evals="$DOMAINS_DIR/$name/evals/run_evals.py"
+  if [[ -f "$evals" ]]; then
+    run_step "evals: $name" python3 "$evals"
+  elif [[ -d "$DOMAINS_DIR/$name/scripts" ]]; then
+    printf "  ----  %-22s no outcome evals; the adapter can refuse and nothing asks what it concludes\n" "evals: $name"
+  fi
 done
 
 if [[ $FAILED -eq 0 ]]; then

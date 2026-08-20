@@ -33,6 +33,22 @@ A preprint reporting exactly your effect and an independent replication of it
 look identical in a citation list. They are worth different amounts, and the
 ledger is where that difference gets written down.
 
+## The source-capability gate
+
+`source-capability` asks the corpus a different question from the provenance
+gate. Provenance asks whether every element traces to something fetchable and
+unretracted. Capability asks whether a source of that KIND could establish the
+thing it is being used for — and catches two failures that run in opposite
+directions.
+
+**Over-reach.** A bundle reaching for independent replication whose ledger holds
+only preprints, method papers, and benchmark pages. None of those can be the
+replication, whatever they report.
+
+**Under-use.** A dataset accession sitting unused in the ledger while the claim
+rests on a review of it. The primary evidence was there and the report cited the
+summary.
+
 ## Record the empty searches
 
 A search that came back empty is information. A search nobody recorded is

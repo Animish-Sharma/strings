@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -206,6 +207,24 @@ def main() -> int:
     proposed = propose_columns(classified, taxonomy)
     confounders = bl.load_table("confounders.json")
 
+    # Run the diagnostics that need nothing but this table.
+    computed: dict = {}
+    if proposed.get("label_column") and proposed.get("unit_column"):
+        proc = subprocess.run(
+            [sys.executable, str(Path(__file__).resolve().parent / "diagnostics.py"),
+             "--metadata", str(path), "--label", proposed["label_column"],
+             "--unit", proposed["unit_column"], "--emit-confounders", "--json"],
+            capture_output=True, text=True)
+        try:
+            diag = json.loads(proc.stdout)
+            for row in diag.get("confounders_addressed", []):
+                existing = computed.get(row["id"])
+                if existing is None or row["verdict"] != "clear":
+                    computed[row["id"]] = {"result": row["result"], "verdict": row["verdict"],
+                                           "computed_by": "scripts/diagnostics.py"}
+        except json.JSONDecodeError:
+            pass
+
     shortfall = []
     unit = proposed["biological_unit_column"]
     if spec["estimand"] == "population" and not unit:
@@ -266,9 +285,14 @@ def main() -> int:
         "elements_requiring_provenance": ["dataset.version", "biological_context.cell_type"],
         "provenance_trace": [{"claim_element": "dataset.version", "source_id": "S1"}],
         "contradiction_ledger": {"searched_and_found_none": False, "queries": [], "entries": []},
+        # Three of the twelve are computable from this table, so they arrive
+        # computed. The rest arrive blank, and blank means unaddressed — a
+        # skeleton that pre-filled plausible answers would convert the audit into
+        # a formality in one step, and a convincing one, because the questions
+        # really were the right ones.
         "confounders_addressed": [
             {"id": c["id"], "question": c["question"], "cheap_test": c["cheap_test"],
-             "result": "", "verdict": ""}
+             **(computed.get(c["id"]) or {"result": "", "verdict": ""})}
             for c in confounders["confounders"]],
         "negative_controls": [{"id": c["id"], "detail": "FILL-ME", "_why": c["why"]}
                               for c in confounders["required_negative_controls"]],

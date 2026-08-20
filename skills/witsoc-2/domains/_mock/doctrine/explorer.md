@@ -1,9 +1,19 @@
 # Mock pack — explorer doctrine
 
-Fixture only. Exists so the per-role doctrine slot is exercised end to end.
+## Freezing a target here
 
-The explorer role, operating over this pack, does what the frame's
-`explorer/SKILL.md` says, with one field-specific addition: the artifact is a
-text file and the frozen `expected_value` is what it must normalize to.
+The frozen claim carries `expected_value` and a `frozen_conditions.normalization`
+naming how content is compared. Freeze the normalization: changing it after a
+failure silently redefines what passing means, and that is the move this fixture
+exists to demonstrate a pack can prevent.
 
-Nothing here is a real field's instructions.
+## Tier selection
+
+`exact` is adversarial and reaches VERIFIED; `sampled` is not and caps at
+CHECKED_BOUNDED. Pick the cheapest tier that can reach the status the claim
+needs, which for anything intended to be admitted means `exact`.
+
+## Arbitrating
+
+A `sampled` pass is evidence about the sample. It is never evidence about the
+whole, and the receipt says so.
