@@ -392,6 +392,38 @@ Two further shared services support the schedule and are frame-owned:
 prefix hoisting, diversity-capped fan-out, kill criteria, context discipline,
 and gain-per-cost ordering.
 
+## 5.15 Working memory
+
+The frame holds three memories and the distinction between them is load-bearing:
+
+| Holds | Where | May it be wrong? |
+|---|---|---|
+| status | `frame-state-v1` | no — it is evidence, and only an admission moves it |
+| what survives a campaign | `memory.py` | the attention tier may; the reuse tier may not |
+| attention, within one run | `frame-soc-v1` | **yes, and that is the point** |
+
+That last permission is the design. Attention that can never be wrong is not
+attention — it is a second evidence store with no gates on it. So working memory
+may hold a hunch, and is forbidden from holding a status.
+
+**The forbidding is mechanical.** The schema closes the crude route: an insight
+id is not sixty-four hex characters, so it cannot appear in `evidence_sha256`.
+The reducer closes the careful one: hand it `--soc` and it refuses any admission
+whose evidence hashes to an entry in the file. Hashing a hunch does not change
+what it is.
+
+Insight tiers are **frame statuses**, not a parallel vocabulary, and anything
+above `CONJECTURE` must name its evidence. A private tier vocabulary produces two
+ladders with different rungs and no rule connecting them, which is how an
+insight marked VERIFIED in working memory comes to look like a claim that went
+through admission.
+
+The **repeat gate** runs before a work item is issued: an attempt matching a
+recorded failure on method and statement stops the campaign before any budget is
+spent. `references/soc_memory.md` carries the rest — decisions and rewards,
+consolidation that says what it dropped, and why the failure ledger and working
+memory both record a failure without being redundant.
+
 ## 5.2 The loop, end to end
 
 `scripts/campaign.py` drives one campaign through every packet the frame defines:

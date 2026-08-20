@@ -27,6 +27,19 @@ to catch. An automatic run tops out at CHECKED_BOUNDED, and the report says why.
 Supply `--review <file>` when a genuine independent review exists, and the same
 run reaches whatever the evidence supports.
 
+## Working memory
+
+Every run opens a `soc.json` beside its workdir and writes to it as it goes: what
+it is pursuing, what it ruled out and why, what it decided and what that turned
+out to be worth. It is ATTENTION and it is allowed to be wrong — which is why the
+reducer is handed it too, and refuses any admission whose evidence hashes to
+something in it. A memory that could stand behind a status would not be working
+memory, it would be a second evidence store with no gates on it.
+
+Before a work item is issued the run asks it whether this attempt has already
+failed. That check costs nothing and is the difference between a campaign that
+compounds and one whose twentieth attempt knows what the first one knew.
+
 ## Memory and blinding
 
 Two frame components existed unwired for as long as the frame did, and both are
@@ -97,6 +110,17 @@ def check_packet(packet: dict, schema_name: str, label: str) -> list[str]:
     return errors
 
 
+def as_json(text: str) -> dict:
+    """Parse a tool's stdout, or return nothing. A tool that prints plain text is
+    not an error here — it is a tool with a different contract — so this returns
+    an empty dict rather than raising, and the caller decides what absence means."""
+    try:
+        parsed = json.loads(text)
+        return parsed if isinstance(parsed, dict) else {}
+    except json.JSONDecodeError:
+        return {}
+
+
 def run(cmd: list[str], timeout: int = 1800) -> tuple[int, str, str]:
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
     return proc.returncode, proc.stdout, proc.stderr
@@ -159,6 +183,33 @@ class Campaign:
             return self.report("STOPPED")
         state = json.loads(state_path.read_text(encoding="utf-8"))
         self.step("freeze target", True, f"revision 0, ceiling {ceiling}")
+
+        # 2b. working memory ---------------------------------------------------
+        soc_path = self.dir / "soc.json"
+        if not soc_path.exists():
+            run([sys.executable, str(HERE / "soc_memory.py"), "init", "--out", str(soc_path),
+                 "--target", target, "--goal", claim.get("exact_statement", "")[:200]])
+        code, out, _ = run([sys.executable, str(HERE / "soc_memory.py"), "check",
+                            "--soc", str(soc_path), "--json",
+                            "--statement", claim.get("exact_statement", "")[:300],
+                            "--method", f"{pack}:{tier}"])
+        risk = as_json(out)
+        if risk.get("repeat_risk") == "HIGH":
+            # A recorded repeat IS the escalation condition — "the same failure
+            # twice changed nothing the checker could see" — reached before any
+            # budget is spent rather than after the threshold counts to it. So
+            # the outcome is the same and the cost is not: the obstruction goes
+            # to the deep-attack role, and production stops on this claim.
+            self.step("repeat check", False,
+                      "this attempt matches a recorded failure — " +
+                      "; ".join(m.get("do_not_repeat", "") for m in risk.get("matches", [])[:2]))
+            self.step("escalation", True,
+                      "ESCALATE — reached by the repeat gate before the threshold, which is the "
+                      "same conclusion for less")
+            return self.report("ESCALATED", target_sha256=target, repeat=risk,
+                               escalated_by="repeat gate")
+        self.step("repeat check", True,
+                  "no recorded failure matches; that is not evidence it will work")
 
         # 3. work item -------------------------------------------------------
         work_item = sealed({
@@ -286,6 +337,18 @@ class Campaign:
 
         # 6. failure path ----------------------------------------------------
         if verdict != "pass":
+            # Two records of the same failure, and they are not redundant. The
+            # ledger holds a normalized SIGNATURE, which is what escalation
+            # counts; working memory holds the reason and the revival condition,
+            # which is what stops the next attempt repeating it. A count cannot
+            # tell you what to change, and a reason cannot fire a threshold.
+            run([sys.executable, str(HERE / "soc_memory.py"), "failure",
+                 "--soc", str(soc_path), "--method", f"{pack}:{tier}",
+                 "--statement", claim.get("exact_statement", "")[:300],
+                 "--blocker", str(receipt.get("failure_class") or verdict)[:200],
+                 "--do-not-repeat", f"the {tier} tier on this artifact unchanged",
+                 "--revival", "a changed artifact, a new premise, or a refuted obstruction"])
+
             ledger = self.dir / "failures.json"
             code, out, err = run([
                 sys.executable, str(HERE / "failure_ledger.py"), "record",
@@ -377,7 +440,7 @@ class Campaign:
                "--state", str(state_path), "--admission", str(admission_path),
                "--result", str(self.dir / "result.json"),
                "--receipt", str(self.dir / "receipt.json"),
-               "--artifact", str(artifact), "--json"]
+               "--artifact", str(artifact), "--soc", str(soc_path), "--json"]
         if reviews:
             cmd += ["--review"] + [str(r) for r in reviews]
         if write:
@@ -392,6 +455,14 @@ class Campaign:
         self.step("apply admission", applied,
                   f"revision {outcome.get('revision')}" if applied
                   else f"REFUSED — {'; '.join(outcome.get('refusals', []))[:300]}")
+
+        if applied:
+            run([sys.executable, str(HERE / "soc_memory.py"), "insight", "--soc", str(soc_path),
+                 "--text", f"{granted} admitted for {claim.get('claim_id')} at tier {tier}",
+                 "--tier", granted, "--evidence", receipt["payload_sha256"][:16],
+                 "--polarity", "supports"])
+            run([sys.executable, str(HERE / "soc_memory.py"), "render", "--soc", str(soc_path),
+                 "--out", str(self.dir / "run.soc")])
 
         # 10. remember --------------------------------------------------------
         memory = self.dir.parent / "campaign_memory.json"
@@ -506,6 +577,9 @@ def self_test() -> int:
             failures.append(
                 f"the second identical failure ended {second['outcome']}, expected ESCALATED — "
                 "an attempt that produced the same signature changed nothing the checker could see")
+        elif second.get("escalated_by") == "repeat gate":
+            print("          (escalated by the repeat gate, before the threshold counted to it — "
+                  "same conclusion, less spent)")
 
     print("\n" + "=" * 62)
     if failures:

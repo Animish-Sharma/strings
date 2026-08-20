@@ -209,6 +209,7 @@ message may be the last one.
 | Operating under interruption; snapshot safety | `references/execution_discipline.md` |
 | Concurrency, cost tiers, caching, kill criteria | `references/execution_economics.md` |
 | Cross-run memory: tiers, contamination, revival | `references/memory.md` |
+| Working memory for one run; the repeat gate | `references/soc_memory.md` |
 | Packet shapes and routing between roles | `references/bridges.md`, `schemas/` |
 | Applying an admission; campaign state | `scripts/reducer.py`, `schemas/frame-state-v1.schema.json` |
 | Running the whole loop end to end | `scripts/campaign.py` |

@@ -1,0 +1,49 @@
+{
+  "schema": "frame-soc-v1",
+  "target_sha256": "068d0014b141998ca0b9a6dbdbfd43a2f239909de119ca8ee2ad1d3c499637e9",
+  "goal": "Knocking down GENE-X with CRISPRi reduces the INFLAMMATORY-SIGNATURE score in primary donor-derived macrophages at 48 hours, measured by scRNA-seq, relative to non-targeting controls in the same donor",
+  "run_status": "RUNNING",
+  "current": {
+    "pursuing": "unset",
+    "obstruction": "unset",
+    "move": "unset"
+  },
+  "insights": [],
+  "failed_approaches": [
+    {
+      "id": "f-515c63662625",
+      "method": "bio:executable",
+      "statement": "Knocking down GENE-X with CRISPRi reduces the INFLAMMATORY-SIGNATURE score in primary donor-derived macrophages at 48 hours, measured by scRNA-seq, relative to non-targeting controls in the same donors.",
+      "blocker": "negative_control_failure",
+      "do_not_repeat": "the executable tier on this artifact unchanged",
+      "recorded_at": "2026-08-20T23:06:32.330778+00:00",
+      "revival_condition": "a changed artifact, a new premise, or a refuted obstruction"
+    }
+  ],
+  "decisions": [],
+  "queue": [
+    {
+      "task": "freeze the target",
+      "state": "pending"
+    },
+    {
+      "task": "retrieve prior art and record the empty searches",
+      "state": "pending"
+    },
+    {
+      "task": "name the obstructions",
+      "state": "pending"
+    },
+    {
+      "task": "attempt refutation before support",
+      "state": "pending"
+    }
+  ],
+  "progress": {
+    "attempts_since_last_progress": 1,
+    "admitted": 0,
+    "failed_attempts": 1,
+    "insights_recorded": 0
+  },
+  "consolidations": []
+}

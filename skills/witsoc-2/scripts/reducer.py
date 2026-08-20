@@ -46,6 +46,13 @@ What it refuses, and why each refusal exists:
   review of another result a review whose producer_ref does not name the result
                           actually supplied. An unbound review discharges
                           independence for work it never saw.
+  attention as evidence   an admission whose evidence hashes to an entry in the
+                          run's working memory. SOC memory is attention and is
+                          allowed to be wrong; laundering it into a receipt is
+                          how a hunch becomes a status. The schema already stops
+                          the crude form — an insight id is not 64 hex — so the
+                          form worth guarding is the careful one: hashing a soc
+                          entry and offering the digest as evidence.
   same-domain review      a reviewer sharing the producer's role AND method
                           family. Two checks sharing a failure domain are one
                           check; this fails closed when either side declines to
@@ -488,6 +495,33 @@ def refuse(state: dict, admission: dict, extras: dict) -> list[str]:
                         "A ceiling is a property of the backend that produced the evidence, and "
                         "no number of admissions raises it")
 
+    # Attention may not become evidence. Working memory is allowed to hold a
+    # hunch — that permission is what makes it attention rather than a second,
+    # unverified evidence store — so the one thing it must never do is appear
+    # behind a status. The crude route is already closed by the schema: an
+    # insight id is not sixty-four hex characters. The careful route is to hash
+    # a soc entry and offer the digest, and that is what this closes.
+    soc = extras.get("soc")
+    if soc:
+        attention: dict[str, str] = {}
+        for insight in soc.get("insights", []) or []:
+            attention[hashlib.sha256(
+                canonical(insight).encode()).hexdigest()] = f"insight {insight.get('id')}"
+            attention[hashlib.sha256(
+                str(insight.get("text", "")).encode()).hexdigest()] = f"insight {insight.get('id')}"
+        for failure in soc.get("failed_approaches", []) or []:
+            attention[hashlib.sha256(
+                canonical(failure).encode()).hexdigest()] = f"failure {failure.get('id')}"
+        offered = []
+        for upd in (admission.get("delta", {}) or {}).get("update_claims", []) or []:
+            offered += list(upd.get("evidence_sha256") or [])
+        for digest in offered:
+            if digest in attention:
+                problems.append(
+                    f"evidence {digest[:12]}... is {attention[digest]} from the run's working "
+                    "memory. Attention is allowed to be wrong, which is exactly why it may not "
+                    "stand behind a status — hashing it does not change what it is")
+
     delta = admission.get("delta", {}) or {}
     claims = dict(state.get("claims", {}))
 
@@ -595,6 +629,8 @@ def main() -> int:
     a.add_argument("--admission", required=True); a.add_argument("--result")
     a.add_argument("--review", nargs="*", default=[]); a.add_argument("--receipt")
     a.add_argument("--artifact", help="the live artifact, re-hashed to check receipt freshness")
+    a.add_argument("--soc", help="the run's working memory. Supplying it lets the reducer refuse "
+                   "an admission whose evidence is a laundered attention entry.")
     a.add_argument("--write", action="store_true"); a.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
@@ -678,7 +714,8 @@ def main() -> int:
                   "receipt": read(args.receipt) if args.receipt else None,
                   "artifact_sha256": (
                       hashlib.sha256(Path(args.artifact).read_bytes()).hexdigest()
-                      if args.artifact else None)}
+                      if args.artifact else None),
+                  "soc": read(args.soc) if args.soc else None}
         problems = refuse(state, admission, extras)
 
         if problems:
