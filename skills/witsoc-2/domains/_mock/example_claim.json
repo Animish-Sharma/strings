@@ -1,0 +1,11 @@
+{
+  "schema": "_mock-claim-v1",
+  "claim_id": "MOCK-1",
+  "exact_statement": "the candidate artifact normalizes to the expected value",
+  "expected_value": "alpha\nbeta\ngamma",
+  "frozen_conditions": {
+    "normalization": "strip_whitespace"
+  },
+  "status": "OPEN",
+  "target_sha256": "d4a89824f2803dff8e0bcd10f00eb902c8f56dfbf076fe9233f453759edc263a"
+}

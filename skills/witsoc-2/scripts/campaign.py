@@ -27,6 +27,22 @@ to catch. An automatic run tops out at CHECKED_BOUNDED, and the report says why.
 Supply `--review <file>` when a genuine independent review exists, and the same
 run reaches whatever the evidence supports.
 
+## Memory and blinding
+
+Two frame components existed unwired for as long as the frame did, and both are
+about what a later run is allowed to know.
+
+`memory.py` records what happened so the next campaign against the same target
+does not rediscover it. A campaign that forgets is a campaign whose twentieth
+attempt knows what the first one knew — and the failure ledger already tracks
+signatures within a run, but nothing carried them across runs.
+
+`blind_packet.py` strips a result down to what a reviewer needs before the
+reviewer sees it. Independent review means the reviewer did not produce the
+work; it is worth much less when the reviewer can read the producer's reasoning,
+because agreement then costs nothing. The blinded packet is written beside the
+result so a review can be requested against it rather than against the full one.
+
 ## Failure is a first-class outcome
 
 A failing adapter is not an error here. The failure is recorded in the ledger,
@@ -110,7 +126,8 @@ class Campaign:
 
     def execute(self, claim_path: Path, artifact: Path, tier: str,
                 domain: str | None, statement: str | None,
-                review_path: Path | None, write: bool) -> dict:
+                review_path: Path | None, write: bool,
+                receipt_path: Path | None = None) -> dict:
         claim = json.loads(claim_path.read_text(encoding="utf-8"))
         target = claim.get("target_sha256")
 
@@ -173,9 +190,23 @@ class Campaign:
         self.write("work_item", work_item)
 
         # 4. adapter ---------------------------------------------------------
-        adapter = SKILL_ROOT / plan["adapter"]
-        code, out, err = run([sys.executable, str(adapter), "--artifact", str(artifact),
-                              "--claim", str(claim_path), "--tier", tier, "--json"])
+        # A supplied receipt is re-admitted rather than re-earned. This is not a
+        # shortcut around verification: the reducer still re-hashes the live
+        # artifact against what the receipt verified, so a stale one is refused
+        # exactly as before. What it avoids is paying for an expensive tier again
+        # to re-admit evidence that already exists — and it is what makes the
+        # campaign's own determinism checkable, since a receipt carries the one
+        # thing that legitimately differs between runs.
+        if receipt_path is not None:
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            self.step("reuse receipt", True,
+                      f"{receipt.get('receipt_id')} — the reducer will still re-hash the "
+                      "artifact against it")
+            out, err = json.dumps(receipt), ""
+        else:
+            adapter = SKILL_ROOT / plan["adapter"]
+            code, out, err = run([sys.executable, str(adapter), "--artifact", str(artifact),
+                                  "--claim", str(claim_path), "--tier", tier, "--json"])
         try:
             receipt = json.loads(out)
         except json.JSONDecodeError:
@@ -188,6 +219,9 @@ class Campaign:
             return self.report("STOPPED")
         self.write("receipt", receipt)
         verdict = receipt["verdict"]
+        if receipt_path is not None:
+            self.steps.append({"step": "run adapter", "ok": True,
+                               "detail": "skipped; a receipt was supplied"})
         # The step succeeded whatever the verdict was. A failing adapter is a
         # result, not an error, and marking it as an error is how a system learns
         # to treat negative evidence as a malfunction.
@@ -270,6 +304,16 @@ class Campaign:
                                pack=pack, ceiling=ceiling, receipt=receipt,
                                escalate=escalate)
 
+        # 6b. blind the result for review -------------------------------------
+        blinded = self.dir / "result.blinded.json"
+        code, out, _ = run([sys.executable, str(HERE / "blind_packet.py"),
+                            "--result", str(self.dir / "result.json"),
+                            "--out", str(blinded), "--json"])
+        if blinded.exists():
+            self.step("blind for review", True,
+                      "result.blinded.json — request the review against this; a reviewer who can "
+                      "read the producer's reasoning agrees for free")
+
         # 7. review ----------------------------------------------------------
         reviews = []
         if review_path:
@@ -349,6 +393,18 @@ class Campaign:
                   f"revision {outcome.get('revision')}" if applied
                   else f"REFUSED — {'; '.join(outcome.get('refusals', []))[:300]}")
 
+        # 10. remember --------------------------------------------------------
+        memory = self.dir.parent / "campaign_memory.json"
+        if not memory.exists():
+            run([sys.executable, str(HERE / "memory.py"), "init", "--out", str(memory)])
+        if applied:
+            run([sys.executable, str(HERE / "memory.py"), "record-result",
+                 "--mem", str(memory), "--statement", claim.get("exact_statement", "")[:300],
+                 "--admission-id", admission["admission_id"]])
+            self.step("remember", True,
+                      f"recorded in {memory.name}; a later campaign against this target starts "
+                      "from what this one learned")
+
         return self.report("ADMITTED" if applied else "REFUSED",
                            pack=pack, ceiling=ceiling, granted=granted if applied else None,
                            receipt=receipt, refusals=outcome.get("refusals", []),
@@ -356,6 +412,40 @@ class Campaign:
 
     def report(self, outcome: str, **extra) -> dict:
         return {"outcome": outcome, "steps": self.steps, "workdir": str(self.dir), **extra}
+
+
+def check_idempotent(tmp: Path, claim_path: Path, artifact: Path, domain: str) -> list[str]:
+    """Two runs over the same inputs must produce byte-identical packets.
+
+    A packet that differs between runs carries something that is not evidence —
+    a timestamp, a path, an ordering — and every hash downstream of it becomes
+    unreproducible. The reducer binds admissions to results by seal, so a result
+    that reseals differently is a result no earlier review can be bound to.
+    """
+    problems: list[str] = []
+    seals = []
+    receipt_path = None
+    for index in (1, 2):
+        run_dir = tmp / f"idem-{index}"
+        Campaign(run_dir, quiet=True).execute(claim_path, artifact, "exact", domain,
+                                              None, None, True, receipt_path)
+        # Hold the receipt fixed after the first run. A receipt records WHEN it
+        # was produced and that is real evidence about freshness, so two receipts
+        # legitimately differ. The question worth asking is whether the campaign
+        # builds the same packets from the same evidence — not whether a
+        # timestamp can be made timeless.
+        if receipt_path is None:
+            receipt_path = run_dir / "receipt.json"
+        seals.append({name: json.loads((run_dir / f"{name}.json").read_text())["payload_sha256"]
+                      for name in ("work_item", "result", "admission")
+                      if (run_dir / f"{name}.json").exists()})
+    for name in seals[0]:
+        if seals[0][name] != seals[1].get(name):
+            problems.append(
+                f"{name} seals differently across two identical runs "
+                f"({seals[0][name][:12]}... vs {str(seals[1].get(name))[:12]}...). Something in "
+                "it is not evidence, and every hash downstream of it is unreproducible")
+    return problems
 
 
 def self_test() -> int:
@@ -395,6 +485,13 @@ def self_test() -> int:
                 "an unreviewed automatic run reached VERIFIED. One process cannot be both "
                 "producer and independent reviewer, and the ceiling that stops it is the point")
 
+        print("\nThe same inputs twice — the packets must seal identically:\n")
+        idem = check_idempotent(tmp, claim_path, good, "_mock")
+        print(f"  {'ok  ' if not idem else 'MISS'}  work item, result, and admission are "
+              "byte-identical across runs")
+        print("          a packet that differs run to run carries something that is not evidence")
+        failures.extend(idem)
+
         print("\nA failing artifact — the ladder must engage:\n")
         run_dir = tmp / "run-fail"
         campaign = Campaign(run_dir)
@@ -432,6 +529,8 @@ def main() -> int:
     source.add_argument("--statement")
     r.add_argument("--workdir")
     r.add_argument("--review")
+    r.add_argument("--receipt", help="re-admit an existing receipt instead of re-running the "
+                   "adapter. The reducer still re-hashes the artifact against it.")
     r.add_argument("--write", action="store_true")
     r.add_argument("--json", action="store_true")
     sub.add_parser("self-test")
@@ -445,7 +544,8 @@ def main() -> int:
     try:
         report = campaign.execute(
             Path(args.claim), Path(args.artifact), args.tier, args.domain, args.statement,
-            Path(args.review) if args.review else None, args.write)
+            Path(args.review) if args.review else None, args.write,
+            Path(args.receipt) if args.receipt else None)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2

@@ -1,0 +1,36 @@
+{
+  "schema": "frame-state-v1",
+  "target_sha256": "af6dfd3c3f3239b49943151ae5e579e8f42c99a7f6737015e901ca92c9dc8274",
+  "revision": 1,
+  "previous_state_sha256": "e9a8b40da1ac68b7e7f244ad1d1faf8907bd7acd21f27faf49595e04fe6e2be9",
+  "root_claim_id": "LE-SUCC",
+  "claims": {
+    "LE-SUCC": {
+      "claim_id": "LE-SUCC",
+      "statement": "every natural number is at most its successor",
+      "status": "VERIFIED",
+      "dependency_mode": "LEAF",
+      "dependencies": [],
+      "evidence_refs": [
+        "53cd282805ab91520183259b21633a003e9ff423c10c13404397fda5f16ef43c"
+      ],
+      "ceiling": "VERIFIED",
+      "admitted_by": "ADM-af6dfd3c"
+    }
+  },
+  "active_obstruction": null,
+  "open_gaps": [],
+  "outcome": "SOLVED",
+  "history": [
+    {
+      "revision": 1,
+      "admission_id": "ADM-af6dfd3c",
+      "decision": "ACCEPT",
+      "granted_status": "VERIFIED",
+      "claim_ids": [
+        "LE-SUCC"
+      ],
+      "admission_sha256": "3f110e54c88c6d104c1b051583f94cbc588084b503df62ba1a12c0512eda53ce"
+    }
+  ]
+}

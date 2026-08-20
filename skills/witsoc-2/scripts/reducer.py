@@ -65,6 +65,7 @@ Usage:
     reducer.py show --state <state.json> [--json]
     reducer.py seal --packet <p.json>            compute payload_sha256
     reducer.py validate --packet <p.json> --kind claim|work-item|result|receipt|review|admission
+    reducer.py replay --state <state.json> [--json]
     reducer.py apply --state <state.json> --admission <a.json> [--result <r.json>]
                      [--review <rev.json>] [--receipt <rc.json>]
                      [--artifact <path>] [--write]
@@ -336,6 +337,58 @@ def derive_checks(state: dict, admission: dict, extras: dict) -> tuple[dict, lis
     return checks, problems
 
 
+def replay(state: dict) -> dict:
+    """Check the history actually accounts for the state.
+
+    `frame-state-v1` calls its history append-only and says it is what makes a
+    run replayable rather than merely logged. Nothing replayed it. An
+    append-only log nobody re-derives from is a log, and the difference only
+    shows when the two disagree — which is precisely when it matters.
+
+    Three consistency claims, each of which can fail independently:
+
+      * the revision count equals the number of applied admissions
+      * every claim whose status moved names an admission, and that admission is
+        in the history
+      * no admission appears twice — a replayed admission is the classic way a
+        status moves without new evidence
+    """
+    problems: list[str] = []
+    history = state.get("history", []) or []
+    applied = [h for h in history if h.get("decision") == "ACCEPT"]
+    claims = state.get("claims", {}) or {}
+
+    if state.get("revision") != len(applied):
+        problems.append(
+            f"revision is {state.get('revision')} and {len(applied)} admission(s) were accepted. "
+            "One of the two is wrong, and the state cannot say which")
+
+    known = {h.get("admission_id") for h in history}
+    seen: set[str] = set()
+    for entry in history:
+        aid = entry.get("admission_id")
+        if aid in seen:
+            problems.append(f"admission {aid!r} appears twice in the history — a replayed "
+                            "admission moves a status without new evidence")
+        seen.add(aid)
+
+    for claim_id, claim in claims.items():
+        status = claim.get("status")
+        if status in {"OPEN", "CONJECTURE"}:
+            continue
+        admitted_by = claim.get("admitted_by")
+        if not admitted_by:
+            problems.append(
+                f"claim {claim_id!r} is {status} and names no admission. Only an admission may "
+                "move a status, so a status with nothing behind it did not come through here")
+        elif admitted_by not in known:
+            problems.append(
+                f"claim {claim_id!r} names admission {admitted_by!r}, which is not in the history")
+
+    return {"consistent": not problems, "revisions": state.get("revision"),
+            "history": history, "claims": len(claims), "problems": problems}
+
+
 def refuse(state: dict, admission: dict, extras: dict) -> list[str]:
     """Every reason this admission may not be applied."""
     problems: list[str] = []
@@ -534,6 +587,8 @@ def main() -> int:
                         "printed.")
     s = sub.add_parser("show"); s.add_argument("--state", required=True); s.add_argument("--json", action="store_true")
     se = sub.add_parser("seal"); se.add_argument("--packet", required=True)
+    rp = sub.add_parser("replay"); rp.add_argument("--state", required=True)
+    rp.add_argument("--json", action="store_true")
     v = sub.add_parser("validate"); v.add_argument("--packet", required=True)
     v.add_argument("--kind", required=True, choices=sorted(KIND_SCHEMA)); v.add_argument("--json", action="store_true")
     a = sub.add_parser("apply"); a.add_argument("--state", required=True)
@@ -567,6 +622,22 @@ def main() -> int:
             if args.ceiling:
                 print(f"  Ceiling {args.ceiling}: an admission above it is refused, not warned about.")
             return 0
+
+        if args.cmd == "replay":
+            state = read(args.state)
+            report = replay(state)
+            if args.json:
+                print(json.dumps(report, indent=2))
+            else:
+                print(f"REPLAY: {'CONSISTENT' if report['consistent'] else 'BROKEN'} — "
+                      f"{report['revisions']} revision(s), {len(report['history'])} admission(s)")
+                for problem in report["problems"]:
+                    print(f"  {problem}")
+                if report["consistent"]:
+                    print("  Every claim's status names the admission that set it, every "
+                          "admission is in the history, and the revision count matches. The "
+                          "history is a record and not a story told afterwards.")
+            return 0 if report["consistent"] else 1
 
         if args.cmd == "seal":
             print(seal(read(args.packet)))

@@ -1,7 +1,7 @@
 {
   "contract_version": "2",
   "domain": "bio",
-  "description": "Perturbation biology: auditing whether a claim about what a perturbation does to a biological system deserves belief, and under exactly which context. Built around evidence denominators, recomputation from pinned data, and refutation before support. The pack never reaches VERIFIED \u2014 empirical support is always support for a frozen dataset, context, and analysis.",
+  "description": "Perturbation biology: auditing whether a claim about what a perturbation does to a biological system deserves belief, and under exactly which context. Built around evidence denominators, recomputation from pinned data, and refutation before support. The pack never reaches VERIFIED — empirical support is always support for a frozen dataset, context, and analysis.",
   "roles": {
     "researcher": "Durbin"
   },
@@ -129,12 +129,12 @@
       },
       {
         "name": "executable",
-        "description": "Recomputes the effect from the pinned metadata table at the estimand-matching denominator, then tests it by permutation within stratum. Reported numbers are ignored entirely. The negative-control contrast \u2014 the control condition split against itself \u2014 must come back silent.",
+        "description": "Recomputes the effect from the pinned metadata table at the estimand-matching denominator, then tests it by permutation within stratum. Reported numbers are ignored entirely. The negative-control contrast — the control condition split against itself — must come back silent.",
         "adversarial": true,
         "cost_hint": "moderate",
         "max_status": "CHECKED_BOUNDED",
         "authorship": "independent",
-        "two_sided_evidence": "scripts/negative_control/ holds eight known-bad bundles \u2014 pseudoreplication, a pipeline that finds structure in its own control, context drift, a retracted source, scope escalation, an unresolved fatal contradiction, unrecorded confounder checks, and an edited preregistration. The tier must reject all eight and accept the one good bundle; scripts/check.py --self-test runs them.",
+        "two_sided_evidence": "scripts/negative_control/ holds eight known-bad bundles — pseudoreplication, a pipeline that finds structure in its own control, context drift, a retracted source, scope escalation, an unresolved fatal contradiction, unrecorded confounder checks, and an edited preregistration. The tier must reject all eight and accept the one good bundle; scripts/check.py --self-test runs them.",
         "contamination_controls": "The adapter is fixed pack infrastructure; the bundle is produced per run by whoever is making the claim. The tier recomputes from the pinned table rather than reading any reported statistic, the frozen target hash is checked before and after, and the permutation seed and iteration count are fixed rather than chosen after seeing the result.",
         "availability_check": "python3 scripts/availability.py --tier executable --bundle <bundle.json>",
         "negative_control": "scripts/negative_control",
@@ -142,7 +142,7 @@
       },
       {
         "name": "replication",
-        "description": "The same claim against a second source that shares nothing with the first, under a separately pinned analysis path. Refuses more cells from the same donors, a second screen of the same line, and a re-analysis of the same accession \u2014 each is worth doing and none is replication. Grants the CHECKED_REPRODUCED refinement.",
+        "description": "The same claim against a second source that shares nothing with the first, under a separately pinned analysis path. Refuses more cells from the same donors, a second screen of the same line, and a re-analysis of the same accession — each is worth doing and none is replication. Grants the CHECKED_REPRODUCED refinement.",
         "adversarial": true,
         "cost_hint": "expensive",
         "max_status": "CHECKED_BOUNDED",
@@ -182,7 +182,7 @@
       "design",
       "analysis"
     ],
-    "freshness_rule": "The receipt records the bundle's SHA-256 at check time and is stale the moment the bundle's current hash differs; the exit gate recomputes rather than trusting the recorded value. It is also stale if any pinned input hash has changed, because the analysis is only bound to the data it actually read \u2014 a receipt from an earlier version of the metadata table is a receipt about different data."
+    "freshness_rule": "The receipt records the bundle's SHA-256 at check time and is stale the moment the bundle's current hash differs; the exit gate recomputes rather than trusting the recorded value. It is also stale if any pinned input hash has changed, because the analysis is only bound to the data it actually read — a receipt from an earlier version of the metadata table is a receipt about different data."
   },
   "doctrine": {
     "escalation": {
@@ -236,7 +236,7 @@
       },
       {
         "name": "contradiction-ledger",
-        "description": "Requires a list of sources that disagree, each with a resolution of resolved, unresolved-nonfatal, or unresolved-fatal. Prose dismissal is not a resolution. An empty ledger fails unless the search itself is recorded \u2014 every real claim in this field has something against it.",
+        "description": "Requires a list of sources that disagree, each with a resolution of resolved, unresolved-nonfatal, or unresolved-fatal. Prose dismissal is not a resolution. An empty ledger fails unless the search itself is recorded — every real claim in this field has something against it.",
         "blocking": true
       },
       {
@@ -246,12 +246,12 @@
       },
       {
         "name": "statistical-audit",
-        "description": "Estimand, identifiability, uncertainty at the matching denominator, multiplicity, minimum detectable effect, and prespecification. Held inside this pack until a statistics pack is registered, and it says so \u2014 the dependency is visible rather than forgotten. Multiple-testing correction offered as the answer to clustered cell-level uncertainty is itself a demotion trigger.",
+        "description": "Estimand, identifiability, uncertainty at the matching denominator, multiplicity, minimum detectable effect, and prespecification. Held inside this pack until a statistics pack is registered, and it says so — the dependency is visible rather than forgotten. Multiple-testing correction offered as the answer to clustered cell-level uncertainty is itself a demotion trigger. Multiplicity and specification sensitivity are computed rather than asserted: scripts/multiplicity.py reports how often the best of N null features looks this good, and scripts/multiverse.py re-runs the contrast under every defensible filtering, transform, and aggregation choice. A gate that accepts a sentence where a number exists is accepting the sentence.",
         "blocking": true
       },
       {
         "name": "leakage-audit",
-        "description": "For any model or generalization claim: whether the held-out axis actually held anything out. Severity follows the claim, not the overlap \u2014 leakage irrelevant to what is claimed is not a defect, and treating it as one trains people to route around the check.",
+        "description": "For any model or generalization claim: whether the held-out axis actually held anything out. Severity follows the claim, not the overlap — leakage irrelevant to what is claimed is not a defect, and treating it as one trains people to route around the check.",
         "blocking": true
       },
       {
@@ -262,6 +262,11 @@
       {
         "name": "metric-panel",
         "description": "The whole panel is reported, report-only metrics are never ranked on, and a rank that swings across the gate metrics is flagged rather than resolved by choosing the flattering ordering. A missing metric counts as a failed one.",
+        "blocking": true
+      },
+      {
+        "name": "source-capability",
+        "description": "Asks the corpus what each source is CAPABLE of supporting, not whether it agrees. A preprint reporting exactly your effect and an independent replication of it are identical in a citation list and worth different amounts. Catches a bundle reaching for replication with nothing that could be it, and a claim resting on a summary while the primary evidence sits unused in the same ledger.",
         "blocking": true
       }
     ]

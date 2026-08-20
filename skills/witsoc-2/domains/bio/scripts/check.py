@@ -64,18 +64,21 @@ TIERS = {
 # Which gates guard which ceiling. Read this as: what would have to be true for
 # a claim to deserve the status this tier can grant.
 GATES_BY_TIER = {
-    "structural": ["context-protection", "provenance-trace", "scope-language",
-                   "denominator"],
-    "executable": ["context-protection", "provenance-trace", "scope-language",
-                   "denominator", "contradiction-ledger", "confounder-sweep",
-                   "statistical-audit", "leakage-audit", "baseline-gate", "metric-panel"],
-    "replication": ["context-protection", "provenance-trace", "scope-language",
-                    "denominator", "contradiction-ledger", "confounder-sweep",
-                    "statistical-audit", "leakage-audit", "baseline-gate", "metric-panel"],
+    "structural": ["context-protection", "provenance-trace", "source-capability",
+                   "scope-language", "denominator"],
+    "executable": ["context-protection", "provenance-trace", "source-capability",
+                   "scope-language", "denominator", "contradiction-ledger",
+                   "confounder-sweep", "statistical-audit", "leakage-audit",
+                   "baseline-gate", "metric-panel"],
+    "replication": ["context-protection", "provenance-trace", "source-capability",
+                    "scope-language", "denominator", "contradiction-ledger",
+                    "confounder-sweep", "statistical-audit", "leakage-audit",
+                    "baseline-gate", "metric-panel"],
 }
 
 GATE_SCRIPTS = {
     "denominator": "denominator_gate.py",
+    "source-capability": "source_capability.py",
     "context-protection": "context_protection.py",
     "provenance-trace": "provenance_trace.py",
     "scope-language": "scope_language.py",

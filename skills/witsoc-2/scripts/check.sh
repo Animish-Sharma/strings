@@ -3,6 +3,11 @@
 # order that fails cheapest first.
 #
 #   frame purity        no frame file reaches into a domain pack
+#   doc links           every path a document names actually exists
+#   contract shapes     claims satisfy the frame's, declared gates exist,
+#                       refinements refine a status that is real
+#   delivery            context budget, shell entry points, registry accuracy,
+#                       nothing shipped that should not be
 #   reducer             15 adversarial admissions refused for the stated reason
 #   campaign            the loop closes, and the failure ladder engages
 #   resolution          every pack's examples still resolve to it
@@ -51,6 +56,10 @@ packs() {
 
 if [[ "$MODE" != "pack" ]]; then
   run_step "frame purity"    python3 "$SCRIPTS_DIR/check_frame_purity.py"
+  run_step "doc links"       python3 "$SCRIPTS_DIR/check_doc_links.py"
+  run_step "contract shapes" python3 "$SCRIPTS_DIR/check_contract_shapes.py"
+  run_step "delivery"        python3 "$SCRIPTS_DIR/check_delivery.py"
+  run_step "schema examples" python3 "$SCRIPTS_DIR/check_schema_examples.py"
   run_step "reducer"         python3 "$SCRIPTS_DIR/reducer_selftest.py"
   run_step "campaign loop"   python3 "$SCRIPTS_DIR/campaign.py" self-test
   run_step "resolution"      python3 "$SCRIPTS_DIR/resolve_domain.py" --self-test

@@ -1,7 +1,7 @@
 {
   "schema": "bio-audit-bundle-v1",
   "claim_id": "BIO-DEMO-1",
-  "target_sha256": "e5c6da2d0ec3ee3e3eb494901d4679c9f66be06eeb30eff4458165a90b8ecd9d",
+  "target_sha256": "7468c44e689ce081062ba805093dee23670e9b3c850926fcc2bc4949eed132a7",
   "analysed_context": {
     "biological_context": {
       "cell_type": "monocyte-derived macrophage",
@@ -257,7 +257,18 @@
       "minimum_detectable_effect": 0.55,
       "basis": "within-donor sd across six donors at alpha 0.05"
     },
-    "prespecification": "endpoint, unit, alpha, and permutation scheme fixed in good_prereg.json before analysis"
+    "prespecification": "endpoint, unit, alpha, and permutation scheme fixed in good_prereg.json before analysis",
+    "specification_sensitivity": {
+      "verdict": "ROBUST",
+      "universes": 8,
+      "ran": 4,
+      "significant_in": "4/4",
+      "effect_range": [
+        -0.8411,
+        -0.7896
+      ],
+      "computed_by": "scripts/multiverse.py"
+    }
   },
   "evidence_tiers_available": [],
   "stated_bounds": "six donors, primary macrophages, CRISPRi at 48 hours, this signature, this preprocessing",

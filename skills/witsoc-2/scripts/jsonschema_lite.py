@@ -39,13 +39,27 @@ def validate(node: Any, schema: dict[str, Any], path: str, errors: list[str]) ->
 
     expected = schema.get("type")
     if expected:
-        py_type = TYPE_MAP.get(expected)
-        # bool is a subclass of int in Python; the contract never wants that.
-        if py_type and (
-            not isinstance(node, py_type)
-            or (expected in {"integer", "number"} and isinstance(node, bool))
+        # `type` may be a list — `["string", "null"]` is used by the frame's own
+        # state schema for a nullable hash. The first version indexed TYPE_MAP
+        # with it directly and crashed, which nothing noticed because nothing had
+        # ever validated a state: a validator that cannot read its own schemas is
+        # a validator nobody has pointed at them.
+        options = expected if isinstance(expected, list) else [expected]
+        allowed = tuple(TYPE_MAP[o] if not isinstance(TYPE_MAP.get(o), tuple) else TYPE_MAP[o]
+                        for o in options if o in TYPE_MAP)
+        flat: list[type] = []
+        for entry in allowed:
+            flat.extend(entry if isinstance(entry, tuple) else [entry])
+        nullable = "null" in options
+        if node is None and nullable:
+            return
+        if flat and (
+            not isinstance(node, tuple(flat))
+            or (set(options) & {"integer", "number"} and isinstance(node, bool)
+                and "boolean" not in options)
         ):
-            errors.append(f"{path}: expected {expected}, got {type(node).__name__}")
+            names = " or ".join(options)
+            errors.append(f"{path}: expected {names}, got {type(node).__name__}")
             return
 
     if isinstance(node, str):

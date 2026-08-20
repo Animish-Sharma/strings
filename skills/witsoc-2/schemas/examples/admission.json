@@ -1,0 +1,36 @@
+{
+  "schema": "frame-admission-v1",
+  "admission_id": "ADM-6eb45c09",
+  "target_sha256": "6eb45c09faa838df679534ee77f12786f48e51a6f6d26a31ce73e8af72d410d9",
+  "base_revision": 0,
+  "base_state_sha256": "8aafc1b5ce935c3cae3e7711ffb790854db9f5e194f81da713fbc5a1b89f56ea",
+  "decided_by_role": "explorer",
+  "result_ref": {
+    "result_id": "RES-4fdbc441",
+    "payload_sha256": "c04dfac0ebf5382c6893ace3276b6e138678f300e848f9ecf8bf5b7eaefaf1b6"
+  },
+  "receipt_ref": {
+    "receipt_id": "mock-4b688212a196",
+    "payload_sha256": "f038d7fe645d21461c15ec8f178183f9c68d882ba9b75cf3ce0abd72dc8f5873",
+    "target_sha256": "6eb45c09faa838df679534ee77f12786f48e51a6f6d26a31ce73e8af72d410d9"
+  },
+  "decision": "ACCEPT",
+  "granted_status": "CHECKED_BOUNDED",
+  "checks": {},
+  "review_refs": [],
+  "delta": {
+    "update_claims": [
+      {
+        "claim_id": "EXAMPLE-1",
+        "from_status": "OPEN",
+        "to_status": "CHECKED_BOUNDED",
+        "evidence_sha256": [
+          "f038d7fe645d21461c15ec8f178183f9c68d882ba9b75cf3ce0abd72dc8f5873"
+        ]
+      }
+    ]
+  },
+  "delta_sha256": "00df0b6df369107fa2c51c79e603b518c03e327a05b90cd04245e3594bd1c194",
+  "rationale": "the _mock adapter returned a passing receipt at tier exact; every acceptance condition is left for the reducer to derive",
+  "payload_sha256": "8ffc1d0fbe4059bd9dcf21b8b50a04260dfdb96de85b4e92a87b53a688a43ced"
+}

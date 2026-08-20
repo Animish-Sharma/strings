@@ -1,0 +1,30 @@
+{
+  "receipt_id": "mock-4b688212a196",
+  "target_sha256": "6eb45c09faa838df679534ee77f12786f48e51a6f6d26a31ce73e8af72d410d9",
+  "artifact_sha256": "4fdbc441ea7b546100e086ac1e4fc5ae6749b7314311c99db05be450eca12996",
+  "tier": "exact",
+  "verdict": "pass",
+  "max_status": "VERIFIED",
+  "produced_at": "2026-08-20T22:40:37.577283+00:00",
+  "refute_attempt": {
+    "gate_name": "exact-recheck",
+    "discharged_by": "adversarial_tier",
+    "outcome": "survived"
+  },
+  "completeness": {
+    "all_obligations_covered": true,
+    "concluding_step_covered": true,
+    "open_gaps": 0,
+    "rejections": 0
+  },
+  "environment": {
+    "fresh_process": true,
+    "fresh_copy": false,
+    "restricted_env": false,
+    "toolchain_version": "mock/1",
+    "seed": "6eb45c09faa838df"
+  },
+  "normalization_applied": "strip_whitespace",
+  "log_excerpt": "exact match",
+  "payload_sha256": "f038d7fe645d21461c15ec8f178183f9c68d882ba9b75cf3ce0abd72dc8f5873"
+}

@@ -38,6 +38,52 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import biolib as bl  # noqa: E402
 
 
+def negative_control_proposal(rows, proposed: dict, spec: dict) -> dict:
+    """Propose the control-against-itself split from the data.
+
+    This is the single most valuable check in the pack and the one most likely
+    to be skipped, because it asks the author to invent a unit that does not
+    exist in their metadata. So it is proposed here instead: split each control
+    unit's observations in half, deterministically, and test the halves against
+    each other. Two halves of one control condition differ by nothing, so a
+    pipeline that finds a difference between them is measuring its own structure.
+
+    The split is by row order within unit rather than at random, so it is
+    reproducible from the metadata alone and nobody has to store a seed.
+    """
+    unit_col = proposed.get("unit_column")
+    label_col = proposed.get("label_column")
+    if not unit_col or not label_col:
+        return {"unit_column": "FILL-ME", "label_column": "FILL-ME", "labels": ["a", "b"],
+                "_why": "no unit or label column was identified, so no split can be proposed"}
+
+    labels = [(r.get(label_col) or "").strip() for r in rows]
+    distinct = sorted({l for l in labels if l})
+    counts = {u: sum(1 for r in rows if (r.get(unit_col) or "").strip() == u)
+              for u in {(r.get(unit_col) or "").strip() for r in rows} if u}
+    smallest = min(counts.values()) if counts else 0
+
+    proposal = {
+        "unit_column": "nc_unit",
+        "label_column": "nc_split",
+        "labels": ["a", "b"],
+        "_how_to_build": (
+            f"add two columns to the metadata: `nc_split` alternating 'a'/'b' by row order "
+            f"WITHIN each {unit_col}, and `nc_unit` = {unit_col} + '_' + nc_split, both left "
+            f"empty for rows whose {label_col} is not the control condition"),
+        "_candidate_control_labels": distinct,
+        "_why": ("the control condition tested against itself must come back silent. A pipeline "
+                 "never asked to find nothing has never shown that it can, and this is the check "
+                 "most likely to fire on a sincere, careful, subtly broken analysis"),
+    }
+    if smallest and smallest < 4:
+        proposal["_warning"] = (
+            f"the smallest {unit_col} has {smallest} observation(s); halving it leaves too few "
+            "to test. A negative control that cannot fail carries no information, and its pass "
+            "looks exactly like a real one")
+    return proposal
+
+
 def propose_columns(classified: dict, taxonomy: dict) -> dict:
     """Which column plays which role, proposed and clearly labelled as a guess."""
     def first(level):
@@ -143,7 +189,7 @@ def main() -> int:
             print(f"ERROR: {exc}", file=sys.stderr)
             return 2
     claim_class = args.claim_class or claim.get("claim_class")
-    statement = args.statement or claim.get("statement", "")
+    statement = args.statement or claim.get("exact_statement") or claim.get("statement", "")
     if not claim_class:
         print("ERROR: supply --class or a --claim carrying claim_class", file=sys.stderr)
         return 2
@@ -207,13 +253,7 @@ def main() -> int:
             "treatment_label": "FILL-ME",
             "control_label": "FILL-ME",
             "stratum_column": proposed["stratum_column"],
-            "negative_control": {
-                "unit_column": "FILL-ME: a finer unit splitting the control against itself",
-                "label_column": "FILL-ME",
-                "labels": ["a", "b"],
-                "_why": "the control condition tested against itself must come back silent; a "
-                        "pipeline never asked to find nothing has never shown that it can",
-            },
+            "negative_control": negative_control_proposal(rows, proposed, spec),
         },
         "_column_classification": classified,
         "_proposed_by_the_taxonomy": proposed,

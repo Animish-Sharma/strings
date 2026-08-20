@@ -278,6 +278,91 @@ def permutation_p(
     }
 
 
+def bootstrap_interval(
+    values: Sequence[float],
+    labels: Sequence[str],
+    treatment: str,
+    control: str,
+    *,
+    iterations: int = 4000,
+    seed: int = 0,
+    level: float = 0.95,
+    strata: Sequence[str] | None = None,
+) -> dict[str, Any]:
+    """A percentile interval on the difference in unit means.
+
+    A p-value answers "could this be nothing". An interval answers "how big,
+    and how sure" — and only the second bounds a claim. A tier whose whole
+    ceiling is CHECKED_BOUNDED reporting no bounds was reporting the one number
+    that does not do its job.
+
+    Resampling follows the DESIGN. In a matched design — one treated and one
+    control unit per stratum — the pairs are resampled, not the arms, because
+    that is what the stratified permutation test is testing. Resampling arms
+    independently on a paired design throws away the pairing and produces an
+    interval far wider than the test: the first version of this function did
+    exactly that, and reported an interval spanning zero for an effect the same
+    data put at p = 0.03. The interval was not wrong about its own question, it
+    was answering a different one.
+
+    Where there is no pairing, resampling is within arm — pooling the arms
+    instead would build an interval for a design with no treatment structure at
+    all, narrow in exactly the cases where the design is weakest.
+
+    With few units the interval is wide and jagged, and that is the finding. An
+    interval computed from four units is honest about a design that cannot say
+    much, where a p-value from the same four units reads like a result.
+    """
+    arm_t = [v for v, l in zip(values, labels) if l == treatment]
+    arm_c = [v for v, l in zip(values, labels) if l == control]
+    if len(arm_t) < 2 or len(arm_c) < 2:
+        return {"ran": False,
+                "reason": "fewer than two units in an arm; a resampled interval over this "
+                          "design describes the resampling and not the biology"}
+
+    paired = None
+    if strata:
+        by_stratum: dict[str, dict[str, list[float]]] = {}
+        for value, label, stratum in zip(values, labels, strata):
+            if label in (treatment, control):
+                by_stratum.setdefault(stratum, {}).setdefault(label, []).append(value)
+        if len(by_stratum) >= 2 and all(
+                len(arms.get(treatment, [])) == 1 and len(arms.get(control, [])) == 1
+                for arms in by_stratum.values()):
+            paired = [arms[treatment][0] - arms[control][0] for arms in by_stratum.values()]
+
+    rng = random.Random(seed)
+    diffs = []
+    if paired:
+        for _ in range(iterations):
+            sample = [paired[rng.randrange(len(paired))] for _ in paired]
+            diffs.append(mean(sample))
+    else:
+        for _ in range(iterations):
+            rt = [arm_t[rng.randrange(len(arm_t))] for _ in arm_t]
+            rc = [arm_c[rng.randrange(len(arm_c))] for _ in arm_c]
+            diffs.append(mean(rt) - mean(rc))
+    diffs.sort()
+    tail = (1.0 - level) / 2.0
+    lo = diffs[max(0, int(tail * len(diffs)) - 1)]
+    hi = diffs[min(len(diffs) - 1, int((1.0 - tail) * len(diffs)))]
+    point = mean(paired) if paired else mean(arm_t) - mean(arm_c)
+    return {
+        "ran": True,
+        "point_estimate": point,
+        "level": level,
+        "lower": lo,
+        "upper": hi,
+        "width": hi - lo,
+        "iterations": iterations,
+        "resampled": "paired differences" if paired else "within arm",
+        "pairs": len(paired) if paired else None,
+        "crosses_zero": lo <= 0.0 <= hi,
+        "note": ("the interval is the bound; the p-value only says whether zero is in it. "
+                 "With few units it is wide, and that width is the design speaking"),
+    }
+
+
 def pseudobulk(
     rows: Sequence[dict[str, str]], unit_col: str, value_col: str, label_col: str
 ) -> list[dict[str, Any]]:

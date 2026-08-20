@@ -1,0 +1,60 @@
+{
+  "schema": "maths-receipt-v1",
+  "receipt_id": "maths-a5991bb55720-kernel",
+  "target_sha256": "af6dfd3c3f3239b49943151ae5e579e8f42c99a7f6737015e901ca92c9dc8274",
+  "artifact_sha256": "a5991bb55720d5bdb5c130122e6f1458edd503789f663f24a1debc299f40835c",
+  "tier": "kernel",
+  "verdict": "pass",
+  "produced_at": "2026-08-20T20:56:17.957773+00:00",
+  "max_status": "VERIFIED",
+  "refute_attempt": {
+    "gate_name": "kernel-recheck",
+    "discharged_by": "adversarial_tier",
+    "outcome": "survived"
+  },
+  "completeness": {
+    "all_obligations_covered": true,
+    "concluding_step_covered": true,
+    "open_gaps": 0,
+    "rejections": 0
+  },
+  "supports_status": "VERIFIED",
+  "gaps": [],
+  "not_applicable": [],
+  "gates": [
+    {
+      "gate": "placeholder-scan",
+      "verdict": "pass",
+      "detail": "PLACEHOLDER SCAN: PASS \u2014 no escape hatches"
+    },
+    {
+      "gate": "target-protection-diff",
+      "verdict": "pass",
+      "detail": "TARGET PROTECTION: PASS \u2014 statement matches the frozen target"
+    },
+    {
+      "gate": "premise-precondition-audit",
+      "verdict": "pass",
+      "detail": "PREMISE AUDIT: PASS (0 citation(s))"
+    },
+    {
+      "gate": "fidelity-review",
+      "verdict": "pass",
+      "detail": "FIDELITY: FAITHFUL"
+    },
+    {
+      "gate": "axiom-audit",
+      "verdict": "pass",
+      "detail": "AXIOM AUDIT: PASS"
+    }
+  ],
+  "toolchain": "Lean (version 4.33.0, x86_64-unknown-linux-gnu, commit d8b18978322de05a8f3dba51ef03cf5461676c17, Release)  (no WITSOC2_LEAN_PROJECT; Mathlib imports unavailable)",
+  "axiom_audit": "pending: enumerate dependencies and compare against the allowlist",
+  "environment": {
+    "fresh_process": true,
+    "fresh_copy": false,
+    "restricted_env": false
+  },
+  "log_excerpt": "{\"verdict\": \"pass\", \"command\": \"/usr/bin/lake env lean /tmp/claude-1000/-home-xeclipse-Documents-Intern-strings-2/d336868f-aa94-470f-9fc9-057fa8f9f654/scratchpad/prod-le/le_succ.lean\", \"artifact_sha256\": \"a5991bb55720d5bdb5c130122e6f1458edd503789f663f24a1debc299f40835c\", \"log_excerpt\": \"\", \"_exit\": 0}",
+  "payload_sha256": "53cd282805ab91520183259b21633a003e9ff423c10c13404397fda5f16ef43c"
+}

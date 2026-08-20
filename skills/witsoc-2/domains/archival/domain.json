@@ -1,7 +1,7 @@
 {
   "contract_version": "2",
   "domain": "archival",
-  "description": "Documentary and historical claims: whether the sources that agree about something are actually saying it independently. The field has no kernel and no dataset to re-analyse \u2014 the evidence is documents, and the one operation that cannot be argued with is collapsing the citation graph to its roots.",
+  "description": "Documentary and historical claims: whether the sources that agree about something are actually saying it independently. The field has no kernel and no dataset to re-analyse — the evidence is documents, and the one operation that cannot be argued with is collapsing the citation graph to its roots.",
   "roles": {
     "researcher": "Ranke"
   },
@@ -127,7 +127,7 @@
         "cost_hint": "moderate",
         "max_status": "CHECKED_BOUNDED",
         "authorship": "independent",
-        "two_sided_evidence": "scripts/negative_control/ holds seven known-bad dossiers \u2014 a citation cascade, a chain running backwards in time, uniformly interested origins, untraced translation drift, prose claiming occurrence and motive and typicality, an absence claim with no survival argument, and a dossier that never says what falsity would look like. The tier must reject all seven and accept the one good dossier; scripts/check.py --self-test runs them.",
+        "two_sided_evidence": "scripts/negative_control/ holds seven known-bad dossiers — a citation cascade, a chain running backwards in time, uniformly interested origins, untraced translation drift, prose claiming occurrence and motive and typicality, an absence claim with no survival argument, and a dossier that never says what falsity would look like. The tier must reject all seven and accept the one good dossier; scripts/check.py --self-test runs them.",
         "contamination_controls": "The collapse is computed from the declared derivation edges, and the frozen target hash is checked before and after. A dossier cannot be edited to add independence after the count comes back short without changing the hash.",
         "availability_check": "python3 scripts/availability.py --tier triangulation --bundle <dossier.json>",
         "negative_control": "scripts/negative_control",
@@ -154,12 +154,12 @@
       "supports_status",
       "documentary"
     ],
-    "freshness_rule": "The receipt records the dossier's SHA-256 at check time and is stale the moment the dossier's current hash differs; the exit gate recomputes rather than trusting the recorded value. Adding a source, or an edge between existing sources, changes the collapse \u2014 so a receipt from before an edit is a receipt about a different graph."
+    "freshness_rule": "The receipt records the dossier's SHA-256 at check time and is stale the moment the dossier's current hash differs; the exit gate recomputes rather than trusting the recorded value. Adding a source, or an edge between existing sources, changes the collapse — so a receipt from before an edit is a receipt about a different graph."
   },
   "doctrine": {
     "escalation": {
       "max_consecutive_failures": 3,
-      "failure_signature": "The pair (failure_class, first problem line with source ids, shelfmarks, dates, and counts stripped). Two failures with the same pair are the same failure. Three rather than two, because unlike a recomputation over fixed data, each attempt here can legitimately bring new sources \u2014 a second attempt with a genuinely new source is a different attempt even when it fails the same way."
+      "failure_signature": "The pair (failure_class, first problem line with source ids, shelfmarks, dates, and counts stripped). Two failures with the same pair are the same failure. Three rather than two, because unlike a recomputation over fixed data, each attempt here can legitimately bring new sources — a second attempt with a genuinely new source is a different attempt even when it fails the same way."
     },
     "roles": {
       "explorer": "doctrine/explorer.md",
@@ -197,7 +197,7 @@
       },
       {
         "name": "interest-audit",
-        "description": "Not whether a source is biased \u2014 interested parties are often the only people present, and discarding them empties the archive. Whether, after collapsing to distinct origins, anything is left that did not want the claim to be true. If every origin shares one stake, their agreement is explained by the stake and needs no other cause.",
+        "description": "Not whether a source is biased — interested parties are often the only people present, and discarding them empties the archive. Whether, after collapsing to distinct origins, anything is left that did not want the claim to be true. If every origin shares one stake, their agreement is explained by the stake and needs no other cause.",
         "blocking": true
       },
       {
@@ -220,7 +220,7 @@
     },
     "REJECTED_CASCADE": {
       "refines": "REJECTED",
-      "description": "Refuted as corroboration: the agreeing sources collapse to fewer origins than the claim asserts. Recorded separately because the claim may still be true \u2014 what has been refuted is the reason given for believing it.",
+      "description": "Refuted as corroboration: the agreeing sources collapse to fewer origins than the claim asserts. Recorded separately because the claim may still be true — what has been refuted is the reason given for believing it.",
       "tier": "triangulation"
     }
   }

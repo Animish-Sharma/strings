@@ -24,8 +24,14 @@ whoever is asking, not to the tool that noticed the shortfall.
 requirements can still fail for reasons no table anticipates. What it clears is
 the bar for being able to speak about the unit at all.
 
+Prospectively, it answers the question people actually have. `--for-effect`
+takes the smallest effect worth detecting and returns how many units it would
+take — which is the design question, asked before the experiment rather than
+after it has failed to answer anything.
+
 Usage:
     design.py --class <claim_class> [--metadata <file.csv>] [--json]
+    design.py --class <claim_class> --for-effect 0.5 --sd 1.0 [--power 0.8]
     design.py --list
     design.py --claim <claim.json> [--metadata <file.csv>]
 
@@ -141,12 +147,63 @@ def against_metadata(spec: dict, csv_path: Path) -> dict:
     return assessment
 
 
+def units_needed(effect: float, sd: float, power: float, alpha: float,
+                 paired: bool) -> dict:
+    """How many units to detect `effect`, by simulating the test that will be run.
+
+    Not a formula. The executable tier tests by permutation, and a permutation
+    test over few units has a hard floor on the p-value it can produce — with
+    three per arm the smallest achievable two-sided p is larger than 0.05 no
+    matter how big the effect is. A closed-form answer ignores that and returns a
+    number that cannot work, which is worse than no number because it will be
+    used to justify the sample size.
+    """
+    import random
+    rng = random.Random(20260821)
+    trials = 200
+    iterations = 400
+    for n in range(2, 41):
+        hits = 0
+        for trial in range(trials):
+            if paired:
+                diffs = [effect + rng.gauss(0, sd) for _ in range(n)]
+                values = [d for d in diffs] + [0.0] * n
+                labels = ["t"] * n + ["c"] * n
+                strata = [str(i) for i in range(n)] * 2
+            else:
+                values = ([effect + rng.gauss(0, sd) for _ in range(n)]
+                          + [rng.gauss(0, sd) for _ in range(n)])
+                labels = ["t"] * n + ["c"] * n
+                strata = None
+            test = bl.permutation_p(values, labels, "t", "c",
+                                    iterations=iterations, seed=trial, strata=strata)
+            if test.get("ran") and test["p_value"] <= alpha:
+                hits += 1
+        achieved = hits / trials
+        if achieved >= power:
+            return {"units_per_arm": n, "achieved_power": round(achieved, 3),
+                    "total_units": 2 * n if not paired else n,
+                    "design": "matched pairs" if paired else "independent arms"}
+    return {"units_per_arm": None,
+            "note": ("no size up to 40 per arm reaches the requested power at this effect and "
+                     "spread. Either the effect worth detecting is smaller than this design can "
+                     "ever see, or the noise estimate is wrong — both are findings")}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--class", dest="claim_class")
     ap.add_argument("--claim")
     ap.add_argument("--metadata")
     ap.add_argument("--list", action="store_true")
+    ap.add_argument("--for-effect", type=float,
+                    help="the smallest effect worth detecting, in the endpoint's own units")
+    ap.add_argument("--sd", type=float, default=1.0,
+                    help="unit-level spread; for a matched design, of the paired differences")
+    ap.add_argument("--power", type=float, default=0.8)
+    ap.add_argument("--alpha", type=float, default=0.05)
+    ap.add_argument("--paired", action="store_true",
+                    help="each unit contributes both conditions")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
@@ -173,6 +230,17 @@ def main() -> int:
 
     spec = classes[claim_class]
     design = describe(spec)
+
+    if args.for_effect is not None:
+        sizing = units_needed(args.for_effect, args.sd, args.power, args.alpha, args.paired)
+        floor = spec.get("min_upstream_units", 0)
+        design["sizing"] = {**sizing, "for_effect": args.for_effect, "sd": args.sd,
+                            "power": args.power, "alpha": args.alpha}
+        if sizing.get("units_per_arm") and sizing["units_per_arm"] < floor:
+            design["sizing"]["binding_constraint"] = (
+                f"power says {sizing['units_per_arm']} per arm and the claim class requires "
+                f"{floor} upstream units. The class floor binds — it is about what the claim "
+                "MEANS, not about what the test can see")
     if args.metadata:
         path = Path(args.metadata)
         if not path.exists():
@@ -202,6 +270,18 @@ def main() -> int:
         print(f"    - {requirement['id']}: {requirement['do']}")
     for condition in design["must_be_stated"]:
         print(f"    - state explicitly: {condition}")
+
+    if "sizing" in design:
+        sizing = design["sizing"]
+        print(f"\n  To detect {sizing['for_effect']} at power {sizing['power']}, "
+              f"alpha {sizing['alpha']}:")
+        if sizing.get("units_per_arm"):
+            print(f"    {sizing['units_per_arm']} unit(s) per arm "
+                  f"({sizing['design']}), achieved power {sizing['achieved_power']}")
+        else:
+            print(f"    {sizing['note']}")
+        if sizing.get("binding_constraint"):
+            print(f"    {sizing['binding_constraint']}")
 
     if "against_available_data" in design:
         data = design["against_available_data"]

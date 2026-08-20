@@ -40,7 +40,10 @@ EXPLICIT_UNKNOWN = {"unknown", "not_reported", "not_applicable", "none", "n/a"}
 # Every dimension that can change how a perturbation result is interpreted.
 # Nested paths are dotted.
 REQUIRED_DIMENSIONS = [
-    "statement", "organism", "claim_class",
+    # `exact_statement` is the frame's name for this, adopted after a
+    # contract-shape check found the pack's own name silently dropping the claim
+    # text on the way into campaign state.
+    "exact_statement", "organism", "claim_class",
     "biological_context.cell_type", "biological_context.tissue",
     "biological_context.disease_state", "biological_context.donor_or_model_system",
     "perturbation.entity", "perturbation.modality", "perturbation.dose",

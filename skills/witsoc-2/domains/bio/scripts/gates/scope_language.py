@@ -103,7 +103,7 @@ def main() -> int:
 
     text = " ".join(str(bundle.get(k, "")) for k in
                     ("interpretation", "summary", "conclusion", "report_language"))
-    text += " " + str(claim.get("statement", ""))
+    text += " " + str(claim.get("exact_statement") or claim.get("statement", ""))
     lowered = text.lower()
 
     declared = set(bundle.get("evidence_tiers_available") or [])

@@ -133,7 +133,11 @@ def main() -> int:
     found_placeholder = next((t for t in PLACEHOLDER_TOKENS if t in raw), None)
 
     if found_placeholder:
-        verdict, detail = "fail", f"placeholder token {found_placeholder!r} present"
+        # Named exactly as the manifest declares it. A gate the adapter
+        # implements under a different name is a gate nobody can trace from the
+        # contract to the code, which is how a declared check quietly becomes
+        # an undeclared one.
+        verdict, detail = "fail", (f"placeholder-scan: token {found_placeholder!r} present")
     elif args.tier == "exact":
         passed = actual == normalize(expected, mode)
         verdict = "pass" if passed else "fail"

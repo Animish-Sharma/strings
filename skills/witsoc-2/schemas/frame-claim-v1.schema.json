@@ -2,15 +2,13 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "frame-claim-v1",
   "title": "Frozen claim",
-  "description": "The thing everything else binds to. A domain pack extends this with its own frozen content \u2014 anything that, if it changed silently, would make a result stop meaning what it claimed to mean.",
+  "description": "The thing everything else binds to. A domain pack extends this with its own frozen content \u2014 anything that, if it changed silently, would make a result stop meaning what it claimed to mean. REQUIRED covers what an AUTHOR supplies. `status` and `payload_sha256` are machinery: a claim gets its status from the reducer and its seal when it becomes a transmitted packet, so requiring an author to write either produces guesses \u2014 and a guess that happens to match is indistinguishable from knowledge. This was decided by evidence rather than taste: a real claim from a campaign that reached VERIFIED could not satisfy this schema, and when every implementer including the fixture diverges the same way, the specification is what is wrong.",
   "type": "object",
   "required": [
     "claim_id",
     "exact_statement",
     "frozen_conditions",
-    "target_sha256",
-    "status",
-    "payload_sha256"
+    "target_sha256"
   ],
   "properties": {
     "claim_id": {
@@ -118,7 +116,7 @@
       "pattern": "^[0-9a-f]{64}$"
     },
     "status": {
-      "description": "See references/status_vocabulary.md. A frozen claim starts OPEN or CONJECTURE; only admission moves it.",
+      "description": "See references/status_vocabulary.md. A frozen claim starts OPEN or CONJECTURE; only admission moves it. Added by the machinery, not by the author; optional here for that reason and required of the packet once it is transmitted.",
       "enum": [
         "OPEN",
         "CONJECTURE",
@@ -212,7 +210,7 @@
       }
     },
     "payload_sha256": {
-      "description": "SHA-256 over the canonical JSON of this packet with payload_sha256 removed: sorted keys, compact separators, ASCII escapes. Seals the packet and makes it addressable by later packets \u2014 an id alone is a mutable label.",
+      "description": "SHA-256 over the canonical JSON of this packet with payload_sha256 removed: sorted keys, compact separators, ASCII escapes. Seals the packet and makes it addressable by later packets \u2014 an id alone is a mutable label. Added by the machinery, not by the author; optional here for that reason and required of the packet once it is transmitted.",
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
     },

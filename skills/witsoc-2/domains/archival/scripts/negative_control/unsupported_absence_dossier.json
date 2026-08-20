@@ -1,7 +1,7 @@
 {
   "schema": "archival-dossier-v1",
   "claim_id": "ARCH-DEMO-1",
-  "target_sha256": "bb4339caebbbc1c19c55d8379a0721bbfed65e42b9ccc9f91714caa708f0c736",
+  "target_sha256": "2a970e5b1a97fa757fd7c216024f8e8dc1e3b4b48925cf99de7c0a28b71fae68",
   "sources": [
     {
       "id": "REG",

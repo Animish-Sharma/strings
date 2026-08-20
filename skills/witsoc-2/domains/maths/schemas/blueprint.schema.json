@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "maths-blueprint-v1",
+  "title": "Production blueprint",
+  "description": "The input to production, and the only place a proof's structure is decided. `generate_wit.py` renders this and invents nothing — so every property the artifact must have is a property this file must have, and until now those properties were enforced by ad-hoc code inside the renderer with no schema anyone could read. A contract that lives only in the checker is a contract nobody can satisfy on purpose.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["metadata", "target_formalization", "target_protection",
+               "external_dependencies", "lemma_plan", "generator_directive"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "description": "Becomes the MODULE and THEOREM label. Lowercase, underscores; it ends up in a Lean identifier.",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "kind": { "enum": ["THEOREM", "LEMMA", "PROPOSITION", "COROLLARY"] }
+      }
+    },
+    "target_formalization": {
+      "type": "object",
+      "required": ["claim"],
+      "properties": {
+        "claim": {
+          "description": "The informal statement, verbatim. Its hash IS the frozen target, so a change here is a different claim rather than an edit to this one.",
+          "type": "string",
+          "minLength": 10
+        },
+        "hypotheses": { "type": "array" },
+        "formal_statement": {
+          "description": "The Lean signature, supplied and never guessed. Autoformalization is where fidelity is lost, and a guessed statement type-checks exactly as well as a right one.",
+          "type": "string",
+          "minLength": 10
+        },
+        "preamble": {
+          "description": "Imports and options. Kept out of `formal_statement` so the fidelity gate is not diffing an import list against a claim.",
+          "type": "string"
+        },
+        "closing_tactic": { "type": "string" }
+      }
+    },
+    "target_protection": {
+      "type": "object",
+      "required": ["statement_tampering_forbidden", "frozen_target_sha256"],
+      "properties": {
+        "statement_tampering_forbidden": {
+          "description": "Literally true. A blueprint that does not assert this is not asking for a protected run.",
+          "const": true
+        },
+        "frozen_target_sha256": {
+          "description": "SHA-256 of the normalized claim. The renderer recomputes it and refuses when they differ, which is the check that stops a plan drifting from the thing it was approved for.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "original_statement": { "type": "string" },
+        "authorized_mutations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["old_target_sha256", "new_target_sha256", "mutation_kind",
+                         "reason", "authorized_by"],
+            "properties": {
+              "old_target_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+              "new_target_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+              "mutation_kind": {
+                "enum": ["narrow", "widen", "specialize", "repair_ambiguity", "restate"]
+              },
+              "reason": { "type": "string", "minLength": 10 },
+              "authorized_by": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "external_dependencies": {
+      "description": "Every result the plan may cite. A step citing anything outside this list is refused: out of scope is not a step.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["theorem_name"],
+        "properties": {
+          "theorem_name": { "type": "string", "minLength": 1 },
+          "source": { "type": "string" },
+          "preconditions": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "lemma_plan": {
+      "description": "The proof structure. Each entry becomes one WIT step and one Lean obligation, so a plan of one step has decomposed nothing and will fail the sketch rubric for exactly that reason.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["step_id", "type", "statement"],
+        "properties": {
+          "step_id": { "type": "string", "minLength": 1 },
+          "type": {
+            "enum": ["HAVE", "SHOW", "LET", "ASSUME", "CONSIDER", "SUFFICES",
+                     "CASE", "CITE", "GAP"]
+          },
+          "statement": { "type": "string", "minLength": 5 },
+          "depends_on": {
+            "description": "Earlier steps only. WIT forbids forward references, and so does the renderer.",
+            "type": "array", "items": { "type": "string" }
+          },
+          "cites": { "type": "array", "items": { "type": "string" } },
+          "method": { "type": "string" },
+          "expecting": { "type": "string" },
+          "formalization": {
+            "description": "The Lean proposition and tactic for this step. A step without one keeps its hole, and the artifact is honestly incomplete rather than confidently wrong.",
+            "type": "object",
+            "required": ["type", "tactic"],
+            "properties": {
+              "type": { "type": "string", "minLength": 1 },
+              "tactic": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "generator_directive": {
+      "type": "object",
+      "properties": {
+        "status_to_assert": {
+          "description": "What the artifact may claim about itself. VERIFIED is absent from this enum by design: a blueprint is structurally incapable of ordering a success claim, because the thing that grants success has to be able to refuse.",
+          "enum": ["UNVERIFIED", "PARTIAL", "CONDITIONAL", "GAP"]
+        }
+      }
+    }
+  }
+}

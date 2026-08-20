@@ -133,6 +133,7 @@ def main() -> int:
         print("no statements sampled; nothing external to test against", file=sys.stderr)
         return 2
 
+    gates = [("target_protection.py", "target-protection"), ("fidelity.py", "fidelity")]
     results = []
     with tempfile.TemporaryDirectory() as raw:
         tmp = Path(raw)
@@ -147,31 +148,57 @@ def main() -> int:
 
             faithful = tmp / "faithful.wit"
             faithful.write_text(wit_artifact(entry["name"], statement), encoding="utf-8")
-            accepted = run_gate("target_protection.py", faithful, claim_path) == 0
 
-            caught, missed = [], []
-            for label, mutate, why in MUTATIONS:
-                mutated = mutate(statement)
-                if normalize(mutated) == normalize(statement):
-                    continue  # this mutation does not apply to this statement
-                path = tmp / f"{label}.wit"
-                path.write_text(wit_artifact(entry["name"], mutated), encoding="utf-8")
-                (caught if run_gate("target_protection.py", path, claim_path) != 0
-                 else missed).append({"mutation": label, "why": why, "became": mutated[:70]})
+            per_gate = {}
+            for script, gate_name in gates:
+                # A gate that returns NOT_RUN on the honest artifact has not
+                # accepted it, and has not rejected it either. Both facts matter:
+                # 3 means "I had nothing to ask", and a gate that always says
+                # that is a gate that never contributes.
+                code = run_gate(script, faithful, claim_path)
+                accepted = code == 0
+                not_run = code == 3
+                caught, missed = [], []
+                for label, mutate, why in MUTATIONS:
+                    mutated = mutate(statement)
+                    if normalize(mutated) == normalize(statement):
+                        continue
+                    path = tmp / f"{label}.wit"
+                    path.write_text(wit_artifact(entry["name"], mutated), encoding="utf-8")
+                    mutant_code = run_gate(script, path, claim_path)
+                    (caught if mutant_code == 1 else missed).append(
+                        {"mutation": label, "why": why, "became": mutated[:70],
+                         "exit": mutant_code})
+                per_gate[gate_name] = {"faithful_accepted": accepted, "not_run": not_run,
+                                       "caught": len(caught), "missed": missed}
 
+            primary = per_gate["target-protection"]
             results.append({"name": entry["name"], "source": entry.get("source"),
                             "statement": statement[:80],
-                            "faithful_accepted": accepted,
-                            "mutations_caught": len(caught), "missed": missed})
+                            "faithful_accepted": primary["faithful_accepted"],
+                            "mutations_caught": primary["caught"],
+                            "missed": primary["missed"],
+                            "per_gate": per_gate})
 
     accepted = sum(1 for r in results if r["faithful_accepted"])
     applied = sum(r["mutations_caught"] + len(r["missed"]) for r in results)
     caught = sum(r["mutations_caught"] for r in results)
 
+    by_gate = {}
+    for _, gate_name in gates:
+        rows = [r["per_gate"][gate_name] for r in results]
+        by_gate[gate_name] = {
+            "faithful_accepted": sum(1 for r in rows if r["faithful_accepted"]),
+            "not_run_on_faithful": sum(1 for r in rows if r["not_run"]),
+            "caught": sum(r["caught"] for r in rows),
+            "applied": sum(r["caught"] + len(r["missed"]) for r in rows),
+        }
+
     summary = {
         "statements": len(results),
         "faithful_accepted": f"{accepted}/{len(results)}",
         "mutations_caught": f"{caught}/{applied}",
+        "by_gate": by_gate,
         "results": results,
     }
 
@@ -187,6 +214,17 @@ def main() -> int:
                 print(f"           missed {miss['mutation']}: {miss['why']}")
         print(f"\n  faithful restatements accepted   {summary['faithful_accepted']}")
         print(f"  mutations caught                 {summary['mutations_caught']}")
+        print("\n  per gate:")
+        for gate_name, stats in by_gate.items():
+            note = ""
+            if stats["not_run_on_faithful"] == len(results) and stats["caught"]:
+                note = ("   <- NOT_RUN on the honest artifact (no independent judge supplied) "
+                        "while its deterministic half still caught drift. Both halves are real; "
+                        "only one of them can run unattended")
+            elif stats["not_run_on_faithful"] == len(results):
+                note = "   <- NOT_RUN everywhere and caught nothing; this gate contributed nothing"
+            print(f"    {gate_name:<20} accepted {stats['faithful_accepted']}/{len(results)}"
+                  f"   caught {stats['caught']}/{stats['applied']}{note}")
         print("\n  The accept column is the one that matters. A gate that rejects everything\n"
               "  catches every mutation and is useless.")
 

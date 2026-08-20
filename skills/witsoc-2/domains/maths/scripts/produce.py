@@ -19,6 +19,23 @@ The chain:
 Three properties worth stating, because each is a place this could have been built
 worse:
 
+**Attempts compound.** A step that reached the kernel clean is recorded in the
+campaign's lemma pool, and a failing kernel run has its residual goals mined out
+of the diagnostics and proposed as bridging lemmas. Without that, every run
+starts from nothing and the twentieth attempt at a hard target knows exactly
+what the first one knew. The pool lives beside the workdir, so it accumulates
+across runs against the same target and not across unrelated ones.
+
+**Refutation comes first.** Before any expensive tier, the standard
+counterexample families for the claim's area are named and the bounded tier is
+offered the chance to break it. Doctrine has said "refute before you support"
+since the pack was written, and nothing enforced it: production ran straight at
+the proof, which is the order that spends the most to learn a claim was false.
+A blueprint that declares a `search_domain` gets a bounded refutation attempt;
+one that does not gets told which families it skipped, because an unrecorded
+absence of counterexample search reads in a report exactly like a search that
+found nothing.
+
 **Nothing is invented.** `generate_wit` renders a reviewed plan; `wit_to_lean`
 carries formalizations the blueprint supplied and refuses to guess a statement.
 This script adds no step, no lemma, and no tactic of its own. If the blueprint
@@ -30,6 +47,12 @@ that happens to type-check for the wrong reason.
 CLAIM does not hash to the blueprint's frozen target; the adapter's
 target-protection gate checks it again against the claim. Two independent checks
 of the same thing, which is the only kind of redundancy worth paying for.
+
+**A failure hands back an edit, not an adjective.** When the kernel refuses, the
+run writes `revision_request.json`: which step failed, which axis the gap
+classifier says to move, what that means concretely for this blueprint, and any
+bridging lemmas mined out of the diagnostic. "Revise the blueprint" is not
+advice; a named step, a named axis, and a proposed change is.
 
 **Failure is routed, not retried.** A kernel failure is classified, and the class
 decides who owns the fix. `repair_cycle` refuses a fourth attempt in the same
@@ -87,6 +110,242 @@ class Production:
         if not self.quiet:
             print(f"  [{'ok  ' if ok else 'STOP'}] {name}" + (f"  {detail}" if detail else ""))
 
+    # What each axis means as an edit to THIS file. The classifier names the axis;
+    # without this table the name is a category, and a category is not a change
+    # anyone can make.
+    AXIS_EDITS = {
+        "theorem_source": ("a cited result is missing or misnamed. Correct the entry in "
+                           "external_dependencies, or drop the citation and add the step that "
+                           "establishes it — a premise that does not exist is a sub-claim"),
+        "method": ("the tactic did not close the goal. Change the step's formalization.tactic; "
+                   "the goal itself was accepted, so the statement is not what is wrong"),
+        "encoding": ("the Lean rendering of a step does not say what the step says. Change "
+                     "formalization.type, not the informal statement — the informal statement is "
+                     "frozen"),
+        "formalization_target": ("the formal_statement does not correspond to the frozen claim. "
+                                 "This is a new claim with a new hash if the claim is what "
+                                 "changes, and a correction if the formalization is"),
+        "statement_strength": ("the plan proves something weaker or stronger than the target. "
+                               "Narrowing the target starts a new claim; strengthening a step is "
+                               "an edit to this one"),
+        "invariant": ("the decomposition is missing the fact that makes the induction go "
+                      "through. Add it as an earlier step, not as a stronger conclusion"),
+        "object_class": ("the objects the plan reasons about are not the objects the statement "
+                         "quantifies over. Fix the binders before the tactics"),
+        "computational_bound": ("the search or bound in the plan is too wide to close. Narrow it "
+                                "and state the narrowed range in the claim"),
+    }
+
+    def grade_sketch(self, blueprint: dict) -> dict | None:
+        """Score the decomposition. The blueprint already is a proof DAG — one
+        node per step with its dependencies — so the rubric that had no input
+        has had one all along, in a different shape."""
+        steps = blueprint.get("lemma_plan", []) or []
+        if not steps:
+            return None
+        target = (blueprint.get("target_formalization", {}) or {}).get("claim", "")
+        dag = {
+            "target": target,
+            "nodes": [{
+                "id": str(step.get("step_id")),
+                "statement": step.get("statement", ""),
+                "formal_statement": (step.get("formalization") or {}).get("type"),
+                "depends_on": step.get("depends_on", []),
+                "kind": str(step.get("type", "HAVE")).lower(),
+                # A step that cites an outside result is doing less work than one
+                # that does not; a step with no dependencies and no citation is
+                # either atomic or the whole problem in disguise.
+                "granularity": ("atomic" if step.get("cites") or step.get("depends_on")
+                                else "multi_step"),
+            } for step in steps],
+        }
+        path = self.dir / "proof_dag.json"
+        path.write_text(json.dumps(dag, indent=2) + "\n", encoding="utf-8")
+        code, out, _ = run([sys.executable, str(HERE / "sketch_rubric.py"),
+                            "--sketch", str(path), "--json"])
+        scored = as_json(out)
+        if not scored:
+            return None
+        components = scored.get("components", {})
+        miracle = components.get("miracle_fraction", 0)
+        scored["reading"] = (
+            "a hole shaped like the problem: at least one step restates the target, so this "
+            "decomposition has decomposed nothing"
+            if miracle and miracle > 0 else
+            "small, separately checkable holes — the useful kind"
+            if scored.get("score", 0) >= 0.6 else
+            "coarse: the steps are large or unlinked, so a failure will not localize")
+        return scored
+
+    def write_revision_request(self, blueprint: dict, blueprint_path: Path,
+                               failure_class: str, diagnostic: str,
+                               advice: dict, kernel: dict) -> Path:
+        """Turn a classified failure into a specific, checkable edit."""
+        axis = (advice.get("proposed_mutation") or {}).get("axis", "unknown")
+        steps = blueprint.get("lemma_plan", []) or []
+
+        # Which step? The diagnostic names a Lean identifier `stepN` when it can.
+        failing = None
+        for step in steps:
+            ident = "step" + str(step.get("step_id", "")).replace(".", "_")
+            if ident and ident in diagnostic:
+                failing = step
+                break
+
+        pool = self.dir / "lemma_pool.json"
+        bridges = []
+        if pool.exists():
+            code, out, _ = run([sys.executable, str(HERE / "lemma_pool.py"), "status",
+                                "--pool", str(pool), "--json"])
+            status = as_json(out)
+            bridges = status.get("mined_statements") or []
+
+        request = {
+            "schema": "maths-revision-request-v1",
+            "blueprint": str(blueprint_path),
+            "target_sha256": blueprint.get("target_protection", {}).get("frozen_target_sha256"),
+            "failure_class": failure_class,
+            "gap_class": advice.get("gap_class"),
+            "why_this_class": advice.get("why_this_class"),
+            "axis_to_move": axis,
+            "what_that_means_here": self.AXIS_EDITS.get(
+                axis, "no concrete edit is recorded for this axis; say what you changed and why"),
+            "failing_step": ({"step_id": failing.get("step_id"),
+                              "statement": failing.get("statement"),
+                              "formalization": failing.get("formalization")}
+                             if failing else None),
+            "step_identification": ("matched by the Lean identifier in the diagnostic"
+                                    if failing else
+                                    "the diagnostic names no step identifier, so the failure is "
+                                    "in the statement or the preamble rather than in one step"),
+            "diagnostic": diagnostic[:600],
+            "mined_bridges": bridges,
+            "do_not_repeat": advice.get("do_not_repeat"),
+            "note": ("A revision is a new blueprint, not an edit to the artifact. The frozen "
+                     "target does not move unless the claim itself is what changed, and then it "
+                     "moves with a new hash and a recorded authorized_mutation."),
+        }
+        path = self.dir / "revision_request.json"
+        path.write_text(json.dumps(request, indent=2) + "\n", encoding="utf-8")
+        return path
+
+    def pool_path(self) -> Path:
+        pool = self.dir / "lemma_pool.json"
+        if not pool.exists():
+            run([sys.executable, str(HERE / "lemma_pool.py"), "init", "--out", str(pool)])
+        return pool
+
+    def harvest_lemmas(self, blueprint: dict) -> int:
+        """Record each formalized obligation as proved. A step the kernel accepted
+        is a fact about the library from now on, and forgetting it is how a long
+        campaign re-derives the same bridge twenty times."""
+        pool = self.pool_path()
+        recorded = 0
+        for step in blueprint.get("lemma_plan", []) or []:
+            formal = step.get("formalization") or {}
+            if not formal.get("type"):
+                continue
+            code, out, _ = run([sys.executable, str(HERE / "lemma_pool.py"), "propose",
+                                "--pool", str(pool), "--statement", formal["type"],
+                                "--origin", f"kernel-pass:{blueprint.get('metadata',{}).get('name','')}"])
+            # `propose` prints "proposed <id>" as plain text, not JSON. Reading
+            # it as JSON silently produced no id, so every harvested lemma stayed
+            # PROPOSED and the pool recorded three facts it never learned.
+            proposed = as_json(out)
+            lemma_id = (proposed.get("id") or proposed.get("lemma_id")
+                        if proposed else None)
+            if not lemma_id:
+                parts = out.strip().split()
+                lemma_id = parts[-1] if parts and len(parts[-1]) >= 8 else None
+            if lemma_id:
+                run([sys.executable, str(HERE / "lemma_pool.py"), "record", "--pool", str(pool),
+                     "--id", str(lemma_id), "--status", "PROVED",
+                     "--evidence", "kernel elaboration of the containing artifact"])
+                recorded += 1
+        return recorded
+
+    def mine_lemmas(self, diagnostic: str) -> int:
+        """Read the checker's residual goals and propose each as a bridge."""
+        if not diagnostic:
+            return 0
+        pool = self.pool_path()
+        code, out, _ = run([sys.executable, str(HERE / "lemma_pool.py"), "mine",
+                            "--pool", str(pool), "--diagnostic", diagnostic[:4000]])
+        mined = as_json(out)
+        candidates = mined.get("proposed") or mined.get("lemmas") or []
+        return len(candidates) if isinstance(candidates, list) else 0
+
+    def attempt_refutation(self, blueprint: dict, blueprint_path: Path) -> dict:
+        """Try to break the claim before trying to establish it.
+
+        Two things happen. The standard counterexample families for the claim's
+        area are looked up and named — an area with no relevant family is itself
+        a recorded finding, not silence. And where the blueprint declares a
+        finite `search_domain`, the bounded tier actually searches it.
+
+        A refutation here ends the campaign with a result. That is the cheapest
+        good outcome available and the one the previous ordering could not reach
+        without first paying for a proof attempt.
+        """
+        target_form = blueprint.get("target_formalization", {}) or {}
+        area = target_form.get("area") or blueprint.get("metadata", {}).get("area")
+        families = []
+        code, out, _ = run([sys.executable, str(HERE / "counterexample.py"), "families"]
+                           + (["--domain", area] if area else []))
+        parsed = as_json(out)
+        if isinstance(parsed, dict):
+            families = parsed.get("families") or []
+
+        search = target_form.get("search_domain")
+        if not search:
+            return {"refuted": False,
+                    "detail": ("no search_domain declared, so nothing was searched. "
+                               + (f"{len(families)} standard famil(ies) apply to this area and "
+                                  "were not tested" if families else
+                                  "no standard family is recorded for this area, which is itself "
+                                  "the finding")),
+                    "families_available": families}
+
+        claim_path = self.dir / "bounded_claim.json"
+        # The bounded tier reads its bounds from frozen_conditions, not from the
+        # top level, because bounds that are not frozen can be quietly shrunk
+        # after a failing search. Writing them anywhere else produces a tier that
+        # runs, finds nothing, and reports it as evidence.
+        claim_path.write_text(json.dumps({
+            "claim_id": blueprint.get("metadata", {}).get("name", "claim"),
+            "frozen_conditions": {"bounded_search": search}}, indent=2), encoding="utf-8")
+        code, out, _ = run([sys.executable, str(HERE / "tiers" / "bounded.py"),
+                            "--claim", str(claim_path), "--json"])
+        bounded = as_json(out)
+        if not bounded or bounded.get("verdict") in {None, "error"}:
+            return {"refuted": False,
+                    "detail": ("the bounded tier could not run over the declared search_domain, "
+                               "so nothing was searched. NOT a clean search: an unrun search and "
+                               "a search that found nothing are written the same way"),
+                    "bounded": bounded}
+        witnesses = bounded.get("counterexamples") or (
+            [bounded["counterexample"]] if bounded.get("counterexample") else [])
+        if witnesses:
+            var = search.get("variable", "n")
+            shown = ", ".join(f"{var}={w}" for w in witnesses[:4])
+            return {"refuted": True,
+                    "counterexamples": witnesses,
+                    "bounds": bounded.get("bounds"),
+                    "detail": (f"{shown} over {bounded.get('bounds')} "
+                               f"({bounded.get('checked')} value(s) checked). The claim is false "
+                               "as stated, and this cost nothing"),
+                    "bounded": bounded}
+        if bounded.get("verdict") in {"refuted", "fail"}:
+            return {"refuted": True,
+                    "detail": f"the bounded tier returned {bounded['verdict']} over "
+                              f"{bounded.get('bounds')} without naming a witness — treat as a "
+                              "refutation and go find the witness before reporting it",
+                    "bounded": bounded}
+        return {"refuted": False,
+                "detail": (f"bounded search over {search} found no counterexample — which bounds "
+                           "the claim inside that range and establishes nothing outside it"),
+                "bounded": bounded, "families_available": families}
+
     def classify_gap(self, failure_class: str, diagnostic: str, artifact: Path) -> dict:
         """Ask the gap classifier which axis to move next."""
         payload = [{"node_id": artifact.stem, "status": "GAP",
@@ -119,6 +378,36 @@ class Production:
             return self.report("REFUSED_BEFORE_PRODUCING")
         self.step("render blueprint", True,
                   f"{wit_path.name}, {len(blueprint.get('lemma_plan', []))} step(s)")
+
+        # 1b. premise pre-flight ----------------------------------------------
+        # Cheapest first. A citation that does not resolve costs five seconds of
+        # import elaboration to discover at the kernel tier, and the diagnostic
+        # it returns says exactly what a lookup says for free.
+        preflight_cmd = [sys.executable, str(HERE / "premise_preflight.py"),
+                         "--blueprint", str(blueprint_path), "--json"]
+        corpus = os.environ.get("WITSOC2_MATHS_CORPUS")
+        if corpus and Path(corpus).is_file():
+            preflight_cmd += ["--corpus", corpus]
+        code, out, _ = run(preflight_cmd)
+        preflight = as_json(out)
+        if preflight.get("problems"):
+            self.step("premise pre-flight", False,
+                      "; ".join(preflight["problems"])[:200])
+            return self.report("REFUSED_BEFORE_PRODUCING", preflight=preflight)
+        unresolved = preflight.get("unresolved") or []
+        self.step("premise pre-flight", True,
+                  f"{preflight.get('declared', 0)} declared, {len(unresolved)} unresolved"
+                  + (f" ({', '.join(u['name'] for u in unresolved[:3])}) — a lead is not a "
+                     "premise, and the kernel is about to say so" if unresolved else ""))
+
+        # 1c. refutation first --------------------------------------------------
+        refutation = self.attempt_refutation(blueprint, blueprint_path)
+        if refutation.get("refuted"):
+            self.step("refutation attempt", True,
+                      f"COUNTEREXAMPLE: {refutation['detail'][:150]}")
+            return self.report("REFUTED", target_sha256=target,
+                               counterexample=refutation)
+        self.step("refutation attempt", True, refutation.get("detail", "")[:150])
 
         # 2. structural check -------------------------------------------------
         code, out, err = run([sys.executable, str(HERE / "tiers" / "structural.py"),
@@ -179,21 +468,22 @@ class Production:
                   f"{len(translated.get('open_steps', []))} open"
                   + (f", preamble {len(preamble.splitlines())} line(s)" if preamble else ""))
         if state != "OBLIGATIONS_FILLED":
-            # An incomplete artifact is not automatically a bad one — whether its
-            # gaps are GOOD gaps is a separate question with its own rubric in
-            # scripts/sketch_rubric.py. That rubric consumes a proof DAG rather
-            # than a WIT artifact, so this path cannot call it without building
-            # one, and saying so is better than a call that silently returns
-            # nothing and reads like a clean result.
+            # An incomplete artifact is not automatically a bad one. Whether its
+            # gaps are GOOD gaps — small, independent, separately checkable — is
+            # a different question, and the rubric that answers it needed a proof
+            # DAG nobody was building. The blueprint IS that DAG: one node per
+            # step, dependencies already declared, the target already frozen.
             open_steps = translated.get("open_steps", [])
-            self.step("kernel", False,
+            rubric = self.grade_sketch(blueprint)
+            detail = (f"{len(open_steps)} obligation(s) still open. "
+                      f"Sketch quality {rubric['score']} — {rubric['reading']}"
+                      if rubric else
                       f"{len(open_steps)} obligation(s) still open, so the kernel would only "
-                      "confirm the holes. Fill them in the blueprint, or report SKETCH honestly "
-                      "— and run scripts/sketch_rubric.py against the proof DAG to find out "
-                      "whether these are good gaps or one hole shaped like the problem")
+                      "confirm the holes")
+            self.step("kernel", False, detail)
             return self.report("PRODUCED_INCOMPLETE", artifact=str(lean_path),
                                status="SKETCH", target_sha256=target,
-                               open_steps=open_steps)
+                               open_steps=open_steps, sketch=rubric)
 
         # 4. kernel, with the repair loop -------------------------------------
         repair_state = self.dir / "repair.json"
@@ -208,7 +498,11 @@ class Production:
             kernel = as_json(out)
             verdict = kernel.get("verdict")
             if verdict == "pass":
-                self.step(f"kernel (attempt {attempt})", True, "elaborated clean")
+                harvested = self.harvest_lemmas(blueprint)
+                self.step(f"kernel (attempt {attempt})", True,
+                          "elaborated clean"
+                          + (f"; {harvested} obligation(s) recorded as proved in the pool"
+                             if harvested else ""))
                 return self.report("CHECKED", artifact=str(lean_path), wit=str(wit_path),
                                    status="VERIFIED_pending_gates", target_sha256=target,
                                    attempts=attempt)
@@ -223,6 +517,12 @@ class Production:
             diagnostic = kernel.get("failure_signature") or kernel.get("log_excerpt", "")
             self.step(f"kernel (attempt {attempt})", False,
                       f"{failure_class}: {str(diagnostic)[:120]}")
+
+            mined = self.mine_lemmas(str(diagnostic))
+            if mined:
+                self.step("lemma mining", True,
+                          f"{mined} bridging lemma(s) proposed from the residual goals — the "
+                          "failed probe's diagnostics are the product, not a side effect")
 
             code, out, _ = run([sys.executable, str(HERE / "repair_cycle.py"), "record",
                                 "--state", str(repair_state),
@@ -258,14 +558,17 @@ class Production:
             # for as long as the pack did — the one component whose whole job is
             # to answer the question the failure path was leaving open.
             advice = self.classify_gap(failure_class, diagnostic, lean_path)
+            request = self.write_revision_request(
+                blueprint, blueprint_path, failure_class, str(diagnostic), advice, kernel)
+            axis = (advice.get("proposed_mutation") or {}).get("axis", "unknown")
             self.step("repair", False,
                       f"the artifact is unchanged, so a re-run would fail identically. "
-                      f"{advice.get('gap_class', 'unclassified')} — move the "
-                      f"{(advice.get('proposed_mutation') or {}).get('axis', 'unknown')} axis. "
-                      f"{advice.get('why_this_class', '')}")
+                      f"{advice.get('gap_class', 'unclassified')} — move the {axis} axis. "
+                      f"Edit written to {request.name}")
             return self.report("NEEDS_BLUEPRINT_REVISION", artifact=str(lean_path),
                                failure_class=failure_class, target_sha256=target,
-                               attempts=attempt, guidance=advice)
+                               attempts=attempt, guidance=advice,
+                               revision_request=str(request))
 
         return self.report("ATTEMPTS_EXHAUSTED", target_sha256=target)
 

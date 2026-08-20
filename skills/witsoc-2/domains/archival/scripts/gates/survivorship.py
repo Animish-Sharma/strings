@@ -41,7 +41,7 @@ def main() -> int:
         print(f"error: {exc}"); return 2
 
     problems = []
-    statement = (claim.get("statement") or "").lower()
+    statement = (claim.get("exact_statement") or claim.get("statement") or "").lower()
     is_absence = (claim.get("assertion_kind") == "absence"
                   or any(m in statement for m in ABSENCE_MARKERS))
 

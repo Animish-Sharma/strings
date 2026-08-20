@@ -152,6 +152,9 @@ def main() -> int:
     # 3. Test.
     test = bl.permutation_p(values, labels, treatment, control,
                             iterations=args.iterations, seed=args.seed, strata=strata)
+    interval = bl.bootstrap_interval(values, labels, treatment, control,
+                                     iterations=min(args.iterations, 4000), seed=args.seed,
+                                     strata=strata)
     effect = test["observed_difference"]
     d = bl.cohens_d([v for v, l in zip(values, labels) if l == treatment],
                     [v for v, l in zip(values, labels) if l == control])
@@ -162,6 +165,14 @@ def main() -> int:
             f"recomputed permutation p = {test['p_value']:.4f} at the unit level, against a "
             f"preregistered alpha of {alpha}. Whatever the bundle reports, this design does not "
             "distinguish the effect from label assignment")
+
+    # An interval that crosses zero and a p-value below alpha disagree, and the
+    # disagreement is information rather than an inconsistency to smooth over.
+    if interval.get("ran") and interval["crosses_zero"] and test["p_value"] <= alpha:
+        notes.append(
+            f"the interval [{interval['lower']:.4g}, {interval['upper']:.4g}] includes zero while "
+            f"the permutation p is {test['p_value']:.4f}. The test and the bound disagree, which "
+            "with few units usually means the point estimate is unstable — report both")
 
     claimed_direction = (claim.get("claimed_effect") or {}).get("direction", "").lower()
     observed_direction = "increase" if effect > 0 else "decrease" if effect < 0 else "none"
@@ -215,6 +226,7 @@ def main() -> int:
             "difference_in_unit_means": effect,
             "cohens_d": d,
             "permutation": test,
+            "interval": interval,
             "smallest_reportable_p": smallest_possible,
             "alpha": alpha,
         },

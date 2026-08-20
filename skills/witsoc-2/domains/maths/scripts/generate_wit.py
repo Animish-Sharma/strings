@@ -31,6 +31,20 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from witlib import STEP_KEYWORDS, normalize  # noqa: E402
 
+# The frame's schema validator, shared rather than copied. This is a pack
+# reaching UP to a utility, not the frame reaching down into a pack — the
+# direction the contract forbids. Copying it would be the worse choice: two
+# validators drift, and the copy that drifts is the one nobody re-reads because
+# it keeps passing.
+PACK_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PACK_ROOT.parent.parent / "scripts"))
+try:
+    from jsonschema_lite import validate as _schema_validate  # noqa: E402
+except ImportError:  # pragma: no cover - the pack still works standalone
+    _schema_validate = None
+
+BLUEPRINT_SCHEMA = PACK_ROOT / "schemas" / "blueprint.schema.json"
+
 REQUIRED_SECTIONS = [
     "metadata", "target_formalization", "target_protection",
     "external_dependencies", "lemma_plan", "generator_directive",
@@ -45,6 +59,17 @@ def sha256(text: str) -> str:
 
 def check_blueprint(bp: dict) -> list[str]:
     problems: list[str] = []
+
+    # Shape first, from the schema, so the rules are readable by whoever has to
+    # satisfy them. The semantic checks below are the ones a schema cannot
+    # express — a forward reference, a citation outside scope, a directive
+    # ordering success — and they only make sense on a well-shaped file.
+    if _schema_validate is not None and BLUEPRINT_SCHEMA.is_file():
+        shape: list[str] = []
+        _schema_validate(bp, json.loads(BLUEPRINT_SCHEMA.read_text(encoding="utf-8")),
+                         "blueprint", shape)
+        if shape:
+            return shape
 
     for section in REQUIRED_SECTIONS:
         if section not in bp:

@@ -102,7 +102,37 @@ def main() -> int:
     power = audit.get("power")
     if isinstance(power, dict) and power.get("minimum_detectable_effect") is None:
         problems.append("power is described without a minimum detectable effect, which is the "
-                        "only part of it a null result depends on")
+                        "only part of it a null result depends on. `scripts/power.py` computes "
+                        "it against the test that will actually be run")
+
+    # Multiplicity and sensitivity both have computations now, and a gate that
+    # accepts a sentence where a number exists is accepting the sentence.
+    screen = audit.get("feature_universe") or audit.get("features_tested")
+    if screen and not audit.get("multiplicity_computed"):
+        problems.append(
+            f"the endpoint came out of a universe of {screen} features and multiplicity is "
+            "described in prose. Run `scripts/multiplicity.py` — the number that matters is how "
+            "often the BEST of that many null features looks this good, and for a large screen "
+            "it is not small")
+
+    sensitivity = audit.get("specification_sensitivity")
+    if sensitivity is None:
+        problems.append(
+            "no specification_sensitivity. Filtering, transform, and aggregation choices are all "
+            "defensible and all arguable; `scripts/multiverse.py` re-runs the contrast under each "
+            "and reports whether the result survives them. Claiming robustness without it is "
+            "claiming something nobody measured")
+    elif isinstance(sensitivity, dict):
+        verdict = str(sensitivity.get("verdict", "")).upper()
+        if verdict == "SPECIFICATION_DEPENDENT":
+            problems.append(
+                "the multiverse reports a sign flip across defensible specifications. The result "
+                "is a statement about the pipeline, and no correction fixes that")
+        elif verdict == "FRAGILE":
+            notes.append(
+                f"the effect survives {sensitivity.get('significant_in', 'some')} specifications. "
+                "That is the finding and it belongs in the report — the pre-registered "
+                "specification is still the answer, and this is its caveat")
 
     if not delegated:
         notes.append(

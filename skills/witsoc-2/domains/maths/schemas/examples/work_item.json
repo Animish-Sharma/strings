@@ -1,0 +1,19 @@
+{
+  "schema": "frame-work-item-v1",
+  "work_item_id": "WI-af6dfd3c",
+  "target_sha256": "af6dfd3c3f3239b49943151ae5e579e8f42c99a7f6737015e901ca92c9dc8274",
+  "claim_id": "LE-SUCC",
+  "assigned_role": "generator",
+  "expected_artifact": "structural",
+  "verification_tier": "kernel",
+  "falsifier": {
+    "criterion": "the maths adapter returns fail on the frozen target at tier kernel",
+    "test": "run the declared adapter entry point at tier kernel against the artifact and the frozen claim",
+    "scope": "this artifact at tier kernel; a failure here does not refute the claim"
+  },
+  "forbidden_drift": "the frozen statement, the frozen conditions, and the target hash. A changed context is a new claim with a new hash, never an edit to this one",
+  "stop_rule": "escalate after 3 consecutive failures with the same signature",
+  "base_revision": 0,
+  "base_state_sha256": "e9a8b40da1ac68b7e7f244ad1d1faf8907bd7acd21f27faf49595e04fe6e2be9",
+  "payload_sha256": "07dd99135f36362838758e5025008b3b07319f3e2398bf031870efbac96ed58a"
+}

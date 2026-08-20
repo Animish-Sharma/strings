@@ -1,0 +1,22 @@
+{
+  "schema": "frame-result-v1",
+  "result_id": "RES-4fdbc441",
+  "work_item_id": "WI-6eb45c09",
+  "target_sha256": "6eb45c09faa838df679534ee77f12786f48e51a6f6d26a31ce73e8af72d410d9",
+  "emitted_by": "generator",
+  "trust_boundary": "CANDIDATE_ONLY",
+  "candidate_status": "CHECKED_BOUNDED",
+  "method_family": "direct-production",
+  "dependency_path_to_target": [
+    "EXAMPLE-1"
+  ],
+  "work_item_sha256": "ae6575686558171ea171307aa0ae0690f787a64e21979c6fb9f4149ad0a687b6",
+  "receipt_ref": {
+    "receipt_id": "mock-4b688212a196",
+    "payload_sha256": "f038d7fe645d21461c15ec8f178183f9c68d882ba9b75cf3ce0abd72dc8f5873",
+    "target_sha256": "6eb45c09faa838df679534ee77f12786f48e51a6f6d26a31ce73e8af72d410d9"
+  },
+  "base_revision": 0,
+  "base_state_sha256": "8aafc1b5ce935c3cae3e7711ffb790854db9f5e194f81da713fbc5a1b89f56ea",
+  "payload_sha256": "c04dfac0ebf5382c6893ace3276b6e138678f300e848f9ecf8bf5b7eaefaf1b6"
+}

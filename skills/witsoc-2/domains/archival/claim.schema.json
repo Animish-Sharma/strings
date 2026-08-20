@@ -5,25 +5,64 @@
   "description": "Extends frame-claim-v1. The field that does the work is `claimed_independent_support`: it is the number the cascade collapse is checked against, and asserting it before the collapse runs is what makes the collapse a refutation attempt rather than a description of the result.",
   "type": "object",
   "additionalProperties": true,
-  "required": ["claim_id", "statement", "target_sha256", "assertion_kind", "scope",
-               "claimed_independent_support", "falsification_conditions", "allowed_scope"],
+  "required": [
+    "claim_id",
+    "exact_statement",
+    "target_sha256",
+    "assertion_kind",
+    "scope",
+    "claimed_independent_support",
+    "falsification_conditions",
+    "allowed_scope",
+    "frozen_conditions"
+  ],
   "properties": {
-    "claim_id": { "type": "string", "minLength": 1 },
-    "statement": { "type": "string", "minLength": 20 },
-    "target_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "claim_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
     "assertion_kind": {
       "description": "What sort of thing is being claimed. `absence` is separated out because it inherits the archive's survivorship filters fatally: nothing was written, nothing survived, and nothing was catalogued are three different reasons for the same silence.",
-      "enum": ["event", "attribution", "dating", "identification", "absence", "quantity", "text"]
+      "enum": [
+        "event",
+        "attribution",
+        "dating",
+        "identification",
+        "absence",
+        "quantity",
+        "text"
+      ]
     },
     "scope": {
       "description": "Who, what, where, when. A claim missing any of these is several claims, and the sources will support some of them and not others.",
       "type": "object",
-      "required": ["who", "what", "where", "when"],
+      "required": [
+        "who",
+        "what",
+        "where",
+        "when"
+      ],
       "properties": {
-        "who": { "type": "string", "minLength": 1 },
-        "what": { "type": "string", "minLength": 1 },
-        "where": { "type": "string", "minLength": 1 },
-        "when": { "type": "string", "minLength": 1 }
+        "who": {
+          "type": "string",
+          "minLength": 1
+        },
+        "what": {
+          "type": "string",
+          "minLength": 1
+        },
+        "where": {
+          "type": "string",
+          "minLength": 1
+        },
+        "when": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "claimed_independent_support": {
@@ -32,12 +71,33 @@
       "minimum": 1
     },
     "falsification_conditions": {
-      "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 10 }
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 10
+      }
     },
-    "allowed_scope": { "type": "string", "minLength": 10 },
+    "allowed_scope": {
+      "type": "string",
+      "minLength": 10
+    },
     "derived_from": {
       "description": "The claim hash this one was narrowed or repaired from. A changed scope is a new claim; it never edits the old one.",
-      "type": "string", "pattern": "^[0-9a-f]{64}$"
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "exact_statement": {
+      "type": "string",
+      "minLength": 20,
+      "description": "The frame's claim calls this `exact_statement` and so does this one. It was `statement` until a contract-shape check noticed that a pack declaring `extends: frame-claim-v1` while renaming one of its required fields is not extending it — and that the frame's reducer, reading the name it expects, had been recording an EMPTY statement for every claim this pack froze. The campaign state was unreadable and nothing failed."
+    },
+    "frozen_conditions": {
+      "description": "What must not drift, under the name the frame reads. These are the same dimensions this field's own gates already diff against — collecting them here is what lets the FRAME see them too, rather than each pack protecting its target in a vocabulary only it understands.",
+      "type": "object"
+    },
+    "status": {
+      "description": "Inherited from frame-claim-v1; declared here so the extension is checkable."
     }
   }
 }

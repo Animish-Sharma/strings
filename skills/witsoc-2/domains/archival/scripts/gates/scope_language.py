@@ -81,7 +81,7 @@ def main() -> int:
         print(f"error: {exc}"); return 2
 
     text = " ".join(str(dossier.get(k, "")) for k in
-                    ("interpretation", "summary", "conclusion")) + " " + str(claim.get("statement", ""))
+                    ("interpretation", "summary", "conclusion")) + " " + str(claim.get("exact_statement") or claim.get("statement", ""))
     lowered = text.lower()
     declared = set(dossier.get("evidence_tiers_available") or [])
     problems = []
