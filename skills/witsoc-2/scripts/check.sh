@@ -81,6 +81,16 @@ for name in $(packs); do
   # A pack's evals ask what it CONCLUDED; its self-test asks whether the adapter
   # can refuse. Running only the second let one pack ship with no outcome evals
   # at all, and nothing said so.
+  # External evaluation is the only evidence a pack has that it works on
+  # material its author did not write, so its ABSENCE is worth naming.
+  ext=$(find "$DOMAINS_DIR/$name/evals" -maxdepth 2 -name '*external*' -o \
+        -maxdepth 2 -path '*external*' -name '*.py' 2>/dev/null | head -1)
+  if [[ -n "$ext" ]]; then
+    printf "  ....  %-22s %s\n" "external: $name" "$(basename "$ext") — run it against real outside material"
+  else
+    printf "  ----  %-22s none; every green result here is graded against fixtures its author wrote\n" "external: $name"
+  fi
+
   evals="$DOMAINS_DIR/$name/evals/run_evals.py"
   if [[ -f "$evals" ]]; then
     run_step "evals: $name" python3 "$evals"
