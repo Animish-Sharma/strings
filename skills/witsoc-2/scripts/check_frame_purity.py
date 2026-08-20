@@ -44,8 +44,18 @@ SCANNED_SUFFIXES = {".md", ".json", ".py", ".sh", ".txt"}
 # Domain packs live below the contract line and are exempt by construction.
 EXCLUDED_DIRS = {"domains", ".git", "__pycache__", ".venv", "node_modules"}
 
-# This file necessarily contains the vocabulary it bans.
-EXEMPT_FILES = {"scripts/check_frame_purity.py"}
+# Two files necessarily contain the vocabulary they are checked for.
+#
+# The checker itself, obviously. And the improvement report, which is a record of
+# work across the WHOLE skill — it has to name the packs it is reporting on, and
+# a report that could not would be a report about nothing. It is a session
+# record rather than frame doctrine, and the distinction is the point: doctrine
+# tells a role what to do and must survive a pack being swapped out, while this
+# describes what happened to particular packs on a particular day.
+#
+# Exemptions should stay rare and the count is printed on every run so their
+# growth is visible in review rather than accumulating quietly.
+EXEMPT_FILES = {"scripts/check_frame_purity.py", "IMPROVEMENT_REPORT.md"}
 
 ALLOW_MARKER = "frame-purity: allow"
 
