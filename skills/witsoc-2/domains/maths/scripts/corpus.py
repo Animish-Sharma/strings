@@ -1,0 +1,173 @@
+#!/usr/bin/env python3
+"""Premise corpus — pinned retrieval over a declaration index.
+
+Replaces guessing with three honest verdicts:
+
+    KNOWN          resolved name, type, and module
+    SEARCH_TARGET  plausibly exists, unresolved — a lead, never a premise
+    ABSENT         not in the corpus; establishing it is a sub-claim
+
+Two rules make this more than a lookup:
+
+  * The corpus is PINNED. Its sha256 is computed over the canonical manifest and
+    checked on every query. A hit whose fields differ from the snapshot is a
+    drift error, not a result — otherwise a live index can silently change what
+    a recorded proof depended on.
+  * An empty result is INFORMATION, not a reason to fall back to a zero-score
+    guess. It usually means the formulation does not match how the library
+    states the concept, which is a reframing signal.
+
+Feasibility is structural only. FEASIBLE means every query got a candidate and
+every dependency closed — it does not assert that the premises entail anything.
+
+Usage:
+    corpus.py build --src <dir> --out <corpus.json>
+    corpus.py query <q> [<q> ...] [--corpus C] [--top 10] [--json]
+    corpus.py feasibility --queries <f.json> [--corpus C] [--imports ...] [--json]
+"""
+from __future__ import annotations
+import argparse, hashlib, json, os, re, sys
+from pathlib import Path
+
+SCHEMA = "maths.premise_corpus.v1"
+REQUIRED = ("name","type","statement","module","imports","dependencies","aliases")
+NOTATION = {"∑":"Finset.sum","∏":"Finset.prod","∣":"Dvd.dvd","≤":"LE.le","≥":"GE.ge",
+            "∈":"Membership.mem","∀":"forall","∃":"Exists"}
+
+def canonical(decls: list[dict]) -> str:
+    ordered = sorted(decls, key=lambda d: d["name"])
+    return json.dumps({"schema": SCHEMA, "declarations": ordered},
+                      sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+
+def corpus_sha(decls: list[dict]) -> str:
+    return hashlib.sha256(canonical(decls).encode()).hexdigest()
+
+def tokens(text: str) -> set[str]:
+    for sym, name in NOTATION.items():
+        text = text.replace(sym, f" {name} ")
+    return {t for t in re.split(r"[^A-Za-z0-9_.]+", text.lower()) if len(t) > 1}
+
+def symbol_overlap(query: str, decl: dict) -> float:
+    """Directional: `Nat.divisors_eq` provides for `Nat.divisors`, but the bare
+    namespace `Nat` must not match a specific lemma."""
+    qsyms = set(re.findall(r"\b([A-Z][A-Za-z0-9_]*(?:\.[A-Za-z_]\w*)+)\b", query))
+    if not qsyms: return 0.0
+    name = decl["name"]
+    return sum(1 for q in qsyms if name.startswith(q) or q in name) / len(qsyms)
+
+def load_corpus(path: str | None) -> tuple[list[dict], str | None, str | None]:
+    path = path or os.environ.get("WITSOC2_PREMISE_CORPUS")
+    if not path or not Path(path).exists():
+        return [], None, None
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    decls = data.get("declarations", [])
+    recorded = data.get("corpus_sha256")
+    actual = corpus_sha(decls)
+    if recorded and recorded != actual:
+        return decls, recorded, actual   # caller reports drift
+    return decls, recorded, None
+
+def search(query: str, decls: list[dict], top: int) -> list[dict]:
+    qt = tokens(query)
+    scored = []
+    for d in decls:
+        blob = " ".join(str(d.get(k,"")) for k in ("name","type","statement","module")) \
+               + " " + " ".join(d.get("aliases", []))
+        dt = tokens(blob)
+        jaccard = len(qt & dt) / len(qt | dt) if (qt | dt) else 0.0
+        score = jaccard + 0.5 * symbol_overlap(query, d)
+        if score > 0:
+            scored.append({"name": d["name"], "type": d.get("type"),
+                           "module": d.get("module"), "score": round(score, 4)})
+    return sorted(scored, key=lambda s: (-s["score"], s["name"]))[:top]
+
+def build(src: str) -> list[dict]:
+    decls, imports = [], []
+    for path in sorted(Path(src).rglob("*.lean")):
+        try: text = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError: continue
+        module = str(path.relative_to(src)).replace("/", ".")[:-5]
+        imports = re.findall(r"^\s*import\s+([\w.]+)", text, re.MULTILINE)
+        for m in re.finditer(r"^\s*(?:theorem|lemma)\s+([\w.']+)\s*(.*?):=", text,
+                             re.MULTILINE | re.DOTALL):
+            decls.append({"name": m.group(1), "type": " ".join(m.group(2).split())[:400],
+                          "statement": " ".join(m.group(2).split())[:400], "module": module,
+                          "imports": imports, "dependencies": [], "aliases": []})
+    return decls
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    b = sub.add_parser("build"); b.add_argument("--src", required=True); b.add_argument("--out", required=True)
+    q = sub.add_parser("query"); q.add_argument("queries", nargs="+")
+    q.add_argument("--corpus"); q.add_argument("--top", type=int, default=10)
+    q.add_argument("--json", action="store_true")
+    f = sub.add_parser("feasibility"); f.add_argument("--queries", required=True)
+    f.add_argument("--corpus"); f.add_argument("--imports", nargs="*")
+    f.add_argument("--json", action="store_true")
+    a = ap.parse_args()
+
+    if a.cmd == "build":
+        decls = build(a.src)
+        payload = {"schema": SCHEMA, "index_revision": "local",
+                   "declarations": sorted(decls, key=lambda d: d["name"]),
+                   "corpus_sha256": corpus_sha(decls)}
+        Path(a.out).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        print(f"built {a.out}: {len(decls)} declarations, sha {payload['corpus_sha256'][:16]}...")
+        return 0
+
+    decls, recorded, drift = load_corpus(a.corpus)
+    if drift:
+        print(f"ERROR: corpus drift — recorded {recorded[:16]}... actual {drift[:16]}...\n"
+              "  A live index that changed under a recorded proof invalidates it.",
+              file=sys.stderr)
+        return 2
+
+    queries = a.queries if a.cmd == "query" else json.loads(
+        Path(a.queries).read_text(encoding="utf-8"))
+    queries = queries if isinstance(queries, list) else queries.get("queries", [])
+
+    results, unsupported = [], []
+    for query in queries:
+        if not decls:
+            results.append({"query": query, "verdict": "SEARCH_TARGET", "candidates": [],
+                "note": "no corpus configured (WITSOC2_PREMISE_CORPUS) — unresolved "
+                        "rather than guessed"})
+            unsupported.append(query); continue
+        exact = next((d for d in decls if d["name"] == query), None)
+        if exact:
+            results.append({"query": query, "verdict": "KNOWN", "name": exact["name"],
+                            "type": exact.get("type"), "module": exact.get("module")})
+            continue
+        hits = search(query, decls, a.top if a.cmd == "query" else 5)
+        if hits:
+            results.append({"query": query, "verdict": "SEARCH_TARGET", "candidates": hits,
+                            "note": "named candidates are leads, not premises"})
+        else:
+            results.append({"query": query, "verdict": "ABSENT",
+                            "note": "not in the corpus; establishing it is a sub-claim"})
+            unsupported.append(query)
+
+    out = {"corpus_declarations": len(decls), "corpus_sha256": recorded,
+           "empty_result": not decls, "results": results}
+    if a.cmd == "feasibility":
+        out["unsupported_queries"] = unsupported
+        out["feasibility"] = "FEASIBLE" if (decls and not unsupported) else "INFEASIBLE"
+        out["reasons"] = ([] if out["feasibility"] == "FEASIBLE" else
+            (["no corpus configured"] if not decls else
+             [f"no candidate for: {q}" for q in unsupported]))
+        out["note"] = ("structural only: FEASIBLE means every query found a candidate, "
+                       "not that the premises entail the target")
+    if a.json: print(json.dumps(out, indent=2))
+    else:
+        if not decls: print("  no corpus configured — every query is SEARCH_TARGET, never a guess\n")
+        for r in out["results"]:
+            print(f"  {r['verdict']:<14} {r['query']}" +
+                  (f"  :  {r.get('type','')[:60]}" if r.get("type") else ""))
+        if a.cmd == "feasibility":
+            print(f"\n  feasibility: {out['feasibility']}")
+            for reason in out["reasons"]: print(f"    {reason}")
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())

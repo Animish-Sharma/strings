@@ -1,0 +1,302 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "frame-claim-v1",
+  "title": "Frozen claim",
+  "description": "The thing everything else binds to. A domain pack extends this with its own frozen content \u2014 anything that, if it changed silently, would make a result stop meaning what it claimed to mean.",
+  "type": "object",
+  "required": [
+    "claim_id",
+    "exact_statement",
+    "frozen_conditions",
+    "target_sha256",
+    "status",
+    "payload_sha256"
+  ],
+  "properties": {
+    "claim_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lineage_of": {
+      "description": "The claim this was derived from. Hash-linked, not id-linked: an id is mutable, so without from/to hashes you cannot verify a claim actually descends from the ancestor it names \u2014 which is exactly how target drift launders itself.",
+      "type": "object",
+      "required": [
+        "claim_id",
+        "target_sha256",
+        "mutation_kind"
+      ],
+      "properties": {
+        "claim_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mutation_kind": {
+          "enum": [
+            "rephrase",
+            "strengthen",
+            "weaken",
+            "specialize",
+            "generalize",
+            "correct"
+          ]
+        }
+      }
+    },
+    "exact_statement": {
+      "description": "The claim as stated, with quantifier order explicit. No paraphrase.",
+      "type": "string",
+      "minLength": 1
+    },
+    "definitions": {
+      "description": "Every non-standard term used in exact_statement.",
+      "type": "object"
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "objective": {
+      "description": "What establishing this claim is for. Distinguishes a target from a step toward one.",
+      "type": "string"
+    },
+    "success_condition": {
+      "description": "Exactly what would count as establishing this. Stated before work begins.",
+      "type": "string",
+      "minLength": 1
+    },
+    "failure_condition": {
+      "description": "Exactly what would count as refuting it. A claim with no stated failure condition is not falsifiable and cannot be frozen.",
+      "type": "string",
+      "minLength": 1
+    },
+    "frozen_conditions": {
+      "description": "Domain-supplied content that must not drift: inputs, versions, environments, tolerances, baselines, populations. The pack's claim schema names the required keys.",
+      "type": "object"
+    },
+    "allowed_mutations": {
+      "description": "Mutations pre-authorized without opening a new lineage. Each records the axis changed and why.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "axis",
+          "reason",
+          "authorized_by",
+          "from_target_sha256",
+          "to_target_sha256"
+        ],
+        "properties": {
+          "axis": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "authorized_by": {
+            "type": "string"
+          },
+          "from_target_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "to_target_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "target_sha256": {
+      "description": "SHA-256 over the canonical form of this claim. Must agree across work item, artifact, adapter input, receipt, and result.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "status": {
+      "description": "See references/status_vocabulary.md. A frozen claim starts OPEN or CONJECTURE; only admission moves it.",
+      "enum": [
+        "OPEN",
+        "CONJECTURE",
+        "CHECKED_BOUNDED",
+        "SKETCH",
+        "PARTIAL",
+        "CONDITIONAL",
+        "VERIFIED",
+        "GAP",
+        "FAILED_ATTEMPT",
+        "REJECTED"
+      ]
+    },
+    "source_status": {
+      "description": "What is already known about this claim externally, and how well checked that is.",
+      "type": "object",
+      "properties": {
+        "classification": {
+          "enum": [
+            "established",
+            "open",
+            "unconfirmed",
+            "false",
+            "under_specified",
+            "ambiguous"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "source",
+              "source_type",
+              "date_checked",
+              "claim_supported",
+              "retrieved"
+            ],
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "source_type": {
+                "enum": [
+                  "primary",
+                  "survey",
+                  "peer_reviewed",
+                  "preprint",
+                  "curated_library",
+                  "informal_pointer"
+                ]
+              },
+              "date_checked": {
+                "type": "string"
+              },
+              "claim_supported": {
+                "type": "string"
+              },
+              "reliability": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "retrieved": {
+                "description": "False means nobody opened it. A pointer is not a source: without retrieved content, date_checked is a field that was filled in, not a check that was run.",
+                "type": "boolean"
+              },
+              "locator": {
+                "description": "Exact position inside the document that the claim rests on.",
+                "type": "string"
+              },
+              "excerpt": {
+                "description": "The quoted span supporting the claim.",
+                "type": "string"
+              },
+              "content_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$",
+                "description": "Hash of the retrieved bytes."
+              }
+            }
+          }
+        },
+        "sources_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Hash over the canonical sources array. Pins the set as of the moment it was audited, so sources cannot be appended \u2014 or a contradicting one dropped \u2014 after a novelty determination."
+        }
+      }
+    },
+    "payload_sha256": {
+      "description": "SHA-256 over the canonical JSON of this packet with payload_sha256 removed: sorted keys, compact separators, ASCII escapes. Seals the packet and makes it addressable by later packets \u2014 an id alone is a mutable label.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "canonical_fields": {
+      "description": "The exact ordered field list target_sha256 is computed over; a pack appends its frozen fields. Without this, two parties can each compute 'the canonical form' differently \u2014 producing either a spurious disqualifying mismatch, or a green hash that silently missed a changed domain field.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "dependency_mode": {
+      "description": "How this claim's dependencies combine. AND = all required; OR = any one suffices. Omitting the distinction makes closure-checking wrong rather than merely absent: an AND node with two of three legs open looks identical to a satisfied OR node.",
+      "enum": [
+        "LEAF",
+        "AND",
+        "OR"
+      ]
+    },
+    "dependencies": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "not": {
+    "anyOf": [
+      {
+        "required": [
+          "provider"
+        ]
+      },
+      {
+        "required": [
+          "model"
+        ]
+      },
+      {
+        "required": [
+          "session_id"
+        ]
+      },
+      {
+        "required": [
+          "worktree"
+        ]
+      },
+      {
+        "required": [
+          "machine"
+        ]
+      },
+      {
+        "required": [
+          "process_id"
+        ]
+      },
+      {
+        "required": [
+          "retry_count"
+        ]
+      },
+      {
+        "required": [
+          "tokens"
+        ]
+      },
+      {
+        "required": [
+          "cost_usd"
+        ]
+      },
+      {
+        "required": [
+          "wall_clock_ms"
+        ]
+      },
+      {
+        "required": [
+          "budget"
+        ]
+      }
+    ]
+  }
+}

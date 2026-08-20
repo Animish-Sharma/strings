@@ -1,0 +1,77 @@
+{
+  "schema": "archival-dossier-v1",
+  "claim_id": "ARCH-DEMO-1",
+  "target_sha256": "8f2d200b8dd869795d4acf3d6046e9f599ca2e25b437fdceda51dece1512a6bf",
+  "sources": [
+    {
+      "id": "REG",
+      "kind": "primary",
+      "date": "212",
+      "language": "latin",
+      "shelfmark": "Ostia, Reg. Portus 14",
+      "origin": "harbour-office",
+      "interest": "administrative record kept for taxation, no stake in this voyage",
+      "derives_from": []
+    },
+    {
+      "id": "LET",
+      "kind": "contemporary",
+      "date": "213",
+      "language": "greek",
+      "shelfmark": "P.Alex. 88",
+      "origin": "merchant-correspondent",
+      "interest": "unknown",
+      "derives_from": []
+    },
+    {
+      "id": "CHRON",
+      "kind": "later_chronicle",
+      "date": "340",
+      "language": "latin",
+      "shelfmark": "Cod. Vat. lat. 1901",
+      "origin": "chronicler-severus",
+      "interest": "none",
+      "derives_from": [
+        "REG"
+      ]
+    },
+    {
+      "id": "COMP",
+      "kind": "compilation",
+      "date": "790",
+      "language": "latin",
+      "shelfmark": "Cod. Sang. 621",
+      "origin": "compiler-of-st-gall",
+      "interest": "none",
+      "derives_from": [
+        "CHRON"
+      ]
+    },
+    {
+      "id": "MOD",
+      "kind": "modern_scholarship",
+      "date": "1962",
+      "language": "german",
+      "identifier": "doi:10.0000/demo.arch",
+      "origin": "modern-editor",
+      "interest": "none",
+      "derives_from": [
+        "COMP",
+        "LET"
+      ],
+      "transformations": []
+    }
+  ],
+  "supporting_sources": [
+    "CHRON",
+    "COMP",
+    "REG"
+  ],
+  "archive_coverage": "the Ostia harbour material and the Alexandrian papyri catalogued to 1980 were searched; the Alexandrian customs series is lost, and two provincial archives were not consulted",
+  "what_the_record_would_look_like_if_false": "the register would carry no entry for this hull in that season, and the letter would not name the same consignment; both are checkable and both were checked",
+  "evidence_tiers_available": [
+    "independent_origins"
+  ],
+  "stated_bounds": "the surviving register and one contemporary letter",
+  "interpretation": "Three sources record the shipment, so the voyage is corroborated across the tradition."
+}

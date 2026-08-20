@@ -1,0 +1,20 @@
+{
+  "schema": "archival-claim-v1",
+  "claim_id": "ARCH-DEMO-1",
+  "statement": "A grain shipment left the port of Ostia for Alexandria in the spring of the year 212, carrying a cargo recorded in the harbour register.",
+  "assertion_kind": "event",
+  "scope": {
+    "who": "the shipowner named in the register",
+    "what": "one grain shipment, Ostia to Alexandria",
+    "where": "Ostia and Alexandria",
+    "when": "spring 212"
+  },
+  "claimed_independent_support": 2,
+  "falsification_conditions": [
+    "every supporting source traces back to a single origin",
+    "the harbour register entry postdates the voyage by more than a generation",
+    "the shipowner named is attested only in sources with a stake in the shipment"
+  ],
+  "allowed_scope": "what the surviving harbour register and the letters record. Nothing about how typical such voyages were, and nothing about anyone's intentions.",
+  "target_sha256": "8f2d200b8dd869795d4acf3d6046e9f599ca2e25b437fdceda51dece1512a6bf"
+}

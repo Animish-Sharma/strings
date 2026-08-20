@@ -1,0 +1,58 @@
+{
+  "metadata": {
+    "name": "le_succ",
+    "kind": "THEOREM"
+  },
+  "target_formalization": {
+    "claim": "every natural number is at most its successor",
+    "hypotheses": [
+      {
+        "name": "hn",
+        "text": "n is a natural number"
+      }
+    ],
+    "formal_statement": "theorem wit_le_succ (n : Nat) : n \u2264 n + 1"
+  },
+  "target_protection": {
+    "statement_tampering_forbidden": true,
+    "frozen_target_sha256": "af6dfd3c3f3239b49943151ae5e579e8f42c99a7f6737015e901ca92c9dc8274",
+    "original_statement": "every natural number is at most its successor",
+    "authorized_mutations": []
+  },
+  "external_dependencies": [
+    {
+      "theorem_name": "Nat.le_succ"
+    }
+  ],
+  "lemma_plan": [
+    {
+      "step_id": "1",
+      "type": "HAVE",
+      "statement": "n is at most n plus one",
+      "cites": [
+        "Nat.le_succ"
+      ],
+      "method": "linear arithmetic over the naturals",
+      "formalization": {
+        "type": "n \u2264 n + 1",
+        "tactic": "omega"
+      }
+    },
+    {
+      "step_id": "2",
+      "type": "SHOW",
+      "statement": "every natural number is at most its successor",
+      "depends_on": [
+        "1"
+      ],
+      "method": "generalization over n",
+      "formalization": {
+        "type": "n \u2264 n + 1",
+        "tactic": "exact step1"
+      }
+    }
+  ],
+  "generator_directive": {
+    "status_to_assert": "UNVERIFIED"
+  }
+}

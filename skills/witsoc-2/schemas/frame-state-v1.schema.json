@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "frame-state-v1",
+  "title": "Campaign state",
+  "description": "The thing an admission moves. Until this existed, `base_revision` pointed at nothing, deltas had nothing to apply to, and 'only an admission may move a status' was a sentence rather than a mechanism. Every revision is content-addressed and names its predecessor, so the history is replayable and a fork is detectable.",
+  "type": "object",
+  "required": ["schema", "target_sha256", "revision", "claims", "outcome"],
+  "properties": {
+    "schema": { "const": "frame-state-v1" },
+    "target_sha256": {
+      "description": "The frozen root target. Every packet applied to this state must agree with it; a mismatch is rejected rather than reconciled.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "revision": {
+      "description": "Monotonic. A packet cut against an older revision is stale and refused — that is the lost-update guard, and it matters most for the long-running deep-attack role.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "previous_state_sha256": {
+      "description": "Hash of the state this one was derived from. Null at revision 0.",
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "root_claim_id": { "type": "string" },
+    "claims": {
+      "description": "Every claim under this target, keyed by id.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["claim_id", "status"],
+        "properties": {
+          "claim_id": { "type": "string" },
+          "statement": { "type": "string" },
+          "status": {
+            "enum": ["OPEN", "CONJECTURE", "CHECKED_BOUNDED", "SKETCH", "PARTIAL",
+                     "CONDITIONAL", "VERIFIED", "GAP", "FAILED_ATTEMPT", "REJECTED"]
+          },
+          "dependency_mode": { "enum": ["LEAF", "AND", "OR"] },
+          "dependencies": { "type": "array", "items": { "type": "string" } },
+          "evidence_refs": { "type": "array", "items": { "type": "string" } },
+          "admitted_by": {
+            "description": "The admission that last moved this claim. A status with no admission behind it cannot occur — the reducer is the only writer.",
+            "type": "string"
+          },
+          "ceiling": {
+            "description": "The strongest status this claim may ever reach, from the tier that produced its evidence. Bounded evidence sets a ceiling that later admissions cannot lift.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "active_obstruction": { "type": ["string", "null"] },
+    "open_gaps": { "type": "array", "items": { "type": "string" } },
+    "outcome": {
+      "description": "The honest state of the root. SOLVED requires the root claim VERIFIED through an admission that passed every check.",
+      "enum": ["OPEN", "PARTIAL", "SOLVED", "DISPROVED", "STOPPED"]
+    },
+    "history": {
+      "description": "One entry per applied admission. Append-only; this is what makes a run replayable rather than merely logged.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["revision", "admission_id", "decision"],
+        "properties": {
+          "revision": { "type": "integer" },
+          "admission_id": { "type": "string" },
+          "decision": { "enum": ["ACCEPT", "REJECT", "DEFER"] },
+          "granted_status": { "type": "string" },
+          "claim_ids": { "type": "array", "items": { "type": "string" } },
+          "admission_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    }
+  }
+}

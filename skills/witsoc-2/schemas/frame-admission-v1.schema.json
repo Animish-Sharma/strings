@@ -1,0 +1,455 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "frame-admission-v1",
+  "title": "Admission",
+  "description": "The only packet permitted to move a claim's status. Every other packet proposes; this one disposes. It exists so admission is a recorded, replayable operation rather than an unrecorded judgement \u2014 the six acceptance conditions in SKILL.md need somewhere to be written down as having actually been checked, and NOT_RUN needs to be sayable. VERIFIED lives here and nowhere else, which is what makes its absence from frame-result-v1 mean something.",
+  "type": "object",
+  "required": [
+    "admission_id",
+    "target_sha256",
+    "base_revision",
+    "base_state_sha256",
+    "result_ref",
+    "decision",
+    "checks",
+    "delta",
+    "delta_sha256",
+    "rationale",
+    "payload_sha256",
+    "decided_by_role"
+  ],
+  "not": {
+    "anyOf": [
+      {
+        "required": [
+          "provider"
+        ]
+      },
+      {
+        "required": [
+          "model"
+        ]
+      },
+      {
+        "required": [
+          "session_id"
+        ]
+      },
+      {
+        "required": [
+          "worktree"
+        ]
+      },
+      {
+        "required": [
+          "machine"
+        ]
+      },
+      {
+        "required": [
+          "process_id"
+        ]
+      },
+      {
+        "required": [
+          "retry_count"
+        ]
+      },
+      {
+        "required": [
+          "tokens"
+        ]
+      },
+      {
+        "required": [
+          "cost_usd"
+        ]
+      },
+      {
+        "required": [
+          "wall_clock_ms"
+        ]
+      },
+      {
+        "required": [
+          "budget"
+        ]
+      }
+    ]
+  },
+  "properties": {
+    "admission_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "base_revision": {
+      "description": "The state revision this admission applies against. Applying it to any other revision is rejected, not merged.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "base_state_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "result_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result_id",
+        "payload_sha256"
+      ],
+      "properties": {
+        "result_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "receipt_ref": {
+      "description": "The verification receipt this admission rests on, bound by seal rather than named. Required for any accepted status: without it `checks` is a set of assertions by whoever wrote the admission, and the enforcement chain ends in a self-report at exactly the point it matters. With it, the reducer DERIVES each check from the receipt and refuses any disagreement with what was asserted.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "receipt_id",
+        "payload_sha256",
+        "target_sha256"
+      ],
+      "properties": {
+        "receipt_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "target_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "decided_by_role": {
+      "description": "Which role decided this admission. Only Explorer arbitrates: a production role admitting its own output is the failure the no-merge invariant exists to prevent, and until this field existed that invariant was a sentence in a document rather than something the state machine could refuse. The schema admits any role because the schema describes SHAPE; the reducer refuses anything but explorer because that is POLICY. Encoding the policy as a const would make the refusal a formatting complaint instead of the reason it exists.",
+      "enum": [
+        "explorer",
+        "generator",
+        "researcher"
+      ]
+    },
+    "decision": {
+      "enum": [
+        "ACCEPT",
+        "REJECT",
+        "DEFER"
+      ]
+    },
+    "granted_status": {
+      "description": "The status this admission grants. Required in spirit when decision is ACCEPT. This is the only place VERIFIED may appear in any packet.",
+      "enum": [
+        "OPEN",
+        "CONJECTURE",
+        "CHECKED_BOUNDED",
+        "SKETCH",
+        "PARTIAL",
+        "CONDITIONAL",
+        "VERIFIED",
+        "GAP",
+        "FAILED_ATTEMPT",
+        "REJECTED"
+      ]
+    },
+    "checks": {
+      "description": "What the admitting role BELIEVED about each acceptance condition. It is a record, not the decision: the reducer derives every condition from the supplied receipt, result, reviews, and its own closure computation, and refuses any disagreement between the two. Nothing here is required, because forcing a role to state a verdict on a condition it has no evidence about produces guesses \u2014 and a guess that happens to match is indistinguishable from knowledge. State what you checked; the reducer states what is true.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "target_binding": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN"
+          ]
+        },
+        "receipt_freshness": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN"
+          ]
+        },
+        "refute_attempt": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN"
+          ]
+        },
+        "dependency_closure": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN"
+          ]
+        },
+        "no_open_gap": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN"
+          ]
+        },
+        "fidelity": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN"
+          ]
+        },
+        "independent_review": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN"
+          ]
+        },
+        "preconditions": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN"
+          ]
+        },
+        "circularity": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN"
+          ]
+        }
+      }
+    },
+    "review_refs": {
+      "description": "The frame-review-v1 packets discharging independent_review. A review whose independent flag is false does not count toward it.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "review_id",
+          "payload_sha256"
+        ],
+        "properties": {
+          "review_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "payload_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "evidence_refs": {
+      "description": "Every entry echoes the target and result hashes it was gathered under, so evidence harvested from a neighbouring claim is detectable without dereferencing it.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "kind",
+          "uri",
+          "sha256",
+          "target_sha256"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "receipt",
+              "review",
+              "bounded_search",
+              "counterexample",
+              "reduction",
+              "source",
+              "computation"
+            ]
+          },
+          "uri": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "hash_kind": {
+            "enum": [
+              "BYTES_SHA256",
+              "CANONICAL_JSON_SHA256"
+            ]
+          },
+          "target_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "result_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "delta": {
+      "description": "The state transition, typed rather than free text, so an admission can be replayed instead of retold. A newly added claim is forced OPEN with no evidence \u2014 a pre-established claim cannot be injected through a delta.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "add_claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "claim_id",
+              "target_sha256",
+              "status"
+            ],
+            "properties": {
+              "claim_id": {
+                "type": "string"
+              },
+              "target_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "status": {
+                "const": "OPEN"
+              },
+              "evidence_refs": {
+                "type": "array",
+                "maxItems": 0
+              },
+              "ceiling": {
+                "description": "The strongest status this claim may ever reach, set once when the claim is created and never afterwards \u2014 there is no delta operation that raises a ceiling. It comes from the resolved pack: the strongest `max_status` among its tiers, lowered further if the pack is provisional. This is how a provisional pack's cap stops being a printed warning and starts being something the reducer refuses to exceed.",
+                "enum": [
+                  "CONJECTURE",
+                  "SKETCH",
+                  "PARTIAL",
+                  "CHECKED_BOUNDED",
+                  "CONDITIONAL",
+                  "VERIFIED"
+                ]
+              }
+            }
+          }
+        },
+        "update_claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "claim_id",
+              "from_status",
+              "to_status"
+            ],
+            "properties": {
+              "claim_id": {
+                "type": "string"
+              },
+              "from_status": {
+                "type": "string"
+              },
+              "to_status": {
+                "type": "string"
+              },
+              "evidence_sha256": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            }
+          }
+        },
+        "set_dependencies": {
+          "description": "Dependency edits record the mode transition, not just the new edges \u2014 silently turning an AND node into an OR node would make an incomplete claim look closed.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "claim_id",
+              "from_mode",
+              "from_dependencies",
+              "to_mode",
+              "to_dependencies"
+            ],
+            "properties": {
+              "claim_id": {
+                "type": "string"
+              },
+              "from_mode": {
+                "enum": [
+                  "LEAF",
+                  "AND",
+                  "OR"
+                ]
+              },
+              "from_dependencies": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "to_mode": {
+                "enum": [
+                  "LEAF",
+                  "AND",
+                  "OR"
+                ]
+              },
+              "to_dependencies": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "active_obstruction": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "delta_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "remaining_gap_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "payload_sha256": {
+      "description": "SHA-256 over the canonical JSON of this packet with payload_sha256 removed: sorted keys, compact separators, ASCII escapes.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

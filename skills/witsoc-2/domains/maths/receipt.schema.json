@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "maths-receipt-v1",
+  "title": "Mathematics receipt",
+  "description": "Extends frame-receipt-v1. Adds the two things a bare elaboration verdict does not carry: which toolchain produced it, and what the result actually depends on. Elaboration success is necessary and not sufficient.",
+  "allOf": [
+    {
+      "$ref": "frame-receipt-v1"
+    }
+  ],
+  "type": "object",
+  "required": [
+    "toolchain",
+    "axiom_audit"
+  ],
+  "properties": {
+    "toolchain": {
+      "description": "Checker and library revision. A receipt whose toolchain differs from the frozen one is stale in the same way a hash mismatch is stale.",
+      "type": "string"
+    },
+    "axiom_audit": {
+      "description": "The axioms the checked result depends on, compared against the claim's allowlist. A new or metaprogrammed axiom is an escape hatch that a plain type-check will not surface, so this is required rather than advisory.",
+      "type": "string"
+    },
+    "bounds": {
+      "description": "Required for the bounded tier: the stated finite domain actually searched.",
+      "type": "string"
+    },
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "gate",
+          "verdict"
+        ],
+        "properties": {
+          "gate": {
+            "type": "string"
+          },
+          "verdict": {
+            "enum": [
+              "pass",
+              "fail",
+              "error",
+              "not_run"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,358 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "frame-work-item-v1",
+  "title": "Work item",
+  "description": "Coordinator to Generator or Researcher. Exactly one claim. Carries no runtime fields \u2014 provider, model, session, budget, and retry state belong to the orchestrator's execution envelope, not here.",
+  "type": "object",
+  "required": [
+    "work_item_id",
+    "target_sha256",
+    "claim_id",
+    "assigned_role",
+    "expected_artifact",
+    "falsifier",
+    "forbidden_drift",
+    "stop_rule",
+    "payload_sha256",
+    "base_revision",
+    "base_state_sha256"
+  ],
+  "properties": {
+    "work_item_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_sha256": {
+      "description": "The frozen target hash. Must match the claim, the artifact, the receipt, and the result.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "claim_id": {
+      "description": "Exactly one. A work item covering several claims cannot be failed precisely, so it cannot be escalated precisely either.",
+      "type": "string",
+      "minLength": 1
+    },
+    "assigned_role": {
+      "enum": [
+        "generator",
+        "researcher"
+      ]
+    },
+    "dependency_path_to_target": {
+      "description": "How establishing this claim reaches the frozen target. A sub-result with no path back is not progress toward it.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "active_obstruction": {
+      "description": "The specific thing blocking direct production, for a Researcher assignment.",
+      "type": "object",
+      "properties": {
+        "obstruction_id": {
+          "type": "string"
+        },
+        "threatens": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "string"
+        },
+        "blocking_claim": {
+          "description": "The claim that would have to be established to get past this. Naming it is required before choosing a weaker product.",
+          "type": "string"
+        },
+        "attacks_attempted": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "obstruction_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Binds the attack to the obstruction dispatched. Researcher is the expensive role and returns once; substituting a softer obstruction mid-run is target drift one level down, with the least oversight in the system."
+        }
+      },
+      "required": [
+        "obstruction_id",
+        "obstruction_sha256",
+        "blocking_claim"
+      ]
+    },
+    "expected_artifact": {
+      "description": "What must come back, in enough detail that its absence is unambiguous.",
+      "type": "string",
+      "minLength": 1
+    },
+    "verification_tier": {
+      "description": "Which adapter tier this claim requires. Frozen by Explorer before work starts, so a cheap tier cannot be substituted after an expensive one fails.",
+      "type": "string"
+    },
+    "falsifier": {
+      "description": "What observation would show this approach is not working. Required \u2014 an approach with no falsifier cannot report a negative result.",
+      "type": "object",
+      "required": [
+        "criterion",
+        "test"
+      ],
+      "properties": {
+        "criterion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "test": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "type": "string"
+        }
+      }
+    },
+    "forbidden_drift": {
+      "description": "What must not change. Required and specific \u2014 you cannot dispatch a vague worker and expect a sharp answer.",
+      "type": "string",
+      "minLength": 10
+    },
+    "stop_rule": {
+      "description": "When to stop and report rather than continue. Required and specific.",
+      "type": "string",
+      "minLength": 10
+    },
+    "method_family": {
+      "description": "Which family this attempt belongs to, for diversity accounting. Two attempts in one family are one method.",
+      "type": "string"
+    },
+    "do_not_repeat": {
+      "description": "Routes already ruled out by recorded failures. A dispatch matching one of these is blocked until something actually changed.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "mutation_applied": {
+      "description": "Required when re-dispatching a claim that already failed. Names the single axis changed and what was deliberately held constant.",
+      "type": "object",
+      "required": [
+        "axis",
+        "changed",
+        "unchanged_constraints"
+      ],
+      "properties": {
+        "axis": {
+          "type": "string"
+        },
+        "changed": {
+          "type": "string"
+        },
+        "unchanged_constraints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "effort_cap": {
+      "description": "Advisory ceiling in domain-defined units. The orchestrator owns real budgets.",
+      "type": "number"
+    },
+    "expected_information_gain": {
+      "description": "What this probe is expected to tell us, and on what basis. Compared against the observed gain on return; a repeated observation reports no gain.",
+      "type": "object",
+      "properties": {
+        "estimate_millibits": {
+          "type": "number"
+        },
+        "basis": {
+          "type": "string"
+        },
+        "calibration_status": {
+          "enum": [
+            "explicit_model",
+            "heldout_calibrated",
+            "fallback_assumptions",
+            "insufficient_calibration"
+          ]
+        }
+      }
+    },
+    "payload_sha256": {
+      "description": "SHA-256 over the canonical JSON of this packet with payload_sha256 removed: sorted keys, compact separators, ASCII escapes. Seals the packet and makes it addressable by later packets \u2014 an id alone is a mutable label.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "base_revision": {
+      "description": "State revision this was cut against. A long-running role can return against state that moved beneath it; without a base pointer that stale return is silently merged.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "base_state_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "attempt": {
+      "description": "Where this sits in the escalation ladder. The ladder is declared mechanical, so the counter needs a typed home \u2014 held only in a coordinator's working memory it is a judgement call again.",
+      "type": "object",
+      "required": [
+        "index",
+        "consecutive_failures_on_claim"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "consecutive_failures_on_claim": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "prior_failure_signatures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "scheduling": {
+      "description": "How this item is dispatched relative to its siblings. Derived from the parent claim's dependency_mode \u2014 the same graph that decides closure also decides concurrency, and reading it only once leaves the parallelism unclaimed.",
+      "type": "object",
+      "required": [
+        "relation_to_siblings"
+      ],
+      "properties": {
+        "relation_to_siblings": {
+          "description": "race = an OR group; siblings run concurrently and the first pass cancels the rest. fanout = an AND group; all are required, run them concurrently. solo = no siblings.",
+          "enum": [
+            "race",
+            "fanout",
+            "solo"
+          ]
+        },
+        "sibling_group_id": {
+          "description": "Items sharing this id are siblings under one parent claim.",
+          "type": "string"
+        },
+        "cancel_on_sibling_success": {
+          "description": "Race semantics. A cancelled sibling is recorded superseded, never FAILED_ATTEMPT \u2014 it lost a race, it was not refuted, and marking it failed would poison the do-not-repeat ledger against an approach that may be right elsewhere.",
+          "type": "boolean"
+        },
+        "diversity_cell": {
+          "description": "(method family x representation x tier). Every cell gets one candidate before any cell gets a second \u2014 correlated fan-out is the same attempt billed several times.",
+          "type": "string"
+        },
+        "effort_tier": {
+          "description": "Escalates one way, cheapest first. An expensive backend should only see what the cheap pass failed to close.",
+          "enum": [
+            "light",
+            "medium",
+            "heavy"
+          ]
+        },
+        "estimated_cost": {
+          "type": "number",
+          "minimum": 0
+        },
+        "priority": {
+          "description": "Expected information gain per unit cost. Ordering only \u2014 never affects acceptance.",
+          "type": "number"
+        }
+      }
+    },
+    "context_pack": {
+      "description": "Advisory context travelling with this item. Capped deliberately: past a small size it crowds out the problem. Must NOT enter the packet's identity hash, or memoization breaks every time memory grows.",
+      "type": "object",
+      "properties": {
+        "entries": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "required": [
+              "kind",
+              "ref"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "failed_approach",
+                  "accepted_premise",
+                  "method_prior",
+                  "example"
+                ]
+              },
+              "ref": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "self_contained": {
+          "description": "False means this packet needs outside context, which caps concurrency at one \u2014 it cannot be fanned out.",
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "not": {
+    "anyOf": [
+      {
+        "required": [
+          "provider"
+        ]
+      },
+      {
+        "required": [
+          "model"
+        ]
+      },
+      {
+        "required": [
+          "session_id"
+        ]
+      },
+      {
+        "required": [
+          "worktree"
+        ]
+      },
+      {
+        "required": [
+          "machine"
+        ]
+      },
+      {
+        "required": [
+          "process_id"
+        ]
+      },
+      {
+        "required": [
+          "retry_count"
+        ]
+      },
+      {
+        "required": [
+          "tokens"
+        ]
+      },
+      {
+        "required": [
+          "cost_usd"
+        ]
+      },
+      {
+        "required": [
+          "wall_clock_ms"
+        ]
+      },
+      {
+        "required": [
+          "budget"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,256 @@
+{
+  "contract_version": "2",
+  "domain": "maths",
+  "description": "Mathematics: WIT structural checking, Lean/Mathlib kernel verification, and bounded computational search. The baseline domain \u2014 the frame was factored out of a system built for exactly this field, so this pack is the reference instantiation of all five contract items.",
+  "roles": {
+    "researcher": "Lovasz"
+  },
+  "selection": {
+    "signals": [
+      "prove",
+      "disprove",
+      "proof",
+      "conjecture",
+      "show that",
+      "it suffices to show",
+      "integer",
+      "natural number",
+      "rational",
+      "irrational",
+      "prime",
+      "divisible",
+      "divisibility",
+      "modulo",
+      "congruent",
+      "inequality",
+      "upper bound",
+      "lower bound",
+      "tight bound",
+      "asymptotic",
+      "polynomial",
+      "monotone",
+      "sequence",
+      "converges",
+      "diverges",
+      "convergence",
+      "graph",
+      "vertices",
+      "edges",
+      "bipartite",
+      "combinatorial",
+      "subset",
+      "cardinality",
+      "bijection",
+      "injective",
+      "surjective",
+      "matrix",
+      "eigenvalue",
+      "continuous",
+      "closed interval",
+      "induction",
+      "exhaustive search",
+      "counterexample",
+      "if and only if",
+      "there exists",
+      "for every n",
+      "for all n"
+    ],
+    "strong_signals": [
+      "prove that",
+      "prove or disprove",
+      "theorem",
+      "lemma",
+      "corollary",
+      "qed",
+      "mathlib",
+      "lean 4",
+      "formalize",
+      "formal verification",
+      "proof by induction",
+      "well-ordering",
+      "pigeonhole",
+      "modular arithmetic"
+    ],
+    "excludes": [
+      "clinical trial",
+      "gene expression",
+      "p-value",
+      "market share",
+      "focus group",
+      "patient cohort",
+      "in vitro"
+    ],
+    "artifact_kinds": [
+      "structured proof sketch in the field's own notation",
+      "machine-checkable formal artifact",
+      "bounded search harness plus a re-verified witness"
+    ],
+    "examples": [
+      "Prove that for every integer n, the sum of the first n odd numbers equals n squared.",
+      "Show that there is no largest prime, or give a counterexample if the claim fails.",
+      "Formalize the statement that a continuous function on a closed interval attains its maximum.",
+      "Determine whether every graph whose vertices number n and whose edges exceed n^2/4 contains a triangle.",
+      "Prove or disprove: the sequence defined by a(n+1) = a(n)/2 + 1/a(n) converges for every positive start.",
+      "Find a tight upper bound for the least n with this combinatorial property, and confirm it by exhaustive search over the stated finite range."
+    ],
+    "counter_examples": [
+      "Prove that the gene knockout reduces protein levels in the clinical trial cohort.",
+      "Show that conversion improved: the p-value is below 0.05 across the market share test.",
+      "Check that the retry counter never exceeds its configured upper bound in production.",
+      "Summarise what the focus group said about pricing and recommend a change."
+    ],
+    "min_score": 3,
+    "priority": 0
+  },
+  "verification_adapter": {
+    "entry_point": "scripts/check.py",
+    "corpus": {
+      "entry_point": "scripts/corpus.py",
+      "description": "Mathlib declaration retrieval: exact formal type, module, import list, dependency list, aliases. Returns known premises vs. search targets, and never assumes a premise exists. An empty result is information, not a reason to fall back to a guess.",
+      "version": "mathlib4 (pinned per run via scripts/availability.py)"
+    },
+    "tiers": [
+      {
+        "name": "structural",
+        "description": "WIT structural check: one MODULE, labels sequential within scope, every step carries a keyword and a BY justification, every bracketed reference resolves, no forward references, no cross-CASE references, QED present. Catches shape errors before any expensive semantic work.",
+        "adversarial": false,
+        "cost_hint": "cheap",
+        "max_status": "SKETCH",
+        "authorship": "independent",
+        "contamination_controls": "Parses only the artifact; has no access to the expected conclusion and cannot be tuned toward one.",
+        "availability_check": "python3 scripts/availability.py --tier structural",
+        "concurrency_limit": 16
+      },
+      {
+        "name": "kernel",
+        "description": "Lean elaboration against Mathlib. A candidate either type-checks or it does not, and no argument changes that. Preferred feedback order: LSP/REPL per-command, then `lake env lean <file>`, then a full `lake build` only for final confirmation. WITSOC2_LEAN_PROJECT must point at a built Lean project, or the tier elaborates against the ambient toolchain with an empty search path and every library import fails.",
+        "adversarial": true,
+        "cost_hint": "expensive",
+        "max_status": "VERIFIED",
+        "authorship": "independent",
+        "two_sided_evidence": "scripts/negative_control/ holds four known-bad artifacts \u2014 a placeholder escape, a weakened target, a hidden binder assumption, and a type error. The tier must reject all four; scripts/check.py --self-test runs them.",
+        "contamination_controls": "The kernel is upstream software with no knowledge of this run. The frozen target hash is computed before elaboration and re-checked after, so the statement cannot be edited to fit the argument.",
+        "availability_check": "python3 scripts/availability.py --tier kernel",
+        "negative_control": "scripts/negative_control",
+        "concurrency_limit": 2,
+        "prefix_reuse": {
+          "supported": false,
+          "measured_value": "Import elaboration is 98% of kernel cost: 5.0s to import Mathlib against 0.1s for a three-obligation proof, measured over three runs each. Reuse would be worth roughly 50x on a repair loop.",
+          "why_not_built": "The available REPL returned success-shaped output while running against an empty environment \u2014 `Unknown identifier trivial` after a reported successful import. A fast path that succeeds emptily is worse than no fast path. See doctrine/kernel_economics.md.",
+          "gate_before_enabling": "any fast path must reproduce the slow path's verdict on every artifact in scripts/negative_control/, rejections and acceptance alike \u2014 a backend that has lost its environment passes nothing and fails nothing, and only a set of inputs whose verdicts should differ exposes it"
+        }
+      },
+      {
+        "name": "bounded",
+        "description": "Exhaustive or randomized search over a stated finite domain, dispatched to scripts/backends/ (SAT with witness re-verification and labelled refutations; exact arithmetic; finite enumeration). Adversarial within its range and establishes nothing outside it \u2014 a budget stop is UNKNOWN, never a refutation.",
+        "adversarial": true,
+        "cost_hint": "moderate",
+        "max_status": "CHECKED_BOUNDED",
+        "authorship": "independent",
+        "two_sided_evidence": "Search harnesses are run against seeded instances with known counterexamples; an evaluator that scores an erroring candidate is rejected rather than treated as a pass.",
+        "contamination_controls": "Bounds and seed are frozen in the claim before the search runs, so a failing search cannot be rescued by quietly shrinking the range.",
+        "availability_check": "python3 scripts/availability.py --tier bounded",
+        "concurrency_limit": 8,
+        "negative_control": "scripts/negative_control/bounded_false_claim.json"
+      }
+    ]
+  },
+  "claim_schema": {
+    "path": "claim.schema.json",
+    "extends": "frame-claim-v1",
+    "additional_required_fields": [
+      "formal_target",
+      "allowed_external_facts"
+    ]
+  },
+  "receipt_format": {
+    "path": "receipt.schema.json",
+    "extends": "frame-receipt-v1",
+    "required_fields": [
+      "artifact_sha256",
+      "verdict",
+      "tier",
+      "refute_attempt",
+      "toolchain",
+      "axiom_audit"
+    ],
+    "freshness_rule": "The receipt records the artifact SHA-256 at elaboration time and the toolchain identity. It is stale if either differs from the live artifact and current toolchain at the exit gate, which recomputes both rather than trusting the recorded values. A passing build from an earlier edit is the standard way a broken artifact launders itself, so a receipt whose timestamp precedes the artifact's last modification is rejected outright."
+  },
+  "doctrine": {
+    "escalation": {
+      "max_consecutive_failures": 3,
+      "failure_signature": "The pair (failure_class, normalized first diagnostic line with file positions, identifier suffixes, and metavariable numbers stripped). Two failures with the same pair are the same failure; a repeat escalates immediately rather than waiting out the count, because the second attempt evidently changed nothing the checker could see."
+    },
+    "roles": {
+      "explorer": "doctrine/explorer.md",
+      "generator": "doctrine/generator.md",
+      "researcher": "doctrine/researcher.md"
+    },
+    "rules": [
+      "doctrine/repair.md",
+      "doctrine/obstructions.md",
+      "doctrine/target_protection.md",
+      "doctrine/campaign.md",
+      "doctrine/blueprint.md",
+      "doctrine/barriers.md",
+      "doctrine/problem_selection.md",
+      "doctrine/skeptic_pass.md",
+      "doctrine/literature.md",
+      "doctrine/experiments.md",
+      "doctrine/demotion.md",
+      "doctrine/reductions.md",
+      "doctrine/solve_claim.md"
+    ]
+  },
+  "gates": {
+    "refute_attempt": {
+      "name": "kernel-recheck",
+      "description": "Re-elaborate the artifact from its current bytes in a fresh process against a fresh checkout, then audit the axioms the result actually depends on. Because the kernel cannot be talked into a false pass, surviving this is a genuine attempt to break the result rather than a second friendly run.",
+      "satisfied_by_tier": "kernel"
+    },
+    "additional": [
+      {
+        "name": "placeholder-scan",
+        "description": "Rejects sorry, admit, axiom, constant, opaque, unsafe, native_decide, and the `?_`/`by?` holes. These make anything type-check, so their presence voids the kernel's verdict entirely.",
+        "blocking": true
+      },
+      {
+        "name": "target-protection-diff",
+        "description": "Diffs the artifact's statement against the frozen target: signature, binders, hypotheses, domains, and definitions. Catches the target being weakened to something trivially true, an assumption being smuggled into a binder, or a definition being redefined to make the claim vacuous.",
+        "blocking": true
+      },
+      {
+        "name": "axiom-audit",
+        "description": "Enumerates the axioms the checked result depends on and rejects any beyond the declared allowlist. A new or metaprogrammed axiom is an escape hatch that a plain type-check will not surface.",
+        "blocking": true
+      },
+      {
+        "name": "premise-precondition-audit",
+        "description": "Every cited external result has its hypotheses matched against the local use. A citation whose preconditions are unmet is an unresolved gap, not a step.",
+        "blocking": true
+      },
+      {
+        "name": "fidelity-review",
+        "description": "Independent bidirectional check that the formal statement says what the informal target says. The kernel proves things about the encoding; whether the encoding is faithful is a separate question it cannot answer.",
+        "blocking": true
+      }
+    ]
+  },
+  "status_refinements": {
+    "VERIFIED_WIT": {
+      "refines": "VERIFIED",
+      "description": "Structurally valid WIT with every obligation carrying an accepted verdict. Says nothing about semantic truth \u2014 the structural tier's ceiling is SKETCH, so this refinement is reachable only alongside a kernel receipt.",
+      "tier": "structural"
+    },
+    "VERIFIED_LEAN": {
+      "refines": "VERIFIED",
+      "description": "Kernel-checked against Mathlib with a fresh hash-bound receipt, a clean axiom audit, and a passing fidelity review.",
+      "tier": "kernel"
+    },
+    "CHECKED_SYMBOLIC": {
+      "refines": "CHECKED_BOUNDED",
+      "description": "Established by exact symbolic computation over a stated domain rather than by enumeration.",
+      "tier": "bounded"
+    }
+  }
+}

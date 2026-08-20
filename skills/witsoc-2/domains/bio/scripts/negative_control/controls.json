@@ -1,0 +1,69 @@
+{
+  "description": "Known-bad bundles the adapter must reject, and one it must accept. Registered so `adversarial: true` in the manifest is a test rather than a self-report: a backend nothing has ever failed is unaudited, not trustworthy.",
+  "reject": [
+    {
+      "bundle": "pseudoreplication_bundle.json",
+      "claim": "pseudoreplication_claim.json",
+      "tier": "structural",
+      "why": "cells as replicates for a population claim"
+    },
+    {
+      "bundle": "broken_pipeline_bundle.json",
+      "claim": "broken_pipeline_claim.json",
+      "tier": "executable",
+      "why": "finds a difference between two halves of the control"
+    },
+    {
+      "bundle": "context_drift_bundle.json",
+      "claim": "context_drift_claim.json",
+      "tier": "structural",
+      "why": "analysed context drifted from the frozen one"
+    },
+    {
+      "bundle": "retracted_source_bundle.json",
+      "claim": "retracted_source_claim.json",
+      "tier": "structural",
+      "why": "a retracted source in the ledger"
+    },
+    {
+      "bundle": "scope_escalation_bundle.json",
+      "claim": "scope_escalation_claim.json",
+      "tier": "structural",
+      "why": "causal and clinical language on a transcriptomic readout"
+    },
+    {
+      "bundle": "fatal_contradiction_bundle.json",
+      "claim": "fatal_contradiction_claim.json",
+      "tier": "executable",
+      "why": "an unresolved fatal contradiction"
+    },
+    {
+      "bundle": "unchecked_confounders_bundle.json",
+      "claim": "unchecked_confounders_claim.json",
+      "tier": "executable",
+      "why": "confounders marked addressed with no recorded result"
+    },
+    {
+      "bundle": "edited_prereg_bundle.json",
+      "claim": "edited_prereg_claim.json",
+      "tier": "executable",
+      "why": "preregistration hash does not match its file"
+    }
+  ],
+  "accept": [
+    {
+      "bundle": "good_bundle.json",
+      "claim": "good_claim.json",
+      "tier": "executable",
+      "why": "donor-crossed design, recomputed effect, negative control silent"
+    }
+  ],
+  "reject_replication": [
+    {
+      "primary": "good_bundle.json",
+      "replicate": "same_source_replicate_bundle.json",
+      "claim": "good_claim.json",
+      "why": "same accession and same preregistration \u2014 not an independent source"
+    }
+  ]
+}

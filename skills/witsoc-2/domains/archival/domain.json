@@ -1,0 +1,227 @@
+{
+  "contract_version": "2",
+  "domain": "archival",
+  "description": "Documentary and historical claims: whether the sources that agree about something are actually saying it independently. The field has no kernel and no dataset to re-analyse \u2014 the evidence is documents, and the one operation that cannot be argued with is collapsing the citation graph to its roots.",
+  "roles": {
+    "researcher": "Ranke"
+  },
+  "selection": {
+    "signals": [
+      "archive",
+      "archival",
+      "surviving",
+      "survives",
+      "scribe",
+      "scribal",
+      "provenance",
+      "attested",
+      "attestation",
+      "contemporary account",
+      "eyewitness",
+      "historiography",
+      "century",
+      "medieval",
+      "antiquity",
+      "dynasty",
+      "reign",
+      "excavation",
+      "marginalia",
+      "colophon",
+      "recension",
+      "primary source",
+      "secondary source",
+      "the period",
+      "corroborated",
+      "corroboration",
+      "conjecture",
+      "interpolation",
+      "accounts",
+      "copied",
+      "compiled",
+      "transcription",
+      "witness",
+      "witnesses",
+      "no mention",
+      "tradition",
+      "edition",
+      "editor",
+      "manuscript tradition"
+    ],
+    "strong_signals": [
+      "chronicle",
+      "charter",
+      "cartulary",
+      "manuscript",
+      "codex",
+      "codices",
+      "folio",
+      "shelfmark",
+      "inscription",
+      "papyrus",
+      "papyri",
+      "historical record",
+      "citation cascade",
+      "diplomatic edition",
+      "critical apparatus",
+      "stemma",
+      "codicology",
+      "palaeography",
+      "palaeographic",
+      "prosopography",
+      "prosopographical",
+      "editio princeps",
+      "terminus ante quem",
+      "terminus post quem",
+      "autograph manuscript",
+      "harbour register",
+      "parish register"
+    ],
+    "excludes": [
+      "git history",
+      "commit log",
+      "changelog",
+      "database record",
+      "audit log",
+      "server logs",
+      "version history"
+    ],
+    "artifact_kinds": [
+      "dossier: the sources, their derivation chains, the archives searched, and the transformations the wording passed through",
+      "a collapsed citation graph with its surviving independent origins"
+    ],
+    "examples": [
+      "Three chronicles report the same battle. Are they three independent accounts or one account copied twice?",
+      "Does the surviving charter evidence support the claim that this monastery held the mill before the reign in question?",
+      "Assess whether the eyewitness testimony in this manuscript tradition is contemporary or a later interpolation.",
+      "The historical record contains no mention of the settlement before that century. Does that establish it did not exist?",
+      "Trace the provenance of this attested quotation back through the manuscript tradition to a primary source.",
+      "Is the prosopographical identification in this critical apparatus supported by anything outside the editor's conjecture?"
+    ],
+    "counter_examples": [
+      "Trace this bug back through the git history and commit log to the change that introduced it.",
+      "Prove that every prime greater than three is congruent to one or five modulo six.",
+      "Does knocking down this gene reduce the inflammatory signature in donor macrophages?",
+      "Audit the database record and server logs for the period when the outage occurred."
+    ],
+    "min_score": 4,
+    "priority": 0
+  },
+  "verification_adapter": {
+    "entry_point": "scripts/check.py",
+    "tiers": [
+      {
+        "name": "structural",
+        "description": "Dossier shape: the claim's dimensions frozen, every source identified, dated, and locatable by shelfmark, every derivation chain terminating inside the declared set, and no citation cycles. Two sources citing each other establish that they cite each other.",
+        "adversarial": false,
+        "cost_hint": "cheap",
+        "max_status": "SKETCH",
+        "authorship": "independent",
+        "contamination_controls": "Reads the dossier and the claim only. It has no access to whether the claim is true and cannot be tuned toward it.",
+        "availability_check": "python3 scripts/availability.py --tier structural",
+        "concurrency_limit": 16
+      },
+      {
+        "name": "triangulation",
+        "description": "Follows every supporting source back along its derivation chain, merges roots that share an author or an archive, and compares the surviving count against the independence the claim asserts. Adversarial because it is a graph computation: the chains either come home to different places or they do not, and no argument changes which.",
+        "adversarial": true,
+        "cost_hint": "moderate",
+        "max_status": "CHECKED_BOUNDED",
+        "authorship": "independent",
+        "two_sided_evidence": "scripts/negative_control/ holds seven known-bad dossiers \u2014 a citation cascade, a chain running backwards in time, uniformly interested origins, untraced translation drift, prose claiming occurrence and motive and typicality, an absence claim with no survival argument, and a dossier that never says what falsity would look like. The tier must reject all seven and accept the one good dossier; scripts/check.py --self-test runs them.",
+        "contamination_controls": "The collapse is computed from the declared derivation edges, and the frozen target hash is checked before and after. A dossier cannot be edited to add independence after the count comes back short without changing the hash.",
+        "availability_check": "python3 scripts/availability.py --tier triangulation --bundle <dossier.json>",
+        "negative_control": "scripts/negative_control",
+        "concurrency_limit": 8
+      }
+    ]
+  },
+  "claim_schema": {
+    "path": "claim.schema.json",
+    "extends": "frame-claim-v1",
+    "additional_required_fields": [
+      "assertion_kind",
+      "scope",
+      "claimed_independent_support",
+      "falsification_conditions",
+      "allowed_scope"
+    ]
+  },
+  "receipt_format": {
+    "path": "receipt.schema.json",
+    "extends": "frame-receipt-v1",
+    "required_fields": [
+      "independence",
+      "supports_status",
+      "documentary"
+    ],
+    "freshness_rule": "The receipt records the dossier's SHA-256 at check time and is stale the moment the dossier's current hash differs; the exit gate recomputes rather than trusting the recorded value. Adding a source, or an edge between existing sources, changes the collapse \u2014 so a receipt from before an edit is a receipt about a different graph."
+  },
+  "doctrine": {
+    "escalation": {
+      "max_consecutive_failures": 3,
+      "failure_signature": "The pair (failure_class, first problem line with source ids, shelfmarks, dates, and counts stripped). Two failures with the same pair are the same failure. Three rather than two, because unlike a recomputation over fixed data, each attempt here can legitimately bring new sources \u2014 a second attempt with a genuinely new source is a different attempt even when it fails the same way."
+    },
+    "roles": {
+      "explorer": "doctrine/explorer.md",
+      "generator": "doctrine/generator.md",
+      "researcher": "doctrine/researcher.md"
+    },
+    "rules": [
+      "doctrine/independence.md",
+      "doctrine/survivorship.md",
+      "doctrine/transmission.md",
+      "doctrine/report_language.md"
+    ]
+  },
+  "gates": {
+    "refute_attempt": {
+      "name": "cascade-collapse",
+      "description": "The same computation as the triangulation tier, read the other way: the claim asserts N independent supports, the collapse says how many survive. A claim whose corroboration collapses to a single origin has been refuted AS CORROBORATION whether or not it is true, which is the distinction this field exists to keep. Discharged by the triangulation tier because that tier cannot be talked into a false pass.",
+      "satisfied_by_tier": "triangulation"
+    },
+    "additional": [
+      {
+        "name": "dating-consistency",
+        "description": "A chain cannot run backwards, and a witness dated a century after the event is not contemporary however early it is relative to the other sources. Dates in a bibliography are read as labels; here they are constraints.",
+        "blocking": true
+      },
+      {
+        "name": "survivorship",
+        "description": "An absence claim must state why a record would have survived if the thing had happened, and every claim must state what the record would look like if it were false. If the answer is 'the same', the sources are consistent with the claim rather than evidence for it.",
+        "blocking": true
+      },
+      {
+        "name": "transmission-chain",
+        "description": "Counts the language changes and lossy transformations between the claim and its roots. Past a threshold the key wording must be quoted in the original, because a claim resting on a thrice-translated phrase is a claim about the third translator. A reconstruction or emendation in the chain must say what it changed.",
+        "blocking": true
+      },
+      {
+        "name": "interest-audit",
+        "description": "Not whether a source is biased \u2014 interested parties are often the only people present, and discarding them empties the archive. Whether, after collapsing to distinct origins, anything is left that did not want the claim to be true. If every origin shares one stake, their agreement is explained by the stake and needs no other cause.",
+        "blocking": true
+      },
+      {
+        "name": "scope-language",
+        "description": "Documented, attested, and occurred are three different statements written the same way. The distance between the first and the third is the discipline, and prose crosses it for free.",
+        "blocking": true
+      }
+    ]
+  },
+  "status_refinements": {
+    "CHECKED_BOUNDED_ATTESTED": {
+      "refines": "CHECKED_BOUNDED",
+      "description": "Two or more origins that survive the collapse, chains in order, transformations accounted for, and at least one origin without a stake in the claim. Bounded by what survived and what was searched, and silent about what did not.",
+      "tier": "triangulation"
+    },
+    "CHECKED_BOUNDED_DOCUMENTED": {
+      "refines": "CHECKED_BOUNDED",
+      "description": "A single surviving origin records this. Legitimate and narrow: it establishes that the thing was written down, in that place, by that hand. It is not attestation and must never be reported with plural wording.",
+      "tier": "triangulation"
+    },
+    "REJECTED_CASCADE": {
+      "refines": "REJECTED",
+      "description": "Refuted as corroboration: the agreeing sources collapse to fewer origins than the claim asserts. Recorded separately because the claim may still be true \u2014 what has been refuted is the reason given for believing it.",
+      "tier": "triangulation"
+    }
+  }
+}

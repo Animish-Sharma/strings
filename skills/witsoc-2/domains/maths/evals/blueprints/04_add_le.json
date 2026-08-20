@@ -1,0 +1,71 @@
+{
+  "metadata": {
+    "name": "add_le",
+    "kind": "THEOREM"
+  },
+  "target_formalization": {
+    "claim": "if one natural number is at most another then adding one to each preserves the order",
+    "hypotheses": [
+      {
+        "name": "hab",
+        "text": "a is at most b"
+      }
+    ],
+    "formal_statement": "theorem wit_add_le (a b : Nat) (hab : a \u2264 b) : a + 1 \u2264 b + 1"
+  },
+  "target_protection": {
+    "statement_tampering_forbidden": true,
+    "frozen_target_sha256": "3120f7df0924a372ed5ee60ecc268981c48c095dfa1eb33583a33339f841f195",
+    "original_statement": "if one natural number is at most another then adding one to each preserves the order",
+    "authorized_mutations": []
+  },
+  "external_dependencies": [
+    {
+      "theorem_name": "Nat.succ_le_succ"
+    }
+  ],
+  "lemma_plan": [
+    {
+      "step_id": "1",
+      "type": "ASSUME",
+      "statement": "a is at most b",
+      "method": "the hypothesis",
+      "formalization": {
+        "type": "a \u2264 b",
+        "tactic": "exact hab"
+      }
+    },
+    {
+      "step_id": "2",
+      "type": "HAVE",
+      "statement": "a plus one is at most b plus one",
+      "depends_on": [
+        "1"
+      ],
+      "cites": [
+        "Nat.succ_le_succ"
+      ],
+      "method": "linear arithmetic",
+      "formalization": {
+        "type": "a + 1 \u2264 b + 1",
+        "tactic": "omega"
+      }
+    },
+    {
+      "step_id": "3",
+      "type": "SHOW",
+      "statement": "if one natural number is at most another then adding one to each preserves the order",
+      "depends_on": [
+        "2"
+      ],
+      "method": "discharging the assumption",
+      "formalization": {
+        "type": "a + 1 \u2264 b + 1",
+        "tactic": "exact step2"
+      }
+    }
+  ],
+  "generator_directive": {
+    "status_to_assert": "UNVERIFIED"
+  }
+}

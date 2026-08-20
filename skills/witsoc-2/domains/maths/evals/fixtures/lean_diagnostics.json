@@ -1,0 +1,76 @@
+{
+  "_note": "Verbatim Lean 4.31.0-rc1 output, captured by running the compiler \u2014 not written from documentation. Three bugs were found the first time these were used: a filename driving classification, 'unknown module prefix' matching no pattern, and the residual-goal miner stopping at the first `case` header. Regenerate on a toolchain upgrade.",
+  "lean_version": "4.31.0-rc1 / 4.33.0",
+  "cases": [
+    {
+      "id": "unknown_constant",
+      "expect_class": "unknown_identifier",
+      "expect_theory_gap": [
+        "Nat.no_such_lemma"
+      ],
+      "diagnostic": "unknown.lean:1:54: error(lean.unknownIdentifier): Unknown constant `Nat.no_such_lemma`"
+    },
+    {
+      "id": "unsolved_goals",
+      "expect_class": "unsolved_goal",
+      "expect_mined_goals": [
+        "True",
+        "True"
+      ],
+      "diagnostic": "unsolved.lean:1:27: error: unsolved goals\ncase left\n\u22a2 True\n\ncase right\n\u22a2 True"
+    },
+    {
+      "id": "import_missing",
+      "expect_class": "import_missing",
+      "diagnostic": "importmissing.lean:1:0: error: unknown module prefix 'NoSuchModule'\n\nNo directory 'NoSuchModule' or file 'NoSuchModule.olean' in the search path entries:\n/home/xeclipse/.elan/toolchains/leanprover--lean4---v4.33.0/lib/lean"
+    },
+    {
+      "id": "function_expected",
+      "expect_class": "type_mismatch",
+      "diagnostic": "funcexpected.lean:2:8: error: Function expected at\n  n\nbut this term has type\n  Nat\n\nNote: Expected a function because this term is being applied to the argument\n  5"
+    },
+    {
+      "id": "coercion",
+      "expect_class": "coercion_issue",
+      "diagnostic": "coercion.lean:2:2: error: Tactic `rfl` failed: The left-hand side\n  \u2191n\nis not definitionally equal to the right-hand side\n  r\n\nn : Nat\nr : Int\n\u22a2 \u2191n = r"
+    },
+    {
+      "id": "type_mismatch",
+      "expect_class": "type_mismatch",
+      "diagnostic": "typemismatch.lean:1:45: error: Type mismatch\n  \"hello\"\nhas type\n  String\nof sort `Type` but is expected to have type\n  n + 0 = n\nof sort `Prop`"
+    }
+  ],
+  "axiom_outputs": [
+    {
+      "id": "postulated",
+      "expect_deps": [
+        "myaxiom"
+      ],
+      "expect_verdict": "FAIL",
+      "output": "'usesax' depends on axioms: [myaxiom]"
+    },
+    {
+      "id": "standard_only",
+      "expect_deps": [
+        "propext"
+      ],
+      "expect_verdict": "PASS",
+      "output": "'propext_user' depends on axioms: [propext]"
+    },
+    {
+      "id": "clean",
+      "expect_deps": [],
+      "expect_verdict": "PASS",
+      "output": "'g' does not depend on any axioms"
+    }
+  ],
+  "diagnostics": {
+    "import_missing_unbuilt_module": {
+      "lean_version": "4.31.0-rc1",
+      "how_produced": "importing a Mathlib module that exists in the source tree but was not built",
+      "verbatim": "probe.lean:1:0: error: object file '/home/xeclipse/mathlib4/.lake/build/lib/lean/Mathlib/Data/Nat/Defs.olean' of module Mathlib.Data.Nat.Defs does not exist",
+      "expected_class": "import_missing",
+      "note": "Distinct from 'unknown module prefix': the project IS on the search path and the module is not built. It was classified as unsolved_goal until a real partial checkout produced it \u2014 routing a build problem to the role that repairs mathematics."
+    }
+  }
+}

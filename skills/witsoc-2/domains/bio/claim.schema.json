@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "bio-claim-v1",
+  "title": "Frozen perturbation claim",
+  "description": "Extends frame-claim-v1 with everything that can change what a perturbation result MEANS. The rule that makes this worth writing out: freeze every dimension even when the value is unknown. An explicit 'unknown' and a silently omitted field read identically in a report and have entirely different consequences — the first is a stated limit, the second is a limit nobody knows about. A changed value here is a NEW claim with a new hash and its own lineage; it never mutates this one.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "claim_id", "statement", "target_sha256", "organism", "claim_class",
+    "biological_context", "perturbation", "assay", "dataset", "claimed_effect",
+    "falsification_conditions", "allowed_scope"
+  ],
+  "properties": {
+    "claim_id": { "type": "string", "minLength": 1 },
+    "statement": {
+      "description": "The claim in one sentence, in the form: perturbing X with modality P changes response Y in context Z. If it cannot be written this way, it is more than one claim.",
+      "type": "string",
+      "minLength": 20
+    },
+    "target_sha256": {
+      "description": "SHA-256 over the canonical form of this claim with this field removed. Recomputed at every gate rather than read back.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "organism": { "type": "string", "minLength": 1 },
+    "claim_class": {
+      "description": "Which row of data/claim_classes.json this is. The class sets the ceiling, so an unclassified claim has no ceiling and cannot be audited.",
+      "enum": [
+        "cell_level_association", "guide_conditioned_within_screen", "target_conditioned",
+        "donor_replicated_population", "in_vivo_animal", "organoid_patient_model",
+        "spatial_tissue", "network_causal_method", "model_predictive_superiority",
+        "literature_only"
+      ]
+    },
+    "generalization_axis": {
+      "description": "The axis along which generality is claimed — cell_line, donor, perturbation, context, or none. This decides which leakage findings are fatal rather than cosmetic.",
+      "enum": ["none", "cell_line", "donor", "perturbation", "context", "time", "dose"]
+    },
+    "biological_context": {
+      "type": "object",
+      "required": ["cell_type", "tissue", "disease_state", "donor_or_model_system"],
+      "properties": {
+        "cell_type": { "type": "string", "minLength": 1 },
+        "tissue": { "type": "string", "minLength": 1 },
+        "disease_state": { "type": "string", "minLength": 1 },
+        "donor_or_model_system": { "type": "string", "minLength": 1 }
+      }
+    },
+    "perturbation": {
+      "type": "object",
+      "required": ["entity", "modality", "dose", "duration", "delivery"],
+      "properties": {
+        "entity": { "type": "string", "minLength": 1 },
+        "modality": { "type": "string", "minLength": 1 },
+        "dose": { "type": "string", "minLength": 1 },
+        "duration": { "type": "string", "minLength": 1 },
+        "delivery": { "type": "string", "minLength": 1 },
+        "is_combination": {
+          "description": "True for a combination claim, which makes the additive baseline mandatory — it is the baseline elaborate models most often lose to.",
+          "type": "boolean"
+        }
+      }
+    },
+    "assay": {
+      "type": "object",
+      "required": ["type", "readout", "experimental_unit", "controls", "batches", "replicates"],
+      "properties": {
+        "type": { "type": "string", "minLength": 1 },
+        "readout": {
+          "description": "What was physically measured. Every scope-language check works back from this: a transcriptomic readout cannot reach mechanism, organism, or clinic on its own.",
+          "type": "string",
+          "minLength": 1
+        },
+        "experimental_unit": {
+          "description": "The unit the claim is about. Usually decided implicitly by whatever the analysis groups by, which is exactly why it is frozen here instead.",
+          "type": "string",
+          "minLength": 1
+        },
+        "controls": { "type": "string", "minLength": 1 },
+        "batches": { "type": "string", "minLength": 1 },
+        "replicates": { "type": "string", "minLength": 1 }
+      }
+    },
+    "dataset": {
+      "type": "object",
+      "required": ["id", "version", "source", "preprocessing_state"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 },
+        "license": { "type": "string" },
+        "preprocessing_state": {
+          "description": "Raw, filtered, normalized, integrated. Two analyses of 'the same dataset' at different preprocessing states are analyses of different data.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "model_evaluation": {
+      "description": "Present only for a predictive claim. Its absence is what makes the baseline and metric gates not-applicable rather than failed.",
+      "type": "object",
+      "required": ["model", "baseline", "split"],
+      "properties": {
+        "model": { "type": "string" },
+        "model_version": { "type": "string" },
+        "training_data": { "type": "string" },
+        "baseline": { "type": "string" },
+        "split": { "type": "string" },
+        "evaluation_unit": { "type": "string" }
+      }
+    },
+    "claimed_effect": {
+      "type": "object",
+      "required": ["direction", "magnitude", "endpoint"],
+      "properties": {
+        "direction": { "enum": ["increase", "decrease", "change", "no_change", "unknown"] },
+        "magnitude": { "type": "string", "minLength": 1 },
+        "endpoint": { "type": "string", "minLength": 1 }
+      }
+    },
+    "falsification_conditions": {
+      "description": "What would show this claim is wrong. A claim with no stated way to be wrong cannot be audited: there is nothing for a check to fail.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 10 }
+    },
+    "allowed_scope": {
+      "description": "The bounds inside which a result would hold. Written before the result, because after it the temptation is to write the bounds that fit.",
+      "type": "string",
+      "minLength": 10
+    },
+    "derived_from": {
+      "description": "The claim hash this one was narrowed, widened, or repaired from. Present whenever a context changed: the lineage is recorded, the old claim is not edited.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

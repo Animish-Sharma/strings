@@ -1,0 +1,47 @@
+{
+  "schema": "bio-claim-v1",
+  "claim_id": "EVAL-LIT-1",
+  "statement": "Published work reports that GENE-X knockdown lowers inflammatory signalling in myeloid cells; nothing has been recomputed here.",
+  "organism": "human",
+  "claim_class": "literature_only",
+  "biological_context": {
+    "cell_type": "monocyte-derived macrophage",
+    "tissue": "peripheral blood",
+    "disease_state": "healthy",
+    "donor_or_model_system": "primary cells, six unrelated donors"
+  },
+  "perturbation": {
+    "entity": "GENE-X",
+    "modality": "CRISPRi",
+    "dose": "not_applicable",
+    "duration": "48 hours",
+    "delivery": "lentiviral, MOI 0.3",
+    "is_combination": false
+  },
+  "assay": {
+    "type": "scRNA-seq",
+    "readout": "INFLAMMATORY-SIGNATURE score per cell",
+    "experimental_unit": "donor",
+    "controls": "non-targeting guides, same donors, same batch",
+    "batches": "two, each containing three donors and both conditions",
+    "replicates": "six donors, each contributing both conditions"
+  },
+  "dataset": {
+    "id": "DEMO-ACC-001",
+    "version": "v1.2",
+    "source": "public repository",
+    "preprocessing_state": "raw counts, unfiltered"
+  },
+  "claimed_effect": {
+    "direction": "decrease",
+    "magnitude": "roughly 0.9 signature units",
+    "endpoint": "mean donor-level signature score"
+  },
+  "falsification_conditions": [
+    "the donor-level difference is indistinguishable from label assignment under a within-donor permutation",
+    "the effect reverses in any donor with adequate cell recovery",
+    "a generic stress signature moves at least as much as the claimed signature"
+  ],
+  "allowed_scope": "primary human macrophages from these six donors, CRISPRi at 48 hours, this signature, this preprocessing. Nothing outside those bounds.",
+  "target_sha256": "56b8be3c86b93de96a1b791f0f06200a29bdb765d7dfdaa6495f4dc219b46b23"
+}

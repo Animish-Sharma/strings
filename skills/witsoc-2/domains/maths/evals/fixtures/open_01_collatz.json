@@ -1,0 +1,10 @@
+{"id":"open_01_collatz","expected":"OPEN",
+ "statement":"every positive integer reaches 1 under the Collatz map",
+ "why_open":"a genuinely open problem; bounded verification is not evidence of the universal",
+ "claim":{"claim_id":"open_01","exact_statement":"every positive integer reaches 1 under the Collatz map",
+  "success_condition":"a proof for all n","failure_condition":"a divergent or cyclic orbit",
+  "frozen_conditions":{"bounded_search":{"variable":"n","lower":1,"upper":300,
+    "predicate":"(lambda f: f(f, n, 0))(lambda self, m, steps: True if m == 1 else (False if steps > 500 else self(self, (m // 2) if m % 2 == 0 else (3 * m + 1), steps + 1)))"}},
+  "target_sha256":"o01","status":"CONJECTURE"},
+ "must":["bounded tier passes over the range","ceiling stays CHECKED_BOUNDED",
+         "solve gate does NOT accept","no VERIFIED status is reachable"]}

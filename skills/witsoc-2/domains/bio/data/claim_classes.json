@@ -1,0 +1,242 @@
+{
+  "description": "What each class of perturbation claim may reach, and what it must have to get there. This table is the pack's central artifact: it exists to stop two opposite errors \u2014 upgrading a cell-level association into a population claim, and rejecting a legitimately narrow within-screen result because it lacks donors it never needed. A claim is classified first; the ceiling follows from the class, not from how convincing the write-up is.",
+  "source": "Distilled from the perturbation positive-case matrix and the hard denominator rules. Both directions matter: the rules demote, the matrix protects.",
+  "classes": [
+    {
+      "id": "cell_level_association",
+      "label": "Realized-screen cell-level association",
+      "estimand": "cell_level",
+      "minimum_units": "cells whose exchangeability is defended explicitly",
+      "denominator": "cell / model unit",
+      "max_status": "CHECKED_BOUNDED",
+      "min_upstream_units": 0,
+      "requires": [
+        "batch_aware_uncertainty",
+        "depth_control"
+      ],
+      "common_failure": "batch, cell-state, or sequencing-depth confounding read as biology",
+      "refinement": "CONDITIONAL_WITHIN_SCREEN",
+      "conditions_that_must_be_stated": [
+        "the exchangeability of cells within this screen, defended rather than assumed",
+        "that no population-level reading is intended or supported"
+      ]
+    },
+    {
+      "id": "guide_conditioned_within_screen",
+      "label": "Guide-conditioned within-screen perturbation contrast",
+      "estimand": "within_screen",
+      "minimum_units": "cells plus guide assignment and matched controls",
+      "denominator": "guide/cell model, scope bounded by the screen",
+      "max_status": "CHECKED_BOUNDED",
+      "min_upstream_units": 0,
+      "requires": [
+        "guide_assignment",
+        "matched_controls",
+        "guide_capture",
+        "perturbation_efficacy",
+        "batch_aware_uncertainty"
+      ],
+      "common_failure": "guide capture, off-target activity, or weak controls",
+      "refinement": "CONDITIONAL_WITHIN_SCREEN",
+      "conditions_that_must_be_stated": [
+        "that the scope is the screen this was measured in, not the population"
+      ],
+      "min_units_per_arm": 3
+    },
+    {
+      "id": "target_conditioned",
+      "label": "Target-conditioned perturbation effect",
+      "estimand": "within_screen",
+      "minimum_units": "multiple independent guides per target plus efficacy and QC",
+      "denominator": "guide/target model, scope bounded by the screen",
+      "max_status": "CHECKED_BOUNDED",
+      "min_upstream_units": 0,
+      "requires": [
+        "multiple_guides_per_target",
+        "perturbation_efficacy",
+        "matched_controls"
+      ],
+      "common_failure": "guide redundancy mistaken for biological replication",
+      "refinement": "CONDITIONAL_WITHIN_SCREEN",
+      "conditions_that_must_be_stated": [
+        "that the scope is the screen this was measured in, not the population"
+      ],
+      "min_units_per_arm": 3
+    },
+    {
+      "id": "donor_replicated_population",
+      "label": "Donor-replicated population claim",
+      "estimand": "population",
+      "minimum_units": "donors crossed with perturbation and context",
+      "denominator": "donor-level pseudobulk, or a mixed/cluster-robust model",
+      "max_status": "CHECKED_BOUNDED",
+      "min_upstream_units": 3,
+      "few_cluster_warning_below": 5,
+      "requires": [
+        "independent_upstream_units",
+        "replicate_aware_analysis",
+        "confounder_sensitivity"
+      ],
+      "common_failure": "too few donors, or donor confounded with condition",
+      "few_cluster_condition": "with fewer than the warning threshold of upstream units, cluster-robust uncertainty is unreliable; the report carries an explicit few-cluster caveat",
+      "conditions_that_must_be_stated": [
+        "that the claim rests on the independence of its upstream units, which the data cannot verify and the design has to argue",
+        "that the analysis was carried out at the estimand-matching denominator, naming it"
+      ]
+    },
+    {
+      "id": "in_vivo_animal",
+      "label": "Animal or in vivo claim",
+      "estimand": "population",
+      "minimum_units": "animals or experiments crossed with perturbation",
+      "denominator": "animal / experiment / tissue unit",
+      "max_status": "CHECKED_BOUNDED",
+      "min_upstream_units": 3,
+      "few_cluster_warning_below": 5,
+      "requires": [
+        "independent_upstream_units",
+        "replicate_aware_analysis"
+      ],
+      "common_failure": "cells nested inside an animal counted as animals",
+      "few_cluster_condition": "with fewer than the warning threshold of upstream units, cluster-robust uncertainty is unreliable; the report carries an explicit few-cluster caveat",
+      "conditions_that_must_be_stated": [
+        "that the claim rests on the independence of its upstream units, which the data cannot verify and the design has to argue",
+        "that the analysis was carried out at the estimand-matching denominator, naming it"
+      ]
+    },
+    {
+      "id": "organoid_patient_model",
+      "label": "Organoid or patient-model claim",
+      "estimand": "population",
+      "minimum_units": "patient, organoid, or model-system units crossed with perturbation",
+      "denominator": "patient / organoid / model unit",
+      "max_status": "CHECKED_BOUNDED",
+      "min_upstream_units": 3,
+      "few_cluster_warning_below": 5,
+      "requires": [
+        "independent_upstream_units",
+        "replicate_aware_analysis"
+      ],
+      "common_failure": "generalizing from the model system to the organism it stands in for",
+      "few_cluster_condition": "with fewer than the warning threshold of upstream units, cluster-robust uncertainty is unreliable; the report carries an explicit few-cluster caveat",
+      "conditions_that_must_be_stated": [
+        "that the claim rests on the independence of its upstream units, which the data cannot verify and the design has to argue",
+        "that the analysis was carried out at the estimand-matching denominator, naming it"
+      ]
+    },
+    {
+      "id": "spatial_tissue",
+      "label": "Spatial or tissue perturbation claim",
+      "estimand": "population",
+      "minimum_units": "tissue sections, animals, or experiments, plus spatial units",
+      "denominator": "upstream tissue / animal / experiment",
+      "max_status": "CHECKED_BOUNDED",
+      "min_upstream_units": 2,
+      "requires": [
+        "independent_upstream_units",
+        "spatial_autocorrelation_control"
+      ],
+      "common_failure": "spatial spots or cells treated as independent animals",
+      "refinement": "CONDITIONAL_WITHIN_SCREEN",
+      "conditions_that_must_be_stated": [
+        "the spatial autocorrelation structure and how it was accounted for",
+        "that spots and cells are not being counted as independent tissue units",
+        "that the claim rests on the independence of its upstream units, which the data cannot verify and the design has to argue",
+        "that the analysis was carried out at the estimand-matching denominator, naming it"
+      ]
+    },
+    {
+      "id": "network_causal_method",
+      "label": "Network or causal-method claim",
+      "estimand": "population",
+      "minimum_units": "a perturbation design plus stated identifying assumptions",
+      "denominator": "the unit the assumptions actually license",
+      "max_status": "CHECKED_BOUNDED",
+      "min_upstream_units": 0,
+      "requires": [
+        "stated_identifying_assumptions",
+        "assumption_sensitivity"
+      ],
+      "common_failure": "identifiability hidden inside the model rather than argued",
+      "refinement": "CONDITIONAL_WITHIN_SCREEN",
+      "conditions_that_must_be_stated": [
+        "the identifying assumptions, named individually",
+        "the sensitivity of the conclusion to each assumption being wrong"
+      ]
+    },
+    {
+      "id": "model_predictive_superiority",
+      "label": "Model M predicts the response better than baseline B",
+      "estimand": "predictive",
+      "minimum_units": "a held-out split whose axis matches the generalization claimed",
+      "denominator": "the evaluation unit named in the split policy",
+      "max_status": "CHECKED_BOUNDED",
+      "min_upstream_units": 0,
+      "requires": [
+        "baseline_battery",
+        "clean_split",
+        "metric_panel",
+        "prespecified_thresholds"
+      ],
+      "common_failure": "beating a weak baseline, or winning one metric by sacrificing another",
+      "min_units_per_arm": 0
+    },
+    {
+      "id": "literature_only",
+      "label": "Support drawn from published sources without an executable check",
+      "estimand": "unspecified",
+      "minimum_units": "none \u2014 nothing was computed",
+      "denominator": "not applicable",
+      "max_status": "CONJECTURE",
+      "min_upstream_units": 0,
+      "requires": [
+        "source_ledger"
+      ],
+      "common_failure": "a well-sourced summary presented as an audit",
+      "conditions_that_must_be_stated": [
+        "that nothing was computed and no data were examined"
+      ]
+    }
+  ],
+  "hard_rejections": [
+    {
+      "id": "pseudoreplication",
+      "when": "a population-level claim whose only replicate evidence is cell count",
+      "verdict": "REJECTED",
+      "why": "cells inside one donor, animal, or screen are not independent draws from the population the claim is about. More cells shrink the standard error of the wrong estimand."
+    },
+    {
+      "id": "technical_unit_overclaim",
+      "when": "lanes, captures, libraries, or sequencing batches promoted to biological replicates without a design ledger",
+      "verdict": "REJECTED",
+      "why": "a technical process unit shares the biology it was split from; replicating the process is not replicating the biology."
+    },
+    {
+      "id": "fdr_cannot_fix_pseudoreplication",
+      "when": "multiple-testing correction offered as the answer to clustered cell-level uncertainty",
+      "verdict": "REJECTED",
+      "why": "the correction controls the false-discovery rate across features. It does not change the denominator, and the denominator is what is wrong."
+    },
+    {
+      "id": "guide_redundancy_not_biological_replication",
+      "when": "multiple guides used in place of donor, animal, or screen replication for a population claim",
+      "verdict": "REJECTED",
+      "why": "several guides against one target in one screen test the perturbation, not the population."
+    },
+    {
+      "id": "split_leakage",
+      "when": "a generalization claim whose test perturbations, cell lines, or donors appear in training",
+      "verdict": "REJECTED",
+      "why": "the held-out axis is the claim. If it leaks, the number measures memorization on exactly the axis being claimed."
+    },
+    {
+      "id": "baseline_loss",
+      "when": "a predictive-superiority claim whose model does not beat the strongest simple baseline",
+      "verdict": "REJECTED",
+      "why": "the burden of proof is on the model. Losing to a control mean or an additive baseline refutes the claim as stated."
+    }
+  ],
+  "ceiling_note": "A note about the word CONDITIONAL, because two vocabularies collide here and the collision is easy to get backwards. In the positive-case matrix this pack was distilled from, 'conditional' meant a narrow result resting on an assumption nobody can discharge, and it was WEAKER than a bounded result. In the frame's lattice CONDITIONAL is STRONGER than CHECKED_BOUNDED, because it is a claim about the general statement modulo an assumption, while CHECKED_BOUNDED is a claim about a stated finite domain and silent outside it. The frame's reading is the correct one for these classes: a cell-level association is bounded, not conditionally-general. So every class here caps at CHECKED_BOUNDED, and what used to be expressed as a lower ceiling is expressed instead as an EXTRA obligation \u2014 `conditions_that_must_be_stated` \u2014 which is strictly harder to satisfy than a ceiling, because a ceiling can be met by doing nothing.",
+  "crossing_note": "Crossing is required of a BIOLOGICAL unit and is meaningless for an ASSIGNMENT unit. A donor could have contributed cells under both conditions, so a donor that saw only one condition is confounded with it. A guide could not: a guide is targeting or non-targeting by construction, and demanding that it be crossed would reject every screen ever run. So the confounding check applies to population estimands, and within-screen estimands are held to a different bar \u2014 several independent units per arm, matched controls, and demonstrated perturbation efficacy.",
+  "conditions_note": "Population classes carry required report conditions, added after an external evaluation against a regression family written for the predecessor system. Its expectations attached `upstream_units_required` and `pseudobulk_or_cluster_robust_required` as flags a report must SHOW, where this table had them only as design evidence a bundle must DECLARE. Both are checks and they are not the same check: a reader of the finished report sees the second and not the first, and the independence of the upstream units is the assumption that reader most needs and the data can least support."
+}

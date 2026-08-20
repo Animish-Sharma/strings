@@ -1,0 +1,13 @@
+-- Status: UNVERIFIED
+MODULE [bad_forward]
+
+THEOREM [t]:
+  CLAIM:
+    something
+
+PROOF OF [t]:
+  [1] HAVE first.
+      BY [2], circular.
+  [2] HAVE second.
+      BY algebra.
+  QED BY [2].

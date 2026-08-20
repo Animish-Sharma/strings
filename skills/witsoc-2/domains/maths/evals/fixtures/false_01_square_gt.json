@@ -1,0 +1,9 @@
+{"id":"false_01_square_gt","expected":"FALSE_REFUTABLE",
+ "statement":"n^2 > n for every natural number n",
+ "why_false":"n=0 and n=1 are counterexamples",
+ "claim":{"claim_id":"false_01","exact_statement":"n^2 > n for every natural number n",
+  "success_condition":"no counterexample in range","failure_condition":"any n with n^2 <= n",
+  "frozen_conditions":{"bounded_search":{"variable":"n","lower":0,"upper":50,"predicate":"n*n > n"}},
+  "target_sha256":"f01","status":"CONJECTURE"},
+ "must":["bounded tier returns a counterexample","dialectic routes to statement repair",
+         "no status above CONJECTURE is reachable"]}

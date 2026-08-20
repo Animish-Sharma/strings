@@ -1,0 +1,58 @@
+{
+  "metadata": {
+    "name": "two_mul",
+    "kind": "THEOREM"
+  },
+  "target_formalization": {
+    "claim": "twice a natural number equals that number added to itself",
+    "hypotheses": [
+      {
+        "name": "hn",
+        "text": "n is a natural number"
+      }
+    ],
+    "formal_statement": "theorem wit_two_mul (n : Nat) : 2 * n = n + n"
+  },
+  "target_protection": {
+    "statement_tampering_forbidden": true,
+    "frozen_target_sha256": "2d97e70ca266df6b7ae82755d9355e0ad0958701fe1e146080a6b10413a5417e",
+    "original_statement": "twice a natural number equals that number added to itself",
+    "authorized_mutations": []
+  },
+  "external_dependencies": [
+    {
+      "theorem_name": "Nat.two_mul"
+    }
+  ],
+  "lemma_plan": [
+    {
+      "step_id": "1",
+      "type": "HAVE",
+      "statement": "two times n equals n plus n",
+      "cites": [
+        "Nat.two_mul"
+      ],
+      "method": "linear arithmetic",
+      "formalization": {
+        "type": "2 * n = n + n",
+        "tactic": "omega"
+      }
+    },
+    {
+      "step_id": "2",
+      "type": "SHOW",
+      "statement": "twice a natural number equals that number added to itself",
+      "depends_on": [
+        "1"
+      ],
+      "method": "restating the established identity",
+      "formalization": {
+        "type": "2 * n = n + n",
+        "tactic": "exact step1"
+      }
+    }
+  ],
+  "generator_directive": {
+    "status_to_assert": "UNVERIFIED"
+  }
+}
