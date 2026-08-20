@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "name": "choose_succ_right",
+    "kind": "THEOREM"
+  },
+  "target_formalization": {
+    "claim": "for all natural numbers n and k, the binomial coefficient n choose k plus one, times k plus one, equals n choose k times n minus k",
+    "hypotheses": [
+      {
+        "name": "hnk",
+        "text": "n and k are natural numbers"
+      }
+    ],
+    "preamble": "import Mathlib",
+    "formal_statement": "theorem wit_choose_succ_right (n k : ℕ) : Nat.choose n (k + 1) * (k + 1) = Nat.choose n k * (n - k)"
+  },
+  "target_protection": {
+    "statement_tampering_forbidden": true,
+    "frozen_target_sha256": "c16996d4977efd1e2c7c46c0bccd6a07e8921c8cba2c606885d0f5a6b31ab7c4",
+    "original_statement": "for all natural numbers n and k, the binomial coefficient n choose k plus one, times k plus one, equals n choose k times n minus k",
+    "authorized_mutations": []
+  },
+  "external_dependencies": [
+    {
+      "theorem_name": "Nat.choose_succ_right_eq"
+    }
+  ],
+  "lemma_plan": [
+    {
+      "step_id": "1",
+      "type": "SHOW",
+      "statement": "for all natural numbers n and k, the binomial coefficient n choose k plus one, times k plus one, equals n choose k times n minus k",
+      "method": "citing the established recurrence for the binomial coefficient",
+      "formalization": {
+        "type": "Nat.choose n (k + 1) * (k + 1) = Nat.choose n k * (n - k)",
+        "tactic": "exact Nat.choose_succ_right_eq n k"
+      },
+      "cites": [
+        "Nat.choose_succ_right_eq"
+      ]
+    }
+  ],
+  "generator_directive": {
+    "status_to_assert": "UNVERIFIED"
+  }
+}

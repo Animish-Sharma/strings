@@ -163,23 +163,78 @@ specification multiverse, computes the cheap confounder diagnostics from the
 metadata instead of asking for them, proposes the negative-control split, and
 generates the report from the receipt so the prose and the check cannot disagree.
 
+## 4b. Working memory, added as a frame component
+
+The frame held campaign state and cross-run memory and nothing between them, so
+a long run had no compact record of what it was pursuing or what it had ruled
+out. `frame-soc-v1` fills that, adapted from the predecessor's `.soc` file with
+four changes.
+
+**Tiers are frame statuses.** The predecessor invented VERIFIED / CHECKED /
+CONJECTURAL alongside the status lattice — two ladders with different rungs and
+no rule connecting them, so an insight marked VERIFIED in working memory read
+like a claim that had been through admission. An insight above CONJECTURE must
+now name its evidence and the tool refuses otherwise.
+
+**"Attention is never evidence" is mechanical.** The schema closes the crude
+route: an insight id is not sixty-four hex characters. The reducer closes the
+careful one — hand it `--soc` and it refuses any admission whose evidence hashes
+to an entry in the file. Hashing a hunch does not change what it is.
+
+**Bound to the target**, so a memory cannot drift onto the next problem and
+carry its conclusions there. **Consolidation says what it dropped**, because a
+memory that compacts silently leaves a reader unable to tell forgetting from
+never-knowing.
+
+The repeat gate runs before a work item is issued and, on a match, escalates —
+reaching the same conclusion the failure threshold would, before any budget is
+spent rather than after. The ledger holds a normalized signature; working memory
+holds the reason and the revival condition. Neither is redundant: a count cannot
+tell you what to change, and a reason cannot fire a threshold.
+
+## 4c. A campaign on a target nobody chose
+
+The gap named at the end of the last report was that no campaign had ever run
+against a problem someone else picked. One has now.
+
+A target was drawn at random from an installed library — a seeded sample over
+the source tree, filtered only for length. The first attempt proposed induction
+with the standard recurrence and the kernel refused it (`omega could not prove
+the goal`). The failure was classified, the axis named, a revision request
+written, and working memory recorded it so the same blueprint is now refused
+before anything is produced. The revision declared the recurrence as a premise,
+the pre-flight resolved it, the kernel elaborated clean, five blocking gates
+passed including a real axiom audit, and with an independent review it was
+admitted `VERIFIED`.
+
+`domains/maths/evals/drawn/` holds both attempts and is reproducible.
+
+What it is evidence of: the loop closes on material the pipeline did not choose.
+What it is not: evidence the system can prove things. The second attempt cites a
+library result rather than establishing it. **The interesting number is that the
+first attempt failed and the failure was informative** — a named step, a named
+axis, and an edit, rather than a stack trace and a shrug.
+
 ## 5. Current state
 
 ```
-frame purity           PASS   49 files
-doc links              PASS   179 named paths resolve
+frame purity           PASS   55 files
+doc links              PASS   181 named paths resolve
 contract shapes        PASS   4 packs
-delivery               PASS   12.7KB of 16KB budget, 4 entry points, 0 shipped artifacts
+delivery               PASS   12.9KB of 16KB budget, 4 entry points, 0 shipped artifacts
+doctrine coverage      PASS   every blocking gate named in the doctrine it governs
 schema examples        PASS   8 of 9 exercised by real packets
 reducer                PASS   15 adversarial admissions refused for the stated reason
+working memory         PASS   8 boundary and gate cases
 campaign               PASS   loop closes, ladder engages, packets reproducible
 resolution             PASS   30 cases across 4 packs
 
 maths    adapter PASS · evals 7/7 · produce 11/11 · external 10/10 and 29/29
 bio      adapter 9-1 · evals 6/6 · bundle PASS · external 10/10
-archival adapter 7-1
+archival adapter 7-1 · evals 6/6 · external 250/250 chains, two traversals agreeing
 
 end to end   maths -> VERIFIED   bio -> CHECKED_BOUNDED   archival -> CHECKED_BOUNDED
+drawn target maths -> VERIFIED on the second attempt, first failed and was classified
 ```
 
 ## 6. What is still true and uncomfortable
@@ -199,6 +254,9 @@ end to end   maths -> VERIFIED   bio -> CHECKED_BOUNDED   archival -> CHECKED_BO
   sweeps 256 settings over all 30 declared cases: the shipped weights score 30/30
   — along with 103 other settings. The corpus cannot distinguish them, and the
   script says so rather than claiming vindication.
-- **No campaign has run against a problem nobody chose for it.** Every fixture,
-  every blueprint, every bundle was authored here. The external suites are the
-  partial answer and they grade components, not campaigns.
+- **One campaign has run against a problem nobody chose, and it is a small one.**
+  The drawn target was admitted by citing a library result rather than by
+  establishing anything. The loop closing on unchosen material is real evidence;
+  the mathematics done inside it is not much.
+- **Every pack is still one author's.** The archival friction log and the
+  external suites are attempts at an outside view and remain mine.

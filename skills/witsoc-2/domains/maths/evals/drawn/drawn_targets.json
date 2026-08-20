@@ -1,0 +1,38 @@
+[
+  {
+    "name": "restrict_prod_eq_prod_univ",
+    "binders": "(s : Set α)",
+    "statement": "(μ.restrict s).prod ν = (μ.prod ν).restrict (s ×ˢ univ)",
+    "file": "MeasureTheory/Measure/Prod.lean"
+  },
+  {
+    "name": "lintegral_prod",
+    "binders": "(f : α × β → ℝ≥0∞) (hf : AEMeasurable f (μ.prod ν))",
+    "statement": "∫⁻ z, f z ∂μ.prod ν = ∫⁻ x, ∫⁻ y, f (x, y) ∂ν ∂μ",
+    "file": "MeasureTheory/Measure/Prod.lean"
+  },
+  {
+    "name": "choose_succ_right_eq",
+    "binders": "(n k : ℕ)",
+    "statement": "choose n (k + 1) * (k + 1) = choose n k * (n - k)",
+    "file": "Data/Nat/Choose/Basic.lean"
+  },
+  {
+    "name": "heval_X",
+    "binders": "(hx : 0 < x.orderTop)",
+    "statement": "heval x X = x",
+    "file": "RingTheory/HahnSeries/HEval.lean"
+  },
+  {
+    "name": "sub_projection_mem",
+    "binders": "(h : IsCompl p q) (x : E)",
+    "statement": "x - p.projection q h x ∈ q",
+    "file": "LinearAlgebra/Projection.lean"
+  },
+  {
+    "name": "contractLeft_contractLeft",
+    "binders": "(x : CliffordAlgebra Q)",
+    "statement": "d⌋(d⌋x) = 0",
+    "file": "LinearAlgebra/CliffordAlgebra/Contraction.lean"
+  }
+]
