@@ -170,6 +170,40 @@ checking that a directory exists.
 See `doctrine/kernel_economics.md` for the measurement (the import is 98% of
 kernel cost) and for why the obvious optimization was rejected.
 
+## Premise retrieval
+
+Retrieval asks one question — does this name exist — and for most of this pack's
+life it answered wrongly. The corpus was built by a regular expression over
+source files, which cannot see a declaration produced by an attribute, generated
+by a macro, or living in a core library outside the scanned tree.
+
+Measured on one installation: **182,025 declarations from the source scan against
+330,887 theorems in the elaborated environment.** On a set of six real names the
+source scan resolved **2**; the environment index resolves **6**.
+
+```bash
+export WITSOC2_LEAN_PROJECT=/path/to/project
+bash scripts/build_corpus.sh --out corpus.json
+export WITSOC2_MATHS_CORPUS=corpus.json     # produce.py picks it up
+```
+
+`scripts/lean/DumpNames.lean` asks the environment; `corpus.py build-from-env`
+consumes it, and `--merge-types-from` carries types across from a source scan,
+since the two are incomplete in opposite ways: the scan misses declarations, the
+dump misses their types.
+
+This turns the premise pre-flight from advisory noise into a check. Before, every
+blueprint reported its citations unresolved and the kernel was the first thing to
+discover a missing premise — five seconds of import elaboration to learn what a
+lookup answers for free.
+
+Two bugs here were found by running the dumper on a **small** import rather than
+the whole library, in seconds instead of minutes: `run_cmd` needs
+`Lean.Elab.Command` imported explicitly, and the module-name accessor used first
+was a library extension rather than core — so it worked against the full library
+and failed against core, the exact inversion of where you want a script to be
+robust.
+
 ## External evaluation
 
 ```bash
