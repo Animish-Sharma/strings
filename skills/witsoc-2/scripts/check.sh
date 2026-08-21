@@ -78,6 +78,11 @@ for name in $(packs); do
   for entry in "$DOMAINS_DIR/$name/scripts/check.py" "$DOMAINS_DIR/$name/adapter/check.py"; do
     [[ -f "$entry" ]] && run_step "adapter: $name" python3 "$entry" --self-test
   done
+  # A pack may ship other self-tests — a producer, an ingester. They are part of
+  # what the pack claims to do, so they are part of what green means.
+  for extra in "$DOMAINS_DIR/$name"/scripts/{produce,bundle,counts}.py; do
+    [[ -f "$extra" ]] && run_step "$(basename "$extra" .py): $name" python3 "$extra" --self-test
+  done
   # A pack's evals ask what it CONCLUDED; its self-test asks whether the adapter
   # can refuse. Running only the second let one pack ship with no outcome evals
   # at all, and nothing said so.

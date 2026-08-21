@@ -173,6 +173,7 @@ def main() -> int:
         return 2
 
     problems = check_freeze(claim)
+    notes: list[str] = []
 
     recomputed = bl.target_sha256(claim)
     declared = claim.get("target_sha256")
@@ -190,6 +191,25 @@ def main() -> int:
     graph_problems, graph_stats = check_graph(bundle)
     problems += graph_problems
 
+    # An endpoint with no provenance is a number this pack cannot recompute, and
+    # every check downstream of it inherits that. Not fatal — plenty of real
+    # analyses arrive as a table — but it is a ceiling on what the audit covers,
+    # and an unstated ceiling is the kind that gets forgotten.
+    provenance = bundle.get("endpoint_provenance")
+    if not provenance:
+        notes.append(
+            "the endpoint arrived pre-computed and carries no provenance, so this audit covers "
+            "the inference and not the measurement. scripts/counts.py computes it from the "
+            "matrix and records the QC thresholds, normalization, and background rule that "
+            "produced it")
+    else:
+        for field in ("qc_thresholds", "normalization", "background_rule"):
+            if not provenance.get(field):
+                problems.append(
+                    f"endpoint_provenance is present and missing {field!r}. A partial provenance "
+                    "record is worse than none: it reads as though the choice was made "
+                    "deliberately and recorded")
+
     result = {
         "tier": "structural",
         "verdict": "fail" if problems else "pass",
@@ -197,6 +217,7 @@ def main() -> int:
         "target_sha256": recomputed,
         "graph": graph_stats,
         "problems": problems,
+        "notes": notes,
         "failure_class": "structural_freeze" if problems else None,
     }
     if args.json:

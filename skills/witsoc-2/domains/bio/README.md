@@ -65,6 +65,32 @@ and every number it has ever produced is uninformative until that is fixed. It
 is also the check most likely to fire on a sincere, careful, subtly broken
 analysis — which is the kind that gets published.
 
+## It computes the endpoint
+
+For most of this pack's life its endpoint was one pre-computed score column per
+observation, accepted on faith — so everything it checked sat downstream of a
+number it could not recompute. Its own doctrine says the adapter ignores reported
+numbers; it ignored reported *statistics* and trusted the reported *endpoint*.
+
+`scripts/counts.py` closes that. It reads a count matrix (MatrixMarket triples or
+a dense genes-by-cells CSV), computes per-cell QC, normalizes to counts per ten
+thousand and log1p, and scores a named gene signature against an
+**expression-matched background** chosen deterministically by rank.
+
+The background is the part that matters. Without it the score is largely a
+measure of how deeply each cell was sequenced — the pack's own self-test builds a
+matrix whose only difference between arms is a threefold depth confound, and the
+score gap comes out **−0.02 against a real signal of 0.97**.
+
+Every choice it makes is written to a provenance record and belongs in the
+claim's `frozen_conditions`: a result under different QC thresholds or a
+different normalization is a result about different data. The structural tier
+says so when an endpoint arrives without one — not as a failure, because plenty
+of real analyses arrive as a table, but as a stated ceiling on what the audit
+covers.
+
+Standard library only: 500,000 nonzeros stream in under a second.
+
 ## The adapter ignores reported numbers
 
 The executable tier does not read the bundle's effect size or p-value. It

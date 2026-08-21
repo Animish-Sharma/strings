@@ -1,7 +1,7 @@
 {
   "contract_version": "2",
   "domain": "bio",
-  "description": "Perturbation biology: auditing whether a claim about what a perturbation does to a biological system deserves belief, and under exactly which context. Built around evidence denominators, recomputation from pinned data, and refutation before support. The pack never reaches VERIFIED — empirical support is always support for a frozen dataset, context, and analysis.",
+  "description": "Perturbation biology: auditing whether a claim about what a perturbation does to a biological system deserves belief, and under exactly which context. Built around evidence denominators, recomputation from pinned data, and refutation before support. The endpoint is computed here from the count matrix rather than accepted as a column: QC, normalization, and an expression-matched signature background are recorded and frozen with the claim, so the audit covers the measurement and not only the inference. The pack never reaches VERIFIED — empirical support is always support for a frozen dataset, context, and analysis.",
   "roles": {
     "researcher": "Durbin"
   },
