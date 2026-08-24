@@ -55,11 +55,14 @@ def build(state_rev0_hash: str) -> dict:
         "falsifier": "the adapter returns fail on the frozen target",
         "forbidden_drift": ["the statement", "the frozen conditions"],
         "stop_rule": "two consecutive failures with the same signature",
+        "obligations": [{"id": "falsify-first",
+                         "demand": "run the degenerate and boundary cases before committing",
+                         "doctrine": "doctrine/explorer.md"}],
         "base_revision": 0, "base_state_sha256": state_rev0_hash,
     })
     receipt = sealed({
         "schema": "frame-receipt-v1", "receipt_id": "RC-1", "target_sha256": TARGET,
-        "artifact_sha256": ARTIFACT_SHA, "tier": "exact", "verdict": "pass",
+        "artifact_sha256": ARTIFACT_SHA, "tier": "exact", "verdict": "pass", "authorship": "independent",
         "produced_at": "2026-08-21T00:00:00Z", "max_status": "VERIFIED",
         "refute_attempt": {"gate_name": "exact-recheck", "discharged_by": "adversarial_tier",
                            "outcome": "survived"},
@@ -70,7 +73,10 @@ def build(state_rev0_hash: str) -> dict:
         "schema": "frame-result-v1", "result_id": "RES-1", "work_item_id": "WI-1",
         "target_sha256": TARGET, "emitted_by": "generator", "candidate_status": "CHECKED_BOUNDED",
         "trust_boundary": "CANDIDATE_ONLY", "method_family": "direct-construction",
+        "actor": {"actor_id": "worker-gen-7", "attested_by": "orchestrator"},
         "dependency_path_to_target": ["C1"],
+        "obligations_answered": [{"id": "falsify-first", "outcome": "done",
+                                  "detail": "empty, singleton and boundary instances checked"}],
         "work_item_sha256": work_item["payload_sha256"],
         "fidelity_record": {"faithful": True, "checked_by_ref": "REVIEWER-A",
                             "basis": "an independent reviewer compared the checked artifact "
@@ -82,6 +88,7 @@ def build(state_rev0_hash: str) -> dict:
         "schema": "frame-review-v1", "review_id": "REV-1", "target_sha256": TARGET,
         "result_sha256": result["payload_sha256"], "producer_ref": "RES-1",
         "reviewer_ref": "REVIEWER-A", "reviewer_role": "researcher", "independent": True,
+        "actor": {"actor_id": "worker-rev-3", "attested_by": "orchestrator"},
         "verdict": "accept", "method_family": "adversarial-recheck",
         "checks": {"target_fidelity": "PASS", "dependencies": "PASS",
                    "preconditions": "PASS", "circularity": "PASS"},
@@ -91,6 +98,7 @@ def build(state_rev0_hash: str) -> dict:
                                "evidence_sha256": [receipt["payload_sha256"]]}]}
     admission = sealed({
         "schema": "frame-admission-v1", "admission_id": "A-1", "target_sha256": TARGET,
+        "actor": {"actor_id": "session-explorer-1", "attested_by": "orchestrator"},
         "base_revision": 0, "base_state_sha256": state_rev0_hash,
         "decided_by_role": "explorer",
         "result_ref": {"result_id": "RES-1", "payload_sha256": result["payload_sha256"]},
@@ -246,7 +254,113 @@ def m_malformed_result(p, _):
     return p, ARTIFACT_BYTES
 
 
+def m_same_actor_admits(p, _):
+    """The role labels differ and the ACTOR does not.
+
+    This is the case the label comparison could never see: one agent writing
+    both packets, setting `emitted_by` to generator and `decided_by_role` to
+    explorer, and admitting its own work with the invariant apparently intact.
+    """
+    p["admission"]["actor"] = {"actor_id": "worker-gen-7", "attested_by": "orchestrator"}
+    p["admission"] = reseal_admission(p["admission"])
+    return p, ARTIFACT_BYTES
+
+
+def m_same_actor_reviews(p, _):
+    """Self-review wearing a second role label."""
+    p["review"]["actor"] = {"actor_id": "worker-gen-7", "attested_by": "orchestrator"}
+    p["review"] = sealed(p["review"])
+    p["admission"]["review_refs"][0]["payload_sha256"] = p["review"]["payload_sha256"]
+    p["admission"] = reseal_admission(p["admission"])
+    return p, ARTIFACT_BYTES
+
+
+def m_unattested_chain(p, _):
+    """Nobody outside the run vouched that these were different actors.
+
+    Not a lie and not evidence. Independence becomes NOT_RUN, so VERIFIED —
+    whose meaning depends on someone other than the producer agreeing — is out
+    of reach. The frame cannot verify identity itself; what it can do is refuse
+    to treat an unattested separation as a demonstrated one.
+    """
+    for key in ("result", "review", "admission"):
+        p[key].pop("actor", None)
+    p["result"] = sealed(p["result"])
+    p["review"] = sealed(p["review"])
+    p["admission"]["result_ref"]["payload_sha256"] = p["result"]["payload_sha256"]
+    p["admission"]["review_refs"][0]["payload_sha256"] = p["review"]["payload_sha256"]
+    p["admission"] = reseal_admission(p["admission"])
+    return p, ARTIFACT_BYTES
+
+
+def m_graded_tier_no_verifier(p, _):
+    """A tier the party being checked could have influenced, and nobody says who
+    ran it. Authorship is the pack's own declaration that its backend refuses on
+    its own account; without it the checker is unknown, and an unknown checker is
+    the party being checked until somebody says otherwise."""
+    p["receipt"]["authorship"] = "producer"
+    p["receipt"] = sealed(p["receipt"])
+    p["admission"]["receipt_ref"]["payload_sha256"] = p["receipt"]["payload_sha256"]
+    p["admission"] = reseal_admission(p["admission"])
+    return p, ARTIFACT_BYTES
+
+
+def m_verifier_is_producer(p, _):
+    """The graded check was run by the producer. That is the producer's opinion
+    with a receipt attached."""
+    p["receipt"]["authorship"] = "producer"
+    p["receipt"]["verifier"] = {"actor_id": "worker-gen-7", "attested_by": "orchestrator"}
+    p["receipt"] = sealed(p["receipt"])
+    p["admission"]["receipt_ref"]["payload_sha256"] = p["receipt"]["payload_sha256"]
+    p["admission"] = reseal_admission(p["admission"])
+    return p, ARTIFACT_BYTES
+
+
+def m_obligation_unanswered(p, _):
+    """The work item made a step mandatory and the result does not mention it.
+
+    Everything else in this suite examines the artifact. This is the only check
+    that examines the PROCESS, and it can only ask whether the role said what it
+    did — which is exactly enough to make skipping visible."""
+    p["result"].pop("obligations_answered", None)
+    p["result"] = sealed(p["result"])
+    p["admission"]["result_ref"]["payload_sha256"] = p["result"]["payload_sha256"]
+    p["admission"] = reseal_admission(p["admission"])
+    return p, ARTIFACT_BYTES
+
+
+def m_obligation_skipped(p, _):
+    """Honestly reported as not done — and it was required for this status."""
+    p["result"]["obligations_answered"] = [
+        {"id": "falsify-first", "outcome": "not_done", "detail": "went straight to the kernel"}]
+    p["result"] = sealed(p["result"])
+    p["admission"]["result_ref"]["payload_sha256"] = p["result"]["payload_sha256"]
+    p["admission"] = reseal_admission(p["admission"])
+    return p, ARTIFACT_BYTES
+
+
 REFUSE_CASES = [
+    ("an issued obligation the result never mentions", m_obligation_unanswered,
+     "does not mention",
+     "a step nobody mentions and a step nobody took are the same thing in a result"),
+    ("an obligation honestly reported as not done", m_obligation_skipped,
+     "NOT DONE",
+     "the doctrine made it mandatory where the work was issued"),
+    ("a graded tier with nobody attesting who ran it", m_graded_tier_no_verifier,
+     "no attested verifier",
+     "authorship is the pack declaring its backend refuses on its own account"),
+    ("a graded tier verified by the producer", m_verifier_is_producer,
+     "same actor",
+     "a check run by the party being checked is that party's opinion with a receipt"),
+    ("the admitting actor IS the producing actor", m_same_actor_admits,
+     "same",
+     "role labels differ and the actor does not; the label is not the fact"),
+    ("the reviewing actor IS the producing actor", m_same_actor_reviews,
+     "same actor",
+     "self-review wearing a second role label"),
+    ("nobody attested that the actors were different", m_unattested_chain,
+     "independent_review",
+     "an unattested separation is not a demonstrated one, so VERIFIED is out of reach"),
     ("forged checks, no receipt at all", m_no_receipt_ref,
      "check 'receipt_freshness' is NOT_RUN",
      "the case that motivated deriving checks: assertions with nothing behind them"),
@@ -284,13 +398,17 @@ REFUSE_CASES = [
 def run(tmp: Path, packets: dict, artifact: bytes) -> tuple[int, str]:
     state = json.loads((tmp / "state.json").read_text())
     (tmp / "artifact.bin").write_bytes(artifact)
-    for name in ("receipt", "result", "review", "admission"):
+    for name in ("receipt", "result", "review", "admission", "work_item"):
         (tmp / f"{name}.json").write_text(json.dumps(packets[name], indent=2))
     cmd = [sys.executable, str(HERE / "reducer.py"), "apply",
            "--state", str(tmp / "state.json"),
            "--admission", str(tmp / "admission.json"),
            "--result", str(tmp / "result.json"),
-           "--review", str(tmp / "review.json"), "--json"]
+           "--review", str(tmp / "review.json"),
+           # The work item carries the obligations. Without it the reducer
+           # cannot tell an unanswered one from one never demanded, so a suite
+           # that omits it silently skips the only check that examines process.
+           "--work-item", str(tmp / "work_item.json"), "--json"]
     if not packets.get("_withhold_receipt"):
         cmd += ["--receipt", str(tmp / "receipt.json")]
     if not packets.get("_withhold_artifact"):

@@ -26,6 +26,7 @@ import argparse, json, sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import archlib as al  # noqa: E402
+import silence  # noqa: E402
 
 ABSENCE_MARKERS = ("no record", "no evidence", "never", "did not", "was not", "absent",
                    "nothing survives", "unattested")
@@ -40,7 +41,8 @@ def main() -> int:
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"error: {exc}"); return 2
 
-    problems = []
+    problems: list[str] = []
+    notes: list[str] = []
     statement = (claim.get("exact_statement") or claim.get("statement") or "").lower()
     is_absence = (claim.get("assertion_kind") == "absence"
                   or any(m in statement for m in ABSENCE_MARKERS))
@@ -50,6 +52,25 @@ def main() -> int:
             "this is an absence claim and the dossier gives no survival_argument. State why a "
             "record would exist and survive if the thing had happened — otherwise the claim is "
             "about the archive, not about the past, and should say so")
+
+    # The prose above is a sentence somebody wrote about their own claim, and it
+    # is always available: every absence claim's author believes the record would
+    # have shown it. The question has a number in it, so where the dossier states
+    # a survival-rate interval and a count of recording opportunities, the
+    # silence is priced and the prose stops being the only support.
+    if is_absence:
+        silence_result = silence.analyse(dossier, claim)
+        notes.append(f"silence: {silence_result['verdict']} — {silence_result['reading']}")
+        if silence_result["verdict"] == "uninformative":
+            problems.append(
+                "the silence is not evidence: " + silence_result["reading"] + ". An absence "
+                "claim whose own arithmetic says the archive would plausibly be silent anyway "
+                "is a claim about the archive")
+        elif silence_result["verdict"] == "not_computable":
+            notes.append(
+                "the silence was NOT priced — no survival_rate interval and recording "
+                "opportunities were given. That is a gap in the dossier, not a clean result: "
+                "the prose argument stands alone and it is the weakest support this pack takes")
 
     discriminator = (dossier.get("what_the_record_would_look_like_if_false") or "").strip()
     if len(discriminator) < 20:
@@ -65,9 +86,13 @@ def main() -> int:
             "known to be lost. An unrecorded search cannot be distinguished from one nobody ran")
 
     if problems:
+        for note in notes:
+            print(f"  {note[:200]}")
         print(f"fail: {len(problems)} survivorship problem(s)")
         for p in problems: print(f"  {p}")
         return 1
+    for note in notes:
+        print(f"  {note[:200]}")
     print("pass: survival and discrimination both stated")
     return 0
 

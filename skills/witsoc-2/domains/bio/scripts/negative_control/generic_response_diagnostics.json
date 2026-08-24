@@ -1,0 +1,145 @@
+{
+  "computed_by": "scripts/expression_diagnostics.py",
+  "matrix": "generic_response_matrix.csv",
+  "cells_kept": 72,
+  "cells_read": 72,
+  "treated_arm": "treated",
+  "arms": [
+    "control",
+    "treated"
+  ],
+  "signature_genes_found": 10,
+  "signature_genes_missing": [],
+  "generic_sets": {
+    "cell_cycle": {
+      "found": 15,
+      "missing": 0
+    },
+    "stress_viability": {
+      "found": 15,
+      "missing": 0
+    }
+  },
+  "claimed_effect": {
+    "effect": -0.12591916292879735,
+    "arms": [
+      "control",
+      "treated"
+    ],
+    "units": {
+      "treated": 3,
+      "control": 3
+    },
+    "unit_means": {
+      "treated": 0.645457,
+      "control": 0.771376
+    }
+  },
+  "generic_response": {
+    "verdict": "dominant",
+    "claimed_effect": -0.125919,
+    "generic_effects": {
+      "cell_cycle": -0.21711,
+      "stress_viability": 0.607676
+    },
+    "ratios": {
+      "cell_cycle": 1.7242,
+      "stress_viability": 4.8259
+    },
+    "per_signature": {
+      "cell_cycle": {
+        "verdict": "dominant",
+        "ratio": 1.7242,
+        "effect": -0.21711,
+        "reading": "the cell cycle signature moves 1.72x as much as the claimed one. The response is real and it is not specific to this perturbation, which is a different claim than the one frozen"
+      },
+      "stress_viability": {
+        "verdict": "dominant",
+        "ratio": 4.8259,
+        "effect": 0.607676,
+        "reading": "the stress viability signature moves 4.83x as much as the claimed one. The response is real and it is not specific to this perturbation, which is a different claim than the one frozen"
+      }
+    },
+    "reading": "the stress viability signature moves 4.83x as much as the claimed one. The response is real and it is not specific to this perturbation, which is a different claim than the one frozen"
+  },
+  "composition": {
+    "verdict": "not_computable",
+    "reading": "no cluster or cell-type column was given, so a change in which cells are present cannot be distinguished from a change in what they are doing. This is not a clean result, it is an unasked question"
+  },
+  "ambient_rna": {
+    "verdict": "not_computable",
+    "reading": "no droplet fell below the count threshold, so there is no empty-droplet population to estimate the soup from. Ambient contamination was NOT ruled out; it was not measurable here"
+  },
+  "moi_doublets": {
+    "verdict": "clear",
+    "flagged": 0,
+    "cells": 72,
+    "rate": 0.0,
+    "median_counts": 660.0,
+    "median_genes": 102,
+    "method": "counts above 2x median AND genes above 1.5x median \u2014 a screen, not a caller. It bounds the doublet rate rather than identifying doublets, and a dedicated caller should replace it where the rate matters to the claim",
+    "reading": "0.0% of cells look like possible multiplets, within the usual range"
+  },
+  "ambient_droplets": 0,
+  "context_reversal": {
+    "verdict": "not_computable",
+    "reading": "no context column was given. An effect measured in one context says nothing about another, and the report's scope must say so"
+  },
+  "confounders_addressed": [
+    {
+      "id": "cell_cycle",
+      "verdict": "dominant",
+      "result": "the cell cycle signature moves 1.72x as much as the claimed one. The response is real and it is not specific to this perturbation, which is a different claim th",
+      "computed_by": "scripts/expression_diagnostics.py",
+      "evidence": {
+        "ratio": 1.7242,
+        "claimed_effect": -0.125919
+      }
+    },
+    {
+      "id": "stress_viability",
+      "verdict": "dominant",
+      "result": "the stress viability signature moves 4.83x as much as the claimed one. The response is real and it is not specific to this perturbation, which is a different cl",
+      "computed_by": "scripts/expression_diagnostics.py",
+      "evidence": {
+        "ratio": 4.8259,
+        "claimed_effect": -0.125919
+      }
+    },
+    {
+      "id": "composition",
+      "verdict": "not_computable",
+      "result": "no cluster or cell-type column was given, so a change in which cells are present cannot be distinguished from a change in what they are doing. This is not a cle",
+      "computed_by": "scripts/expression_diagnostics.py",
+      "evidence": {}
+    },
+    {
+      "id": "ambient_rna",
+      "verdict": "not_computable",
+      "result": "no droplet fell below the count threshold, so there is no empty-droplet population to estimate the soup from. Ambient contamination was NOT ruled out; it was no",
+      "computed_by": "scripts/expression_diagnostics.py",
+      "evidence": {}
+    },
+    {
+      "id": "moi_doublets",
+      "verdict": "clear",
+      "result": "0.0% of cells look like possible multiplets, within the usual range",
+      "computed_by": "scripts/expression_diagnostics.py",
+      "evidence": {
+        "flagged": 0,
+        "cells": 72,
+        "rate": 0.0,
+        "median_counts": 660.0,
+        "median_genes": 102,
+        "method": "counts above 2x median AND genes above 1.5x median \u2014 a screen, not a caller. It bounds the doublet rate rather than identifying doublets, and a dedicated caller should replace it where the rate matters to the claim"
+      }
+    },
+    {
+      "id": "context_reversal",
+      "verdict": "not_computable",
+      "result": "no context column was given. An effect measured in one context says nothing about another, and the report's scope must say so",
+      "computed_by": "scripts/expression_diagnostics.py",
+      "evidence": {}
+    }
+  ]
+}

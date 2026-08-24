@@ -84,9 +84,19 @@ def main() -> int:
             "claim": statement,
             "hypotheses": claim.get("hypotheses", []),
             **({"preamble": args.preamble} if args.preamble else {}),
-            "formal_statement": args.formal or
+            # A claim that already carries a formal target has had that target
+            # frozen and reviewed. Making the author retype it under --formal
+            # meant the common path produced a blueprint whose SIGNATURE was
+            # still a FILL-ME, and produce.py rendered that placeholder straight
+            # into the theorem line. Carrying it is not guessing; it is the
+            # opposite — it is refusing to let the reviewed statement be retyped.
+            "formal_statement": args.formal or claim.get("formal_target") or
+                (claim.get("frozen_conditions", {}) or {}).get("formal_target") or
                 "FILL-ME: the Lean signature. Supplied, never guessed — autoformalization is "
                 "where fidelity is lost, and a guessed statement type-checks as well as a right one",
+            # Same reason: a declared search domain is what turns a false claim
+            # into a cheap refutation instead of an expensive kernel failure.
+            **({"search_domain": claim["search_domain"]} if claim.get("search_domain") else {}),
         },
         "target_protection": {
             "statement_tampering_forbidden": True,

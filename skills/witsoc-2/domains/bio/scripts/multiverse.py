@@ -108,7 +108,19 @@ def universe(rows, spec, data) -> tuple[list[float], list[str], list[str] | None
     units = bl.pseudobulk(kept, unit_col, value_col, label_col)
     if spec["min_cells_per_unit"]:
         units = [u for u in units if u["n_observations"] >= spec["min_cells_per_unit"]]
-    units = [u for u in units if u["label"] in (data["treatment"], data["control"])]
+    labelled = [u for u in units if u["label"] in (data["treatment"], data["control"])]
+
+    # Crossed design: no unit carries a single arm, so the between-unit path
+    # finds nothing under EVERY specification and the multiverse reports
+    # "unrunnable" for all of them — which reads as a robustness failure and is
+    # actually the analysis layer not knowing what a paired design is.
+    if len(labelled) < 2:
+        pairs, _ = bl.paired_units(kept, unit_col, value_col, label_col,
+                                   data["treatment"], data["control"])
+        if len(pairs) >= 2:
+            differences = [q["difference"] for q in pairs]
+            return differences, ["difference"] * len(differences), None, "paired"
+    units = labelled
 
     strata = None
     if stratum_col:
@@ -154,6 +166,19 @@ def main() -> int:
     for combo in itertools.product(*(alternatives[k] for k in keys)):
         spec = dict(zip(keys, combo))
         values, labels, strata, blocked = universe(rows, spec, data)
+        # A crossed design comes back as within-unit DIFFERENCES, which the
+        # between-arm test cannot read. It is not blocked; it is a different
+        # test, and treating it as blocked reported every specification
+        # unrunnable — a robustness failure that was really the analysis layer
+        # not knowing what a paired design is.
+        if blocked == "paired":
+            null = bl.sign_flip_p(values, iterations=args.iterations, seed=0)
+            results.append({**spec, "ran": True, "design": "paired",
+                            "effect": round(bl.mean(values), 4),
+                            "p": round(null["p_value"], 4),
+                            "significant": null["p_value"] <= args.alpha,
+                            "units": {"paired": null["units"]}})
+            continue
         if blocked:
             results.append({**spec, "ran": False, "why": blocked})
             continue

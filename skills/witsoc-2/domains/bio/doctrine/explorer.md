@@ -5,15 +5,40 @@ the others, and it is not which analysis to run.
 
 ## The first decision is the class, not the method
 
-Before any work: classify the claim against `data/claim_classes.json`. The class
-fixes the ceiling — a realized-screen cell-level association tops out at
-`CONDITIONAL` no matter how clean the analysis, and a donor-replicated
-population claim can reach `CHECKED_BOUNDED` only with donors actually crossed
-with the condition.
+Before any work, resolve the class. The class fixes the ceiling — a
+realized-screen cell-level association tops out at `CONDITIONAL_WITHIN_SCREEN`
+no matter how clean the analysis, and a donor-replicated population claim
+reaches `CHECKED_BOUNDED` only with donors actually crossed with the condition.
 
 Getting this wrong is not a small error. If the class is wrong the ceiling is
 wrong, and every downstream check is guarding the wrong thing while reporting
 that it passed.
+
+Do not do it by eye:
+
+```bash
+python3 scripts/classify_claim.py --statement "<the claim, verbatim>" --explain
+python3 scripts/classify_claim.py --claim <claim.json> --metadata <metadata.csv> --json
+python3 scripts/classify_claim.py --list
+```
+
+**Two answers come back and the gap between them is the point.** The *claimed*
+class comes from the statement's words — what is being asserted. The
+*supportable* class comes from the metadata — what the design can carry. They
+are different questions, and conflating them is the pack's entire subject:
+
+| Gap | Means |
+|---|---|
+| `OVER_CLAIMING` | the statement asserts a population effect the table cannot support. This is the denominator finding, and it now arrives at triage rather than after the analysis is paid for |
+| `UNDER_CLAIMING` | the design could carry more than the statement asks. Not a problem, and worth saying before the data is set aside |
+| `AGREED` | proceed, at the ceiling both allow |
+
+The ceiling is the weaker of the two, always.
+
+`AMBIGUOUS` is a real answer. Two classes within scoring distance means the
+statement has not said what unit it is about; take the weaker ceiling and
+narrow it. `NO_MATCH` usually means the same thing more loudly, and the fix is
+the statement rather than a guess.
 
 Two failure directions, and the second is the one people forget:
 
@@ -22,6 +47,10 @@ Two failure directions, and the second is the one people forget:
 - **Over-rejecting.** A legitimately narrow guide-conditioned contrast refused
   because it has no donors. It never needed donors. Refusing it teaches people
   the audit is noise and trains them to route around it.
+
+The classifier is tuned against a calibration set — `--calibrate` runs it — so a
+misroute is a term problem in `data/claim_classes.json`, visible and fixable,
+rather than a disagreement with a black box.
 
 ## Freeze the context, all of it
 
@@ -57,6 +86,24 @@ modelling:
 - Does a generic stress or cell-cycle signature move as much as the claimed one?
 - Is a simple baseline already as good as the model?
 
+The first and third are computed, not asked:
+
+```bash
+python3 scripts/diagnostics.py --metadata <metadata.csv> --label condition --unit donor
+python3 scripts/expression_diagnostics.py --dense <matrix.csv> --signature <genes.txt>         --design <design.csv> --label condition --unit donor --cluster cell_type
+python3 scripts/design.py --claim <claim.json> --metadata <metadata.csv>
+python3 scripts/power.py --metadata <metadata.csv> --unit donor --label condition
+```
+
+`diagnostics` exits 1 on a fatal confound, and that is the whole campaign
+answered for the price of reading a CSV. `expression_diagnostics` returns the
+generic-response comparison, so "is this just stress?" is a number before it is
+an argument. `design` says what experiment WOULD support the claim, which is the
+right thing to hand back when the answer is that this one cannot. `power`
+reports the minimum detectable effect: a design that cannot see the effect
+being claimed produces a null that means nothing, and running it anyway
+manufactures a result nobody can interpret.
+
 If a cheap falsifier would end the campaign, run it first. The expensive
 analysis is worth nothing if the design cannot carry the claim.
 
@@ -69,10 +116,22 @@ analysis is worth nothing if the design cannot carry the claim.
 | Bounded empirical support | `executable` |
 | `CHECKED_REPRODUCED` | `replication`, which needs a second source that shares no accession |
 
-Probe availability first (`scripts/availability.py`). Here availability is about
-DATA, not toolchains: whether the pinned table exists and contains the columns
-the bundle names. Discovering after the budget that the metadata table has no
-donor column is an avoidable and expensive way to fail.
+Probe availability first. Here availability is about DATA, not toolchains:
+whether the pinned table exists and contains the columns the bundle names.
+Discovering after the budget that the metadata table has no donor column is an
+avoidable and expensive way to fail.
+
+```bash
+python3 scripts/availability.py --tier structural
+python3 scripts/availability.py --tier executable --bundle <bundle.json>
+```
+
+Cost, so a tier is chosen rather than defaulted to: `structural` is milliseconds
+and reads two files. `executable` recomputes the effect and runs a permutation
+null — seconds to a minute on a metadata table, minutes once a count matrix is
+in the path, and it is the tier that actually decides anything. `replication`
+costs a second dataset, which is usually not a compute cost at all but a
+question of whether one exists; ask that before planning around it.
 
 ## Arbitrating a return
 
@@ -92,7 +151,8 @@ Three returns that look like success and are not:
 ## What escalates to Durbin
 
 Two consecutive failures with the same signature on one frozen claim, and it is
-mechanical rather than a judgement (`ARCHITECTURE.md` §5). Also escalate the
+mechanical rather than a judgement — the ladder counts, and the count is the
+one thing not affected by how the attempt felt. Also escalate the
 first time a failure is not explainable: in a field where the design usually
 explains the failure, an unexplained one is more informative than three
 explained ones and is where the real obstruction is.

@@ -28,12 +28,25 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
+import os
 import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+# The tier's authorship, copied from this pack's own manifest so the receipt
+# states who stands behind the verification. `independent` means the backend
+# knows nothing about the run and cannot be talked into a pass; anything else
+# means the frame will require a verifier distinct from the producer. The
+# manifest declared this from the beginning and nothing read it.
+TIER_AUTHORSHIP = {
+    "structural": "independent",
+    "kernel": "independent",
+    "bounded": "independent"
+}
+
 TIERS = {
     "structural": {"max_status": "SKETCH", "adversarial": False},
     "bounded": {"max_status": "CHECKED_BOUNDED", "adversarial": True},
@@ -49,8 +62,50 @@ def run(cmd: list[str]) -> tuple[int, str]:
         return 2, str(exc)
 
 
+# A gate reports its verdict on stdout; Python writes warnings to stderr, and
+# both are captured together. Taking line one meant a DeprecationWarning could
+# appear in the receipt AS the gate's stated reason — a stack-trace fragment
+# where the finding belongs. Prefer the first line that reads like a verdict.
+VERDICT_LINE = re.compile(
+    r"^\s*(?:[A-Z][A-Z \-]{2,}:|pass\b|fail\b|error\b|scope\b|note\b|not_run\b)",
+    re.IGNORECASE)
+# Strongest first. A gate that prints a scope note and then fails must be
+# reported by the failure, not by the note that happened to come first.
+VERDICT_RANK = (("fail", "error", "refused"), ("not_run", "not_applicable"),
+                ("pass",), ("scope", "note"))
+
+
+def verdict_detail(output: str) -> str:
+    lines = [ln.strip() for ln in output.splitlines() if ln.strip()]
+    candidates = [ln for ln in lines if VERDICT_LINE.match(ln)]
+    for tier in VERDICT_RANK:
+        for line in candidates:
+            if line.lower().lstrip().startswith(tier) or any(
+                    t in line.split(":", 1)[0].lower() for t in tier):
+                return line
+    return candidates[0] if candidates else (lines[0] if lines else "")
+
+
 def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+# Which artifact kinds each gate reads, from this pack's own manifest. Walked
+# rather than indexed by path: the manifest nests gates under the verification
+# block, and a lookup that guessed the location silently returned nothing.
+def _manifest_gates(node):
+    if isinstance(node, dict):
+        if node.get("name") and node.get("script"):
+            yield node
+        for value in node.values():
+            yield from _manifest_gates(value)
+    elif isinstance(node, list):
+        for value in node:
+            yield from _manifest_gates(value)
+
+
+GATE_APPLIES = {g["name"]: g.get("applies_to") for g in _manifest_gates(
+    json.loads((HERE.parent / "domain.json").read_text(encoding="utf-8")))}
 
 
 def run_gates(artifact: Path, claim_path: Path, tier: str,
@@ -83,8 +138,32 @@ def run_gates(artifact: Path, claim_path: Path, tier: str,
             gates.append(("axiom-audit",
                           [sys.executable, str(HERE / "gates" / "axiom_audit.py"),
                            str(artifact), "--claim", str(claim_path)]))
+            # Only meaningful once the claim names something the proof must not
+            # cite; the gate reports not_applicable otherwise rather than
+            # failing every campaign whose target the library does not contain.
+            circ = [sys.executable, str(HERE / "gates" / "circularity_audit.py"),
+                    str(artifact), "--claim", str(claim_path)]
+            # Without the index the gate can only check names the claim thought
+            # to forbid. With it, `allowed_external_facts` becomes a check
+            # against the proof term instead of a description of the plan.
+            corpus = os.environ.get("WITSOC2_MATHS_CORPUS")
+            if corpus and Path(corpus).exists():
+                circ += ["--corpus", corpus]
+            gates.append(("circularity-audit", circ))
+    # A gate that does not read this artifact kind must report NOT_APPLICABLE,
+    # not pass. Running it anyway produced a receipt line that looked like a
+    # check and was one gate auditing zero citations — the same shape as the
+    # drift gate that compared nothing on a checked artifact.
+    kind = Path(artifact).suffix.lstrip(".")
+    skipped = {name for name, applies in GATE_APPLIES.items()
+               if applies and kind not in applies}
     results = []
     for name, cmd in gates:
+        if name in skipped:
+            results.append({"gate": name, "verdict": "not_applicable",
+                            "detail": f"does not read a {kind!r} artifact; "
+                                      "declared applies_to in the manifest"})
+            continue
         code, output = run(cmd)
         results.append({
             "gate": name,
@@ -96,7 +175,7 @@ def run_gates(artifact: Path, claim_path: Path, tier: str,
             "verdict": ("pass" if code == 0 else "error" if code == 2
                         else "not_run" if code == 3
                         else "not_applicable" if code == 4 else "fail"),
-            "detail": output.splitlines()[0] if output else "",
+            "detail": verdict_detail(output),
         })
     return results
 
@@ -119,6 +198,23 @@ def run_tier(tier: str, artifact: Path, claim_path: Path, full_build: bool) -> d
         payload = {"verdict": "error", "log_excerpt": out[:2000]}
     payload["_exit"] = code
     return payload
+
+
+def axiom_audit_summary(tier: str, tier_pass: bool, gates: list[dict]) -> str:
+    """What the axiom audit actually found.
+
+    A receipt that contradicts itself is worse than one that omits a field: a
+    reader resolves the contradiction by picking whichever half suits them, and
+    a machine reads whichever half it was pointed at.
+    """
+    entry = next((g for g in gates if g["gate"] == "axiom-audit"), None)
+    if tier != "kernel":
+        return "not_run — the axiom audit needs a kernel elaboration to enumerate"
+    if not tier_pass:
+        return "not_run — the kernel did not elaborate, so there is nothing to enumerate"
+    if entry is None:
+        return "not_run — the gate was not dispatched"
+    return f"{entry['verdict']} — {entry.get('detail', '')}".strip()
 
 
 def build_receipt(tier: str, artifact: Path, claim: dict, tier_result: dict,
@@ -144,18 +240,38 @@ def build_receipt(tier: str, artifact: Path, claim: dict, tier_result: dict,
         "target_sha256": claim.get("target_sha256", ""),
         "artifact_sha256": sha256_file(artifact),
         "tier": tier,
+        "authorship": TIER_AUTHORSHIP.get(tier, "unstated"),
         "verdict": verdict,
         "produced_at": datetime.now(timezone.utc).isoformat(),
         "max_status": TIERS[tier]["max_status"],
+        # Each field states what ITS OWN evidence shows, not what the aggregate
+        # verdict was. Keying them off the overall verdict made a receipt lie
+        # about itself: on a run where the kernel elaborated cleanly and one
+        # separate gate could not run, this reported the refutation as BROKEN —
+        # a false statement about the adversarial tier, in the field the frame's
+        # reducer derives `refute_attempt` from. The reducer would then refuse a
+        # refutation that had in fact survived, and the refusal would look
+        # principled.
+        #
+        # This is the frame's own derive-don't-read rule, applied one level
+        # further in: a receipt is evidence about several separate things, and
+        # collapsing them to one verdict throws away exactly the distinctions
+        # the reducer was built to read.
         "refute_attempt": {
             "gate_name": "kernel-recheck",
-            "discharged_by": "adversarial_tier" if adversarial else "skeptic_pass",
-            "outcome": ("survived" if verdict == "pass"
-                        else "not_run" if verdict == "not_run" else "broken"),
+            # Naming `skeptic_pass` at a tier that ran no skeptic validated and
+            # was untrue. The method that will discharge this is the
+            # adversarial tier; `outcome` already says it has not run.
+            "discharged_by": "adversarial_tier",
+            "outcome": ("not_run" if tier_result.get("verdict") == "not_run"
+                        else "survived" if tier_pass else "broken"),
         },
         "completeness": {
-            "all_obligations_covered": tier == "kernel" and verdict == "pass",
-            "concluding_step_covered": tier == "kernel" and verdict == "pass",
+            # What the TIER covered. A blocking gate that could not run leaves a
+            # gap in the receipt and takes nothing away from what the kernel
+            # elaborated.
+            "all_obligations_covered": tier == "kernel" and tier_pass,
+            "concluding_step_covered": tier == "kernel" and tier_pass,
             "open_gaps": len(blocking_gaps),
             "rejections": len(blocking_failed) + (0 if tier_pass else 1),
         },
@@ -164,10 +280,10 @@ def build_receipt(tier: str, artifact: Path, claim: dict, tier_result: dict,
         "not_applicable": [g["gate"] for g in gates if g["verdict"] == "not_applicable"],
         "gates": gates,
         "toolchain": toolchain,
-        "axiom_audit": (
-            "not_run — requires a kernel pass" if tier != "kernel" or verdict != "pass"
-            else "pending: enumerate dependencies and compare against the allowlist"
-        ),
+        # From the gate that actually ran, not from the aggregate. This field
+        # said "not_run — requires a kernel pass" while the axiom-audit gate in
+        # the same receipt said `pass`, three lines below it.
+        "axiom_audit": axiom_audit_summary(tier, tier_pass, gates),
         "environment": {"fresh_process": True, "fresh_copy": False, "restricted_env": False},
         "log_excerpt": json.dumps(tier_result)[:2000],
     }
@@ -212,11 +328,64 @@ def self_test() -> int:
         if not ok:
             failures.append(f"{control.name} did not pass (exit {code})")
 
+    # The bounded tier declares `adversarial: true` in the manifest. Until this
+    # ran, nothing tested it: the tier had a registered negative control and the
+    # self-test never opened it, so the strongest claim in the manifest was the
+    # least examined one. A search backend that silently returns "no
+    # counterexample" is indistinguishable from one that works, and the only way
+    # to tell them apart is an input where the answer is known to be no.
+    print("\nBounded-tier negative controls — each must be REFUTED:\n")
+    for control, why in (("bounded_false_claim.json", "n^2 > n fails at n = 0 and n = 1"),
+                         ("bounded_false_pair.json", "C(n,0) = 1 < n — needs the second axis")):
+        path = HERE / "negative_control" / control
+        code, out = run([sys.executable, str(HERE / "tiers" / "bounded.py"),
+                         "--claim", str(path), "--json"])
+        refuted = code == 1
+        print(f"  {'ok  ' if refuted else 'MISS'}  {control:<28} {why}")
+        if not refuted:
+            failures.append(f"{control} was not refuted by the bounded tier (exit {code})")
+
     placeholder = HERE / "negative_control" / "placeholder.lean"
     placeholder.write_text("theorem t : True := by\n  sorry\n", encoding="utf-8")
     code, _ = run([sys.executable, str(HERE / "gates" / "placeholder_scan.py"), str(placeholder)])
     ok = code == 1
     print(f"\n  {'ok  ' if ok else 'MISS'}  placeholder.lean rejected by placeholder-scan")
+
+    # Two gates were inert on a Lean artifact and nobody noticed, because every
+    # component check fed them a WIT file.
+    #
+    #  * target-protection parsed GIVEN:/CLAIM: blocks, which a .lean file does
+    #    not have, and had an explicit .lean exemption — so it compared NOTHING
+    #    and returned pass. An artifact that replaced the frozen target with
+    #    `True` cleared the drift gate.
+    #  * axiom-audit wrote its probe beside the artifact and ran the toolchain
+    #    from the PROJECT directory, so a relative artifact path made the probe
+    #    unreachable and the gate reported NOT_RUN — silently, and only for the
+    #    callers who type relative paths, which is all of them.
+    print("\nLean artifacts — the gates must not be inert on them:\n")
+    lean_cases = [
+        ("even_prod_drifted.lean", "target_protection.py", 1,
+         "a statement replaced by True must be caught as drift"),
+        ("even_prod_proved.lean", "target_protection.py", 0,
+         "the honest artifact must still pass"),
+        ("even_prod_postulated.lean", "axiom_audit.py", 1,
+         "a locally postulated axiom must be caught through a RELATIVE path"),
+    ]
+    claim = HERE.parent / "evals" / "path" / "even_prod_claim.json"
+    for name, gate, want, why in lean_cases:
+        artifact = HERE.parent / "evals" / "path" / name
+        if not artifact.exists() or not claim.exists():
+            print(f"  ----  {name}: fixture missing, not run")
+            continue
+        # Deliberately relative: that is the shape that silently disabled one.
+        rel = artifact.relative_to(Path.cwd()) if str(artifact).startswith(str(Path.cwd())) \
+            else artifact
+        code, _ = run([sys.executable, str(HERE / "gates" / gate), str(rel),
+                       "--claim", str(claim)])
+        hit = code == want
+        print(f"  {'ok  ' if hit else 'MISS'}  {name}: {why}")
+        if not hit:
+            failures.append(f"{name} through {gate}: wanted exit {want}, got {code}")
     if not ok:
         failures.append("placeholder.lean was not rejected")
 
@@ -255,8 +424,14 @@ def main() -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 
+    # The claim goes to the probe. Whether the kernel tier needs a LIBRARY is a
+    # property of the claim — a target citing no external results needs the
+    # kernel and not Mathlib — and asking without it made the adapter refuse to
+    # run a tier that would have worked, understating what the run could
+    # establish. That is the same class of error as overstating, facing the
+    # other way, and it is the quieter one.
     code, probe = run([sys.executable, str(HERE / "availability.py"),
-                       "--tier", args.tier, "--json"])
+                       "--tier", args.tier, "--claim", str(args.claim), "--json"])
     toolchain = ""
     if code == 3:
         detail = json.loads(probe).get(args.tier, {}) if probe.startswith("{") else {}

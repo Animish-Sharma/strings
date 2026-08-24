@@ -1,75 +1,95 @@
 {
-  "contract_version": "2",
+  "contract_version": "3",
   "domain": "maths",
-  "description": "Mathematics: WIT structural checking, Lean/Mathlib kernel verification, and bounded computational search. The baseline domain \u2014 the frame was factored out of a system built for exactly this field, so this pack is the reference instantiation of all five contract items.",
+  "description": "Mathematics: WIT structural checking, Lean/Mathlib kernel verification, and bounded computational search. The baseline domain — the frame was factored out of a system built for exactly this field, so this pack is the reference instantiation of all five contract items.",
   "roles": {
     "researcher": "Lovasz"
   },
   "selection": {
     "signals": [
-      "prove",
-      "disprove",
-      "proof",
-      "conjecture",
-      "show that",
-      "it suffices to show",
-      "integer",
-      "natural number",
-      "rational",
-      "irrational",
-      "prime",
-      "divisible",
-      "divisibility",
-      "modulo",
-      "congruent",
-      "inequality",
-      "upper bound",
-      "lower bound",
-      "tight bound",
       "asymptotic",
-      "polynomial",
-      "monotone",
-      "sequence",
-      "converges",
-      "diverges",
-      "convergence",
-      "graph",
-      "vertices",
-      "edges",
-      "bipartite",
-      "combinatorial",
-      "subset",
-      "cardinality",
       "bijection",
-      "injective",
-      "surjective",
-      "matrix",
-      "eigenvalue",
-      "continuous",
+      "bipartite",
+      "cardinality",
       "closed interval",
-      "induction",
-      "exhaustive search",
+      "combinatorial",
+      "congruent",
+      "conjecture",
+      "conjunction",
+      "continuous",
+      "convergence",
+      "converges",
       "counterexample",
-      "if and only if",
-      "there exists",
+      "disjunction",
+      "disprove",
+      "diverges",
+      "divisibility",
+      "divisible",
+      "edges",
+      "eigenvalue",
+      "entails",
+      "exhaustive search",
+      "for all",
+      "for all n",
       "for every n",
-      "for all n"
+      "graph",
+      "holds",
+      "hypothesis and conclusion",
+      "if and only if",
+      "implication",
+      "implies",
+      "induction",
+      "inequality",
+      "injective",
+      "integer",
+      "irrational",
+      "it suffices to show",
+      "lower bound",
+      "matrix",
+      "modulo",
+      "monotone",
+      "natural number",
+      "negation",
+      "polynomial",
+      "prime",
+      "proof",
+      "proposition",
+      "propositional",
+      "prove",
+      "quantifier",
+      "rational",
+      "sequence",
+      "show that",
+      "subset",
+      "surjective",
+      "there exists",
+      "tight bound",
+      "truth table",
+      "upper bound",
+      "valid argument",
+      "vertices"
     ],
     "strong_signals": [
-      "prove that",
-      "prove or disprove",
-      "theorem",
-      "lemma",
       "corollary",
-      "qed",
-      "mathlib",
-      "lean 4",
-      "formalize",
+      "first-order logic",
       "formal verification",
-      "proof by induction",
-      "well-ordering",
+      "formalize",
+      "lean 4",
+      "lemma",
+      "logically valid",
+      "mathlib",
+      "modular arithmetic",
+      "modus ponens",
+      "modus tollens",
       "pigeonhole",
-      "modular arithmetic"
+      "proof by induction",
+      "propositional logic",
+      "prove or disprove",
+      "prove that",
+      "qed",
+      "tautology",
+      "theorem",
+      "well-ordering"
     ],
     "excludes": [
       "clinical trial",
@@ -91,7 +111,8 @@
       "Formalize the statement that a continuous function on a closed interval attains its maximum.",
       "Determine whether every graph whose vertices number n and whose edges exceed n^2/4 contains a triangle.",
       "Prove or disprove: the sequence defined by a(n+1) = a(n)/2 + 1/a(n) converges for every positive start.",
-      "Find a tight upper bound for the least n with this combinatorial property, and confirm it by exhaustive search over the stated finite range."
+      "Find a tight upper bound for the least n with this combinatorial property, and confirm it by exhaustive search over the stated finite range.",
+      "For all propositions P and Q, if P implies Q and P holds, then Q holds."
     ],
     "counter_examples": [
       "Prove that the gene knockout reduces protein levels in the clinical trial cohort.",
@@ -119,16 +140,18 @@
         "authorship": "independent",
         "contamination_controls": "Parses only the artifact; has no access to the expected conclusion and cannot be tuned toward one.",
         "availability_check": "python3 scripts/availability.py --tier structural",
-        "concurrency_limit": 16
+        "concurrency_limit": 16,
+        "script": "scripts/tiers/structural.py",
+        "method_family": "shape-inspection"
       },
       {
         "name": "kernel",
-        "description": "Lean elaboration against Mathlib. A candidate either type-checks or it does not, and no argument changes that. Preferred feedback order: LSP/REPL per-command, then `lake env lean <file>`, then a full `lake build` only for final confirmation. WITSOC2_LEAN_PROJECT must point at a built Lean project, or the tier elaborates against the ambient toolchain with an empty search path and every library import fails.",
+        "description": "Lean elaboration against Mathlib. A candidate either type-checks or it does not, and no argument changes that. Feedback order: `lake env lean <file>` as the default and the floor, then a full `lake build` for final confirmation only. There is no per-command fast path — see prefix_reuse below and doctrine/kernel_economics.md. WITSOC2_LEAN_PROJECT must point at a built Lean project, or the tier elaborates against the ambient toolchain with an empty search path and every library import fails.",
         "adversarial": true,
         "cost_hint": "expensive",
         "max_status": "VERIFIED",
         "authorship": "independent",
-        "two_sided_evidence": "scripts/negative_control/ holds four known-bad artifacts \u2014 a placeholder escape, a weakened target, a hidden binder assumption, and a type error. The tier must reject all four; scripts/check.py --self-test runs them.",
+        "two_sided_evidence": "scripts/negative_control/ holds four known-bad artifacts — a placeholder escape, a weakened target, a hidden binder assumption, and a type error. The tier must reject all four; scripts/check.py --self-test runs them.",
         "contamination_controls": "The kernel is upstream software with no knowledge of this run. The frozen target hash is computed before elaboration and re-checked after, so the statement cannot be edited to fit the argument.",
         "availability_check": "python3 scripts/availability.py --tier kernel",
         "negative_control": "scripts/negative_control",
@@ -136,22 +159,26 @@
         "prefix_reuse": {
           "supported": false,
           "measured_value": "Import elaboration is 98% of kernel cost: 5.0s to import Mathlib against 0.1s for a three-obligation proof, measured over three runs each. Reuse would be worth roughly 50x on a repair loop.",
-          "why_not_built": "The available REPL returned success-shaped output while running against an empty environment \u2014 `Unknown identifier trivial` after a reported successful import. A fast path that succeeds emptily is worse than no fast path. See doctrine/kernel_economics.md.",
-          "gate_before_enabling": "any fast path must reproduce the slow path's verdict on every artifact in scripts/negative_control/, rejections and acceptance alike \u2014 a backend that has lost its environment passes nothing and fails nothing, and only a set of inputs whose verdicts should differ exposes it"
-        }
+          "why_not_built": "The available REPL returned success-shaped output while running against an empty environment — `Unknown identifier trivial` after a reported successful import. A fast path that succeeds emptily is worse than no fast path. See doctrine/kernel_economics.md.",
+          "gate_before_enabling": "any fast path must reproduce the slow path's verdict on every artifact in scripts/negative_control/, rejections and acceptance alike — a backend that has lost its environment passes nothing and fails nothing, and only a set of inputs whose verdicts should differ exposes it"
+        },
+        "script": "scripts/tiers/kernel.py",
+        "method_family": "direct-production"
       },
       {
         "name": "bounded",
-        "description": "Exhaustive or randomized search over a stated finite domain, dispatched to scripts/backends/ (SAT with witness re-verification and labelled refutations; exact arithmetic; finite enumeration). Adversarial within its range and establishes nothing outside it \u2014 a budget stop is UNKNOWN, never a refutation.",
+        "description": "Exhaustive or randomized search over a stated finite domain — one integer variable or a product of several, so pair and triple questions are expressible — dispatched to scripts/backends/ (SAT with witness re-verification and labelled refutations; exact arithmetic; finite enumeration). Adversarial within its range and establishes nothing outside it — a budget stop is UNKNOWN, never a refutation.",
         "adversarial": true,
         "cost_hint": "moderate",
         "max_status": "CHECKED_BOUNDED",
         "authorship": "independent",
-        "two_sided_evidence": "Search harnesses are run against seeded instances with known counterexamples; an evaluator that scores an erroring candidate is rejected rather than treated as a pass.",
+        "two_sided_evidence": "scripts/negative_control/ holds two known-FALSE claims the tier must refute: bounded_false_claim.json (n^2 > n, false at n = 0 and n = 1) and bounded_false_pair.json (C(n,k) >= n, false at k = 0, and inexpressible without the second search axis). scripts/check.py --self-test runs both. A search backend that returns 'no counterexample' for the wrong reason is indistinguishable from a working one on inputs where the answer is yes, so the controls are inputs where it is no.",
         "contamination_controls": "Bounds and seed are frozen in the claim before the search runs, so a failing search cannot be rescued by quietly shrinking the range.",
         "availability_check": "python3 scripts/availability.py --tier bounded",
         "concurrency_limit": 8,
-        "negative_control": "scripts/negative_control/bounded_false_claim.json"
+        "negative_control": "scripts/negative_control/bounded_false_claim.json",
+        "script": "scripts/tiers/bounded.py",
+        "method_family": "bounded-refutation"
       }
     ]
   },
@@ -187,59 +214,161 @@
       "researcher": "doctrine/researcher.md"
     },
     "rules": [
-      "doctrine/repair.md",
-      "doctrine/obstructions.md",
-      "doctrine/target_protection.md",
-      "doctrine/campaign.md",
-      "doctrine/blueprint.md",
-      "doctrine/barriers.md",
-      "doctrine/problem_selection.md",
-      "doctrine/skeptic_pass.md",
-      "doctrine/literature.md",
-      "doctrine/experiments.md",
-      "doctrine/demotion.md",
-      "doctrine/reductions.md",
-      "doctrine/solve_claim.md"
+      {
+        "path": "doctrine/repair.md",
+        "load_when": "failure",
+        "roles": [
+          "generator"
+        ],
+        "why": "read AFTER a failure: diagnosing into a class is what makes the next attempt different"
+      },
+      {
+        "path": "doctrine/obstructions.md",
+        "load_when": "escalation",
+        "roles": [
+          "researcher"
+        ],
+        "why": "the recurring obstruction shapes"
+      },
+      {
+        "path": "doctrine/target_protection.md",
+        "load_when": "freeze",
+        "roles": [
+          "explorer",
+          "generator"
+        ],
+        "why": "the frozen statement is what everything downstream is checked against"
+      },
+      {
+        "path": "doctrine/campaign.md",
+        "load_when": "campaign_start",
+        "why": "how a long campaign is run"
+      },
+      {
+        "path": "doctrine/blueprint.md",
+        "load_when": "production",
+        "roles": [
+          "generator"
+        ],
+        "why": "the plan a candidate is rendered from"
+      },
+      {
+        "path": "doctrine/barriers.md",
+        "load_when": "escalation",
+        "roles": [
+          "researcher"
+        ],
+        "why": "why this problem is hard"
+      },
+      {
+        "path": "doctrine/problem_selection.md",
+        "load_when": "triage",
+        "roles": [
+          "explorer"
+        ],
+        "why": "choosing what to pursue now"
+      },
+      {
+        "path": "doctrine/skeptic_pass.md",
+        "load_when": "pre_admission",
+        "why": "the last thing before a status moves"
+      },
+      {
+        "path": "doctrine/literature.md",
+        "load_when": "retrieval",
+        "roles": [
+          "explorer",
+          "researcher"
+        ],
+        "why": "what is already known, before anything is attempted"
+      },
+      {
+        "path": "doctrine/experiments.md",
+        "load_when": "retrieval",
+        "roles": [
+          "researcher"
+        ],
+        "why": "computational probing of a target"
+      },
+      {
+        "path": "doctrine/demotion.md",
+        "load_when": "demotion",
+        "why": "when a status has to come down"
+      },
+      {
+        "path": "doctrine/reductions.md",
+        "load_when": "escalation",
+        "roles": [
+          "researcher"
+        ],
+        "why": "moving work out of the open core"
+      },
+      {
+        "path": "doctrine/solve_claim.md",
+        "load_when": "pre_admission",
+        "why": "what may and may not be called solved"
+      }
     ]
   },
   "gates": {
     "refute_attempt": {
       "name": "kernel-recheck",
       "description": "Re-elaborate the artifact from its current bytes in a fresh process against a fresh checkout, then audit the axioms the result actually depends on. Because the kernel cannot be talked into a false pass, surviving this is a genuine attempt to break the result rather than a second friendly run.",
-      "satisfied_by_tier": "kernel"
+      "satisfied_by_tier": "kernel",
+      "script": "scripts/tiers/kernel.py"
     },
     "additional": [
       {
         "name": "placeholder-scan",
         "description": "Rejects sorry, admit, axiom, constant, opaque, unsafe, native_decide, and the `?_`/`by?` holes. These make anything type-check, so their presence voids the kernel's verdict entirely.",
-        "blocking": true
+        "blocking": true,
+        "script": "scripts/gates/placeholder_scan.py",
+        "review_check": "dependencies"
       },
       {
         "name": "target-protection-diff",
         "description": "Diffs the artifact's statement against the frozen target: signature, binders, hypotheses, domains, and definitions. Catches the target being weakened to something trivially true, an assumption being smuggled into a binder, or a definition being redefined to make the claim vacuous.",
-        "blocking": true
+        "blocking": true,
+        "script": "scripts/gates/target_protection.py",
+        "review_check": "target_fidelity"
       },
       {
         "name": "axiom-audit",
         "description": "Enumerates the axioms the checked result depends on and rejects any beyond the declared allowlist. A new or metaprogrammed axiom is an escape hatch that a plain type-check will not surface.",
-        "blocking": true
+        "blocking": true,
+        "script": "scripts/gates/axiom_audit.py",
+        "review_check": "dependencies"
+      },
+      {
+        "name": "circularity-audit",
+        "description": "Renders the proof term and refuses it if it cites the target itself, or any library declaration of the same type. The kernel accepts `theorem t : P := library_t`, `#print axioms` reports it clean, and every other gate passes it — so on any target the library already contains, this is the only thing standing between a search and its own answer key.",
+        "blocking": true,
+        "script": "scripts/gates/circularity_audit.py",
+        "review_check": "circularity"
       },
       {
         "name": "premise-precondition-audit",
-        "description": "Every cited external result has its hypotheses matched against the local use. A citation whose preconditions are unmet is an unresolved gap, not a step.",
-        "blocking": true
+        "description": "Every cited external result has its hypotheses matched against the local use. A citation whose preconditions are unmet is an unresolved gap, not a step. Reads the plan's declared citations, so it applies to the WIT artifact; on a checked artifact it audited zero citations and passed, which is not a check. What a tactic reaches for in a checked artifact is the circularity audit's question.",
+        "blocking": true,
+        "script": "scripts/gates/premise_audit.py",
+        "applies_to": [
+          "wit"
+        ],
+        "review_check": "preconditions"
       },
       {
         "name": "fidelity-review",
         "description": "Independent bidirectional check that the formal statement says what the informal target says. The kernel proves things about the encoding; whether the encoding is faithful is a separate question it cannot answer.",
-        "blocking": true
+        "blocking": true,
+        "script": "scripts/gates/fidelity.py",
+        "review_check": "target_fidelity"
       }
     ]
   },
   "status_refinements": {
     "VERIFIED_WIT": {
       "refines": "VERIFIED",
-      "description": "Structurally valid WIT with every obligation carrying an accepted verdict. Says nothing about semantic truth \u2014 the structural tier's ceiling is SKETCH, so this refinement is reachable only alongside a kernel receipt.",
+      "description": "Structurally valid WIT with every obligation carrying an accepted verdict. Says nothing about semantic truth — the structural tier's ceiling is SKETCH, so this refinement is reachable only alongside a kernel receipt.",
       "tier": "structural"
     },
     "VERIFIED_LEAN": {
@@ -252,5 +381,23 @@
       "description": "Established by exact symbolic computation over a stated domain rather than by enumeration.",
       "tier": "bounded"
     }
-  }
+  },
+  "reference_data": [
+    {
+      "path": "data/techniques.json",
+      "purpose": "The method families an approach can belong to. Two arguments differing only in manipulation are one family, and the count is what decides whether a target is genuinely stuck.",
+      "used_by": [
+        "scripts/scoring.py",
+        "scripts/lanes.py"
+      ]
+    },
+    {
+      "path": "data/pivots.json",
+      "purpose": "The mutations available when an approach stalls: what to change about a target that is not the target itself.",
+      "used_by": [
+        "scripts/select.py"
+      ]
+    }
+  ],
+  "held_out_cases": "evals/held_out/statements.json"
 }

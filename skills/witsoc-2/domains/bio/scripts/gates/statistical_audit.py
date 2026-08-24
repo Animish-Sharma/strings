@@ -85,7 +85,17 @@ def main() -> int:
     estimand = (audit.get("estimand") or "").lower()
     claim_class = claim.get("claim_class", "")
     if claim_class.endswith("population") or "population" in claim_class:
-        if "population" not in estimand and "average" not in estimand:
+        # A PAIRED estimand is a population estimand. "The mean within-donor
+        # difference over these donors" is exactly the population quantity a
+        # crossed design identifies, and demanding the word "population" in it
+        # rejects the strongest design this class admits while accepting any
+        # cell-level statement that happens to use the word. The check is for
+        # whether the estimand is about UNITS or about observations, so the
+        # paired vocabulary counts.
+        paired_forms = ("within-donor", "within donor", "within-unit", "within unit",
+                        "paired", "per-donor difference", "matched")
+        if ("population" not in estimand and "average" not in estimand
+                and not any(form in estimand for form in paired_forms)):
             problems.append(
                 f"the claim class is population-level but the estimand reads {estimand[:70]!r}. "
                 "The estimand and the claim have to be about the same thing")

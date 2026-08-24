@@ -79,7 +79,9 @@ Exit: 0 artifact produced and checked, 1 produced but not checked clean,
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import re
 import os
 import subprocess
 import sys
@@ -106,6 +108,24 @@ def as_json(text: str) -> dict:
         return json.loads(text)
     except json.JSONDecodeError:
         return {}
+
+
+def plan_fingerprint(blueprint: dict) -> str:
+    """What makes two attempts THE SAME attempt.
+
+    Not the statement — a revision keeps the statement, and that is the point of
+    a revision. What has to be identical for a re-run to be pointless is the
+    plan: the steps, their formalizations and tactics, the preamble, and the
+    declared citations.
+    """
+    plan = {
+        "steps": blueprint.get("lemma_plan", []),
+        "preamble": (blueprint.get("target_formalization", {}) or {}).get("preamble", ""),
+        "formal": (blueprint.get("target_formalization", {}) or {}).get("formal_statement", ""),
+        "deps": blueprint.get("external_dependencies", []),
+    }
+    return hashlib.sha256(json.dumps(plan, sort_keys=True, ensure_ascii=False)
+                          .encode("utf-8")).hexdigest()[:16]
 
 
 class Production:
@@ -189,18 +209,31 @@ class Production:
 
     def write_revision_request(self, blueprint: dict, blueprint_path: Path,
                                failure_class: str, diagnostic: str,
-                               advice: dict, kernel: dict) -> Path:
+                               advice: dict, kernel: dict,
+                               lean_path: Path | None = None) -> Path:
         """Turn a classified failure into a specific, checkable edit."""
         axis = (advice.get("proposed_mutation") or {}).get("axis", "unknown")
         steps = blueprint.get("lemma_plan", []) or []
 
         # Which step? The diagnostic names a Lean identifier `stepN` when it can.
-        failing = None
+        failing, how = None, ""
         for step in steps:
             ident = "step" + str(step.get("step_id", "")).replace(".", "_")
             if ident and ident in diagnostic:
-                failing = step
+                failing, how = step, "matched by the Lean identifier in the diagnostic"
                 break
+        if failing is None:
+            # Fall back to the line number. The rendered artifact carries a
+            # `-- WIT [n]` marker above every step, so the step owning a
+            # diagnostic is the last marker at or above its line. Without this
+            # a typo INSIDE step 2 reported `failing_step: null` and sent the
+            # reader to `external_dependencies`, because the identifier the
+            # diagnostic named was the misspelling rather than a step.
+            # The normalized diagnostic has had its file position stripped —
+            # that is what makes two failures comparable. The raw log still has
+            # it, so localization reads there.
+            failing, how = self.step_at_line(
+                (kernel or {}).get("log_excerpt", "") or diagnostic, lean_path, steps)
 
         pool = self.dir / "lemma_pool.json"
         bridges = []
@@ -224,8 +257,7 @@ class Production:
                               "statement": failing.get("statement"),
                               "formalization": failing.get("formalization")}
                              if failing else None),
-            "step_identification": ("matched by the Lean identifier in the diagnostic"
-                                    if failing else
+            "step_identification": (how if failing else
                                     "the diagnostic names no step identifier, so the failure is "
                                     "in the statement or the preamble rather than in one step"),
             "diagnostic": diagnostic[:600],
@@ -356,6 +388,32 @@ class Production:
                            "the claim inside that range and establishes nothing outside it"),
                 "bounded": bounded, "families_available": families}
 
+    WIT_MARKER = re.compile(r"--\s*WIT\s*\[([^\]]+)\]")
+
+    def step_at_line(self, diagnostic: str, lean_path, steps: list[dict]):
+        """The step whose rendered block contains the diagnostic's line."""
+        m = re.search(r":(\d+):\d+:\s*error", diagnostic) or \
+            re.search(r":(\d+):\d+:", diagnostic)
+        if not m or lean_path is None or not Path(lean_path).exists():
+            return None, ""
+        line_no = int(m.group(1))
+        try:
+            lines = Path(lean_path).read_text(encoding="utf-8").splitlines()
+        except OSError:
+            return None, ""
+        owner = None
+        for index, text in enumerate(lines[:line_no], start=1):
+            marker = self.WIT_MARKER.search(text)
+            if marker:
+                owner = marker.group(1).strip()
+        if owner is None:
+            return None, ""
+        for step in steps:
+            if str(step.get("step_id", "")).strip() == owner:
+                return step, (f"located by line {line_no}, inside the block rendered for "
+                              f"WIT step [{owner}]")
+        return None, ""
+
     def classify_gap(self, failure_class: str, diagnostic: str, artifact: Path) -> dict:
         """Ask the gap classifier which axis to move next."""
         payload = [{"node_id": artifact.stem, "status": "GAP",
@@ -375,15 +433,32 @@ class Production:
         blueprint = json.loads(blueprint_path.read_text(encoding="utf-8"))
         name = blueprint.get("metadata", {}).get("name", "artifact")
         target = blueprint.get("target_protection", {}).get("frozen_target_sha256", "")
+        # The repeat guard keyed on the theorem's NAME, which a revision does not
+        # change. So the revival condition this same code writes — "a revised
+        # blueprint: a different tactic, a corrected premise" — could never be
+        # satisfied: the first kernel failure refused every later attempt at that
+        # name, and the documented repair loop was unreachable. Key on the plan.
+        plan_key = f"blueprint:{name}@{plan_fingerprint(blueprint)}"
 
         # 0. working memory, before anything is made ----------------------------------------------------
-        soc = self.dir / "soc.json"
+        # Working memory outlives one attempt or it is not memory. Keyed to the
+        # frozen target and resolvable outside the workdir, so a revision — which
+        # needs a place to render — still meets what the last attempt learned.
+        # Before this, memory lived only in the workdir, revisions required a new
+        # workdir, and the repeat guard was therefore always looking at an empty
+        # ledger on exactly the path it exists for.
+        store = os.environ.get("WITSOC2_SOC_STORE")
+        if store:
+            Path(store).mkdir(parents=True, exist_ok=True)
+            soc = Path(store) / f"soc-{(target or 'unkeyed')[:16]}.json"
+        else:
+            soc = self.dir / "soc.json"
         if not soc.exists():
             run([sys.executable, str(FRAME_SCRIPTS / "soc_memory.py"), "init",
                  "--out", str(soc), "--target", target or "0" * 64,
                  "--goal", (blueprint.get("target_formalization", {}) or {}).get("claim", "")[:200]])
         code, out, _ = run([sys.executable, str(FRAME_SCRIPTS / "soc_memory.py"), "check",
-                            "--soc", str(soc), "--json", "--method", f"blueprint:{name}",
+                            "--soc", str(soc), "--json", "--method", plan_key,
                             "--statement", (blueprint.get("target_formalization", {}) or {})
                             .get("claim", "")[:300]])
         risk = as_json(out)
@@ -397,7 +472,7 @@ class Production:
         # 1. render the plan --------------------------------------------------
         wit_path = self.dir / f"{name}.wit"
         code, out, err = run([sys.executable, str(HERE / "generate_wit.py"),
-                              "--blueprint", str(blueprint_path),
+                              "--blueprint", str(blueprint_path), "--revise",
                               "--out", str(wit_path), "--json"])
         rendered = as_json(out)
         if code != 0:
@@ -502,8 +577,15 @@ class Production:
             # DAG nobody was building. The blueprint IS that DAG: one node per
             # step, dependencies already declared, the target already frozen.
             open_steps = translated.get("open_steps", [])
+            open_gaps = translated.get("open_gaps", [])
+            # A gap is an open obligation too. Counting only `open_steps` made a
+            # blueprint whose SIGNATURE was missing report "0 obligation(s) still
+            # open" while refusing to run — true and useless.
+            named = "; ".join(f"{g.get('id')}: {g.get('expecting', '')}"[:160]
+                              for g in open_gaps if isinstance(g, dict))
             rubric = self.grade_sketch(blueprint)
-            detail = (f"{len(open_steps)} obligation(s) still open. "
+            detail = ((f"{named}. " if named else "")
+                      + f"{len(open_steps)} obligation(s) still open. "
                       f"Sketch quality {rubric['score']} — {rubric['reading']}"
                       if rubric else
                       f"{len(open_steps)} obligation(s) still open, so the kernel would only "
@@ -586,7 +668,7 @@ class Production:
             # for as long as the pack did — the one component whose whole job is
             # to answer the question the failure path was leaving open.
             run([sys.executable, str(FRAME_SCRIPTS / "soc_memory.py"), "failure",
-                 "--soc", str(soc), "--method", f"blueprint:{name}",
+                 "--soc", str(soc), "--method", plan_key,
                  "--statement", (blueprint.get("target_formalization", {}) or {})
                  .get("claim", "")[:300],
                  "--blocker", str(failure_class)[:200],
@@ -595,7 +677,8 @@ class Production:
                               "or a decomposition that localizes the failure"])
             advice = self.classify_gap(failure_class, diagnostic, lean_path)
             request = self.write_revision_request(
-                blueprint, blueprint_path, failure_class, str(diagnostic), advice, kernel)
+                blueprint, blueprint_path, failure_class, str(diagnostic), advice, kernel,
+                lean_path)
             axis = (advice.get("proposed_mutation") or {}).get("axis", "unknown")
             self.step("repair", False,
                       f"the artifact is unchanged, so a re-run would fail identically. "
@@ -620,6 +703,7 @@ def self_test() -> int:
     if not fixtures:
         print("no blueprint fixtures found", file=sys.stderr)
         return 1
+    skipped: list[str] = []
     spec = json.loads((PACK / "evals" / "blueprints" / "expected.json").read_text(encoding="utf-8"))
     expected = {e["blueprint"]: e for e in spec["blueprints"]}
     failures = []
@@ -642,6 +726,22 @@ def self_test() -> int:
                 fixture, None, case.get("tier", "structural"), 1)
             got = report["outcome"]
             ok = got == case["expect"]
+            # A LIBRARY that is not there is not a defect in the pipeline. The
+            # fixture's own note says so — the honest answer to "Mathlib is
+            # absent" is NEEDS_BLUEPRINT_REVISION — and the suite then recorded
+            # that honest answer as a failure. It is the same gap-versus-failure
+            # collapse the campaign driver had: an environmental absence read as
+            # a thing shown not to work. NOT_RUN says what happened, and the
+            # coverage this run does not have is stated rather than scored.
+            missing_library = any(
+                "import_missing" in str(step.get("detail", "")) or
+                "unknown module prefix" in str(step.get("detail", ""))
+                for step in report["steps"])
+            if not ok and missing_library:
+                skipped.append(fixture.name)
+                print(f"  ....  {fixture.name:<34} NOT_RUN — the library it imports is absent")
+                print(f"          {case['why'][:110]}")
+                continue
             print(f"  {'ok  ' if ok else 'FAIL'}  {fixture.name:<34} {got}")
             print(f"          {case['why']}")
             if not ok:
@@ -650,6 +750,9 @@ def self_test() -> int:
                                 f"— {detail.get('detail', '')[:200]}")
 
     print("\n" + "=" * 62)
+    if skipped:
+        print(f"  {len(skipped)} fixture(s) NOT_RUN for want of a library: {', '.join(skipped)}")
+        print("  that is coverage this run does not have, and saying so beats scoring it")
     if failures:
         print(f"  PRODUCE SELF-TEST: FAIL — {len(failures)}")
         for failure in failures:

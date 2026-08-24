@@ -1,0 +1,26 @@
+{
+  "description": "Role evals: the DECISIONS a role makes, scored against a defensible answer. Every other eval in this pack scores an artifact through a gate — does a bad bundle get rejected. None of them could tell you whether the Explorer chose the right class, the Generator computed the right endpoint, or Durbin ran the attack that would have ended the campaign. These can, and only for decisions that are mechanical: a role eval is writable exactly where the judgement has machinery under it, so the set is also a map of which judgements do.",
+  "explorer": [
+    {"id": "class_population", "statement": "Does knocking down GENE-X with CRISPRi reduce the inflammatory signature across donors in primary donor macrophages at 48 hours?", "expect_class": "donor_replicated_population", "why": "donors crossed with condition is the population class and its ceiling"},
+    {"id": "class_within_screen", "statement": "Within the screen, cells receiving the guide show a lower pathway score than matched non-targeting controls.", "expect_class": "guide_conditioned_within_screen", "why": "a legitimately narrow contrast that must NOT be over-rejected for having no donors"},
+    {"id": "class_predictive", "statement": "Model M outperforms the mean baseline on held-out perturbations in this Perturb-seq benchmark.", "expect_class": "model_predictive_superiority", "why": "a predictive claim routes to the baseline and leakage gates, not to the denominator gate alone"},
+    {"id": "class_literature", "statement": "The published claim reports that the knockout reduces viability; we assess it based on the literature with no new data.", "expect_class": "literature_only", "why": "caps at CONJECTURE — no recomputation is possible"},
+    {"id": "class_underspecified", "statement": "Does the drug change expression?", "expect_verdict": "NO_MATCH", "why": "the statement does not say what unit it is about; the fix is the statement, not a guess"},
+    {"id": "gap_overclaiming", "statement": "Across donors, primary donor macrophages show a reduced inflammatory signature.", "metadata": "screen_only.csv", "expect_gap": "OVER_CLAIMING", "why": "population words on a table with no donor column — the denominator finding, at triage instead of after the analysis"},
+    {"id": "gap_agreed", "statement": "Across donors, primary donor macrophages show a reduced inflammatory signature.", "metadata": "donor_crossed.csv", "expect_gap": "AGREED", "why": "the design carries the claim; proceed at that ceiling"},
+    {"id": "gap_underclaiming", "statement": "Within the screen, guide-bearing cells differ from matched non-targeting controls.", "metadata": "donor_crossed.csv", "expect_gap": "UNDER_CLAIMING", "why": "a stronger design than the claim needs is not a failure and is worth recording"},
+    {"id": "design_confounded", "statement": "Across donors, the effect holds in primary donor macrophages.", "metadata": "donor_confounded.csv", "expect_gap": "OVER_CLAIMING", "why": "donor is the same variable as condition; no analysis separates them"}
+  ],
+  "generator": [
+    {"id": "endpoint_real_signal", "fixture": "signal", "expect_gap_above": 0.5, "why": "a genuinely elevated signature must come out elevated, or the endpoint measures nothing"},
+    {"id": "endpoint_depth_confound", "fixture": "depth", "expect_gap_below": 0.15, "why": "a threefold depth confound and no biology must NOT produce a signature score — this is what the expression-matched background is for"},
+    {"id": "endpoint_absent_signature", "fixture": "absent", "expect_error": true, "why": "a signature no gene of which is present is an error, never a small score: an empty result reads like a null"}
+  ],
+  "researcher": [
+    {"id": "attack_generic_dominant", "fixture": "generic", "attack": "generic_response", "expect_verdict": "dominant", "why": "attack 3 — a stress signature moving more than the claimed one means the effect is not specific"},
+    {"id": "attack_generic_specific", "fixture": "specific", "attack": "generic_response", "expect_verdict": "clear", "why": "the same attack must stay silent on a specific response, or it is not evidence"},
+    {"id": "attack_composition", "fixture": "composition", "attack": "composition", "expect_verdict": "composition", "why": "attack 4 — a pure proportion shift reported as an expression change is the routine substitution"},
+    {"id": "attack_composition_absent", "fixture": "specific", "attack": "composition", "expect_verdict": "not_computable", "why": "no cluster column must abstain, never clear: an unasked question and a cleared one must not read alike"},
+    {"id": "attack_reversal", "fixture": "reversal", "attack": "context_reversal", "expect_verdict": "reversal", "why": "attack 8 — a sign flip across context is the finding, not a caveat"}
+  ]
+}

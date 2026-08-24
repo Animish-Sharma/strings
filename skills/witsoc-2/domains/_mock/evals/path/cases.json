@@ -1,0 +1,5 @@
+{
+  "schema": "witsoc2.path_cases.v1",
+  "note": "No path cases: the mock pack has no backend that could refuse anything, so a campaign through it would test the frame's plumbing and call it a verification.",
+  "cases": []
+}

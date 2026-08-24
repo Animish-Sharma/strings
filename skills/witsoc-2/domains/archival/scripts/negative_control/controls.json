@@ -42,6 +42,12 @@
       "claim": "no_discriminator_claim.json",
       "tier": "structural",
       "why": "no statement of what falsity would look like"
+    },
+    {
+      "dossier": "shared_error_dossier.json",
+      "claim": "good_claim.json",
+      "tier": "triangulation",
+      "why": "two declared origins whose readings share two errors \u2014 one voice counted as two"
     }
   ],
   "accept": [

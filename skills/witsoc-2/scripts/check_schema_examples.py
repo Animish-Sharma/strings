@@ -88,9 +88,17 @@ def main() -> int:
             if declares == schema_id or is_pack or extends_frame:
                 errors: list[str] = []
                 validate(data, schema, schema_id, errors)
-                matched = {"instance": str(path.relative_to(SKILL_ROOT)), "errors": errors}
-                if not errors:
+                # EVERY matching instance is validated, not the first that
+                # passes. Stopping at the first clean one meant a broken example
+                # elsewhere was reported green — the check said "this schema is
+                # exercised" and answered a different question than "every
+                # instance of it is valid". Which file it happened to reach
+                # first depended on directory order.
+                if errors:
+                    matched = {"instance": str(path.relative_to(SKILL_ROOT)), "errors": errors}
                     break
+                if matched is None:
+                    matched = {"instance": str(path.relative_to(SKILL_ROOT)), "errors": []}
         if matched is None:
             unexercised.append(schema_id)
             report.append({"schema": schema_id, "status": "unexercised"})

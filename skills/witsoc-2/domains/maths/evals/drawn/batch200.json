@@ -1,0 +1,5480 @@
+{
+  "schema": "maths.drawn_targets.v1",
+  "seed": 90210,
+  "pool_size": 67707,
+  "drawn": 200,
+  "targets": [
+    {
+      "name": "CategoryTheory.ShortComplex.SnakeInput.isIso_δ",
+      "binders": "(h₀ : IsZero S.L₀.X₂) (h₃ : IsZero S.L₃.X₂)",
+      "statement": "IsIso S.δ",
+      "file": "Algebra/Homology/ShortComplex/SnakeLemma.lean",
+      "namespaces": [
+        "CategoryTheory",
+        "ShortComplex",
+        "SnakeInput"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Homology.ExactSequence",
+        "public import Mathlib.Algebra.Homology.ShortComplex.Limits",
+        "public import Mathlib.CategoryTheory.Abelian.Refinements"
+      ],
+      "proof": "\n  @Balanced.isIso_of_mono_of_epi _ _ _ _ _ S.δ (S.mono_δ h₀) (S.epi_δ h₃)",
+      "scope_open": [
+        "namespace CategoryTheory",
+        "open Category Limits Preadditive",
+        "variable (C : Type*) [Category* C] [Abelian C]",
+        "namespace ShortComplex",
+        "namespace SnakeInput",
+        "variable {C}",
+        "variable (S : SnakeInput C)"
+      ],
+      "scope_close": [
+        "end SnakeInput",
+        "end ShortComplex",
+        "end CategoryTheory"
+      ]
+    },
+    {
+      "name": "Digraph.inf_adj",
+      "binders": "(x y : Digraph V) (v w : V)",
+      "statement": "(x ⊓ y).Adj v w ↔ x.Adj v w ∧ y.Adj v w",
+      "file": "Combinatorics/Digraph/Basic.lean",
+      "namespaces": [
+        "Digraph"
+      ],
+      "imports": [
+        "public import Mathlib.Order.CompleteBooleanAlgebra",
+        "public import Mathlib.Data.Fintype.Pi"
+      ],
+      "proof": "Iff.rfl",
+      "scope_open": [
+        "open Finset Function",
+        "namespace Digraph",
+        "variable {ι : Sort*} {V : Type*} (G : Digraph V) {a b : V}",
+        "section Order"
+      ],
+      "scope_close": [
+        "end Order",
+        "end Digraph"
+      ]
+    },
+    {
+      "name": "DiscreteQuotient.proj_bot_injective",
+      "binders": "[DiscreteTopology X]",
+      "statement": "Injective (⊥ : DiscreteQuotient X).proj",
+      "file": "Topology/DiscreteQuotient.lean",
+      "namespaces": [
+        "DiscreteQuotient"
+      ],
+      "imports": [
+        "public import Mathlib.Data.Setoid.Partition",
+        "public import Mathlib.Topology.LocallyConstant.Basic",
+        "public import Mathlib.Topology.Separation.Regular",
+        "public import Mathlib.Topology.Connected.TotallyDisconnected"
+      ],
+      "proof": "\n  fun _ _ => proj_bot_inj.1",
+      "scope_open": [
+        "open Set Function TopologicalSpace Topology",
+        "variable {α X Y Z : Type*} [TopologicalSpace X] [TopologicalSpace Y] [TopologicalSpace Z]",
+        "namespace DiscreteQuotient",
+        "variable (S : DiscreteQuotient X)"
+      ],
+      "scope_close": [
+        "end DiscreteQuotient"
+      ]
+    },
+    {
+      "name": "Part.sdiff_def",
+      "binders": "[SDiff α] (a b : Part α)",
+      "statement": "a \\ b = bind a fun y => map (y \\ ·) b",
+      "file": "Data/Part.lean",
+      "namespaces": [
+        "Part"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Notation.Defs",
+        "public import Mathlib.Data.Set.Subsingleton",
+        "public import Mathlib.Logic.Equiv.Defs"
+      ],
+      "proof": "rfl",
+      "scope_open": [
+        "open Function",
+        "namespace Part",
+        "variable {α : Type*} {β : Type*} {γ : Type*}",
+        "section Instances",
+        "section"
+      ],
+      "scope_close": [
+        "end",
+        "end Instances",
+        "end Part"
+      ]
+    },
+    {
+      "name": "Real.pi_gt_d6",
+      "binders": "",
+      "statement": "3.141592 < π",
+      "file": "Analysis/Real/Pi/Bounds.lean",
+      "namespaces": [
+        "Real"
+      ],
+      "imports": [
+        "public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds"
+      ],
+      "proof": "by\n  -- bound[3141592*^-6, Iters -> 10, Rounding -> .8, Precision -> 16]\n  pi_lower_bound [\n    11482/8119, 7792/4217, 54055/27557, 2-623/64690, 2-337/139887, 2-208/345307, 2-167/1108925,\n    2-64/1699893, 2-31/3293535, 2-48/20398657]",
+      "scope_open": [
+        "open scoped Real",
+        "namespace Real"
+      ],
+      "scope_close": [
+        "end Real"
+      ]
+    },
+    {
+      "name": "Finset.exists_ne_one_of_prod_ne_one",
+      "binders": "(h : ∏ x ∈ s, f x ≠ 1)",
+      "statement": "∃ a ∈ s, f a ≠ 1",
+      "file": "Algebra/BigOperators/Group/Finset/Basic.lean",
+      "namespaces": [
+        "Finset"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.BigOperators.Group.Finset.Defs",
+        "public import Mathlib.Data.Finset.Prod",
+        "public import Mathlib.Data.Finset.Sum"
+      ],
+      "proof": "by\n  contrapose! h\n  exact prod_eq_one h",
+      "scope_open": [
+        "open Fin Function",
+        "variable {ι κ G M : Type*} {s s₁ s₂ : Finset ι} {a : ι}",
+        "namespace Finset",
+        "section CommMonoid",
+        "variable [CommMonoid M] {f g : ι → M}",
+        "variable (f s)",
+        "variable {f s}"
+      ],
+      "scope_close": [
+        "end CommMonoid",
+        "end Finset"
+      ]
+    },
+    {
+      "name": "DifferentiableOn.continuousOn",
+      "binders": "(h : DifferentiableOn 𝕜 f s)",
+      "statement": "ContinuousOn f s",
+      "file": "Analysis/Calculus/FDeriv/Basic.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Analysis.Asymptotics.AsymptoticEquivalent",
+        "public import Mathlib.Analysis.Calculus.FDeriv.Defs",
+        "public import Mathlib.Analysis.Normed.Operator.Asymptotics",
+        "public import Mathlib.Analysis.Calculus.TangentCone.Basic",
+        "import Mathlib.Analysis.Asymptotics.Lemmas",
+        "import Mathlib.Analysis.Calculus.TangentCone.DimOne"
+      ],
+      "proof": "fun x hx =>\n  (h x hx).continuousWithinAt",
+      "scope_open": [
+        "open Filter Asymptotics ContinuousLinearMap Set Metric Topology NNReal ENNReal",
+        "noncomputable section",
+        "section",
+        "variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]",
+        "variable {E : Type*} [AddCommGroup E] [Module 𝕜 E] [TopologicalSpace E]",
+        "variable {F : Type*} [AddCommGroup F] [Module 𝕜 F] [TopologicalSpace F]",
+        "variable {f f₀ f₁ g : E → F}",
+        "variable {f' f₀' f₁' g' : E →L[𝕜] F}",
+        "variable {x : E}",
+        "variable {s t : Set E}",
+        "variable {L L₁ L₂ : Filter (E × E)}",
+        "section Continuous",
+        "variable [ContinuousAdd E] [ContinuousSMul 𝕜 E] [ContinuousAdd F] [ContinuousSMul 𝕜 F]"
+      ],
+      "scope_close": [
+        "end Continuous",
+        "end",
+        "end"
+      ]
+    },
+    {
+      "name": "inf_mem_infClosure",
+      "binders": "(ha : a ∈ s) (hb : b ∈ s)",
+      "statement": "a ⊓ b ∈ infClosure s",
+      "file": "Order/SupClosed.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Data.Finset.Lattice.Prod",
+        "public import Mathlib.Data.Finset.Powerset",
+        "public import Mathlib.Data.Set.Finite.Basic",
+        "public import Mathlib.Order.Closure",
+        "public import Mathlib.Order.ConditionallyCompleteLattice.Finset"
+      ],
+      "proof": "\n  infClosed_infClosure (subset_infClosure ha) (subset_infClosure hb)",
+      "scope_open": [
+        "variable {ι : Sort*} {F α β : Type*}",
+        "open Finset OrderDual",
+        "section SemilatticeInf",
+        "variable [SemilatticeInf α] [SemilatticeInf β] {s t : Set α} {a b : α}"
+      ],
+      "scope_close": [
+        "end SemilatticeInf"
+      ]
+    },
+    {
+      "name": "LieIdeal.lcs_succ",
+      "binders": "",
+      "statement": "I.lcs M (k + 1) = ⁅I, I.lcs M k⁆",
+      "file": "Algebra/Lie/Nilpotent.lean",
+      "namespaces": [
+        "LieIdeal"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Lie.Solvable",
+        "public import Mathlib.Algebra.Lie.Quotient",
+        "public import Mathlib.Algebra.Lie.Normalizer",
+        "public import Mathlib.Algebra.Order.Archimedean.Basic",
+        "public import Mathlib.LinearAlgebra.Eigenspace.Basic",
+        "public import Mathlib.RingTheory.Artinian.Module",
+        "public import Mathlib.RingTheory.Nilpotent.Lemmas"
+      ],
+      "proof": "\n  Function.iterate_succ_apply' (fun N => ⁅I, N⁆) k ⊤",
+      "scope_open": [
+        "universe u v w w₁ w₂",
+        "namespace LieIdeal",
+        "open LieModule",
+        "variable {R L : Type*} [CommRing R] [LieRing L] [LieAlgebra R L] (I : LieIdeal R L)",
+        "variable (M : Type*) [AddCommGroup M] [Module R M] [LieRingModule L M]",
+        "variable (k : ℕ)"
+      ],
+      "scope_close": [
+        "end LieIdeal"
+      ]
+    },
+    {
+      "name": "Set.not_top_subset",
+      "binders": "",
+      "statement": "¬⊤ ⊆ s ↔ ∃ a, a ∉ s",
+      "file": "Data/Set/Basic.lean",
+      "namespaces": [
+        "Set"
+      ],
+      "imports": [
+        "public import Mathlib.Order.PropInstances",
+        "public import Mathlib.Tactic.Lift",
+        "public import Mathlib.Tactic.Attr.Register"
+      ],
+      "proof": "\n  not_univ_subset",
+      "scope_open": [
+        "open Function",
+        "universe u v",
+        "namespace Set",
+        "variable {α : Type u} {β : Type v} {a b : α} {s s₁ s₂ t t₁ t₂ u : Set α}"
+      ],
+      "scope_close": [
+        "end Set"
+      ]
+    },
+    {
+      "name": "NonUnitalStarAlgebra.eq_top_iff",
+      "binders": "{S : NonUnitalStarSubalgebra R A}",
+      "statement": "S = ⊤ ↔ ∀ x : A, x ∈ S",
+      "file": "Algebra/Star/NonUnitalSubalgebra.lean",
+      "namespaces": [
+        "NonUnitalStarAlgebra"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Algebra.NonUnitalSubalgebra",
+        "public import Mathlib.Algebra.Star.StarAlgHom",
+        "public import Mathlib.Algebra.Star.Center",
+        "public import Mathlib.Algebra.Star.SelfAdjoint",
+        "public import Mathlib.Algebra.Star.Prod"
+      ],
+      "proof": "\n  ⟨fun h x => by rw [h]; exact mem_top,\n    fun h => by ext x; exact ⟨fun _ => mem_top, fun _ => h x⟩⟩",
+      "scope_open": [
+        "open Module",
+        "universe u u' v v' w w' w''",
+        "variable {F : Type v'} {R' : Type u'} {R : Type u}",
+        "variable {A : Type v} {B : Type w} {C : Type w'}",
+        "namespace NonUnitalStarAlgebra",
+        "variable [CommSemiring R] [StarRing R]",
+        "variable [NonUnitalSemiring A] [StarRing A] [Module R A]",
+        "variable [NonUnitalSemiring B] [StarRing B] [Module R B]",
+        "variable [FunLike F A B] [NonUnitalAlgHomClass F R A B] [StarHomClass F A B]",
+        "section StarSubAlgebraA",
+        "variable [IsScalarTower R A A] [SMulCommClass R A A] [StarModule R A]",
+        "open scoped Pointwise",
+        "open NonUnitalStarSubalgebra",
+        "variable (R)",
+        "variable {R}"
+      ],
+      "scope_close": [
+        "end StarSubAlgebraA",
+        "end NonUnitalStarAlgebra"
+      ]
+    },
+    {
+      "name": "SimpleGraph.sInf_adj",
+      "binders": "{s : Set (SimpleGraph V)}",
+      "statement": "(sInf s).Adj a b ↔ (∀ G ∈ s, Adj G a b) ∧ a ≠ b",
+      "file": "Combinatorics/SimpleGraph/Basic.lean",
+      "namespaces": [
+        "SimpleGraph"
+      ],
+      "imports": [
+        "public import Mathlib.Combinatorics.SimpleGraph.Init",
+        "public import Mathlib.Data.Finite.Prod",
+        "public import Mathlib.Data.Rel",
+        "public import Mathlib.Data.Set.Finite.Basic",
+        "public import Mathlib.Data.Sym.Sym2",
+        "public import Mathlib.Order.CompleteBooleanAlgebra"
+      ],
+      "proof": "\n  Iff.rfl",
+      "scope_open": [
+        "open Finset Function",
+        "universe u v w",
+        "namespace SimpleGraph",
+        "variable {ι : Sort*} {V : Type u} (G : SimpleGraph V) {a b c u v w : V} {e : Sym2 V}",
+        "section Order"
+      ],
+      "scope_close": [
+        "end Order",
+        "end SimpleGraph"
+      ]
+    },
+    {
+      "name": "Int.one_shiftLeft",
+      "binders": "(n : ℕ)",
+      "statement": "1 <<< (n : ℤ) = (2 ^ n : ℕ)",
+      "file": "Data/Int/Bitwise.lean",
+      "namespaces": [
+        "Int"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Ring.Int.Defs",
+        "public import Mathlib.Data.Nat.Bitwise",
+        "public import Mathlib.Data.Nat.Size",
+        "public import Batteries.Data.Int",
+        "import all Init.Data.Nat.Bitwise.Basic  -- for unfolding `Nat.bitwise`",
+        "import all Init.Data.Int.Bitwise.Basic  -- for unfolding `Int.bitwise`"
+      ],
+      "proof": "\n  congr_arg ((↑) : ℕ → ℤ) (by simp [Nat.shiftLeft_eq])",
+      "scope_open": [
+        "namespace Int"
+      ],
+      "scope_close": [
+        "end Int"
+      ]
+    },
+    {
+      "name": "Pi.mulSingle_ne_one_iff",
+      "binders": "",
+      "statement": "mulSingle i x ≠ 1 ↔ x ≠ 1",
+      "file": "Algebra/Notation/Pi/Basic.lean",
+      "namespaces": [
+        "Pi"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Notation.Pi.Defs",
+        "public import Mathlib.Logic.Function.Basic"
+      ],
+      "proof": "\n  mulSingle_eq_one_iff.ne",
+      "scope_open": [
+        "open Function",
+        "variable {ι ι' α β : Type*} {G M N O : ι → Type*}",
+        "namespace Pi",
+        "variable [∀ i, One (M i)] [∀ i, One (N i)] [∀ i, One (O i)] [DecidableEq ι] {i : ι} {x : M i}"
+      ],
+      "scope_close": [
+        "end Pi"
+      ]
+    },
+    {
+      "name": "EReal.mul_neg_iff",
+      "binders": "{a b : EReal}",
+      "statement": "a * b < 0 ↔ 0 < a ∧ b < 0 ∨ a < 0 ∧ 0 < b",
+      "file": "Data/EReal/Operations.lean",
+      "namespaces": [
+        "EReal"
+      ],
+      "imports": [
+        "public import Mathlib.Data.EReal.Basic",
+        "public import Batteries.Util.ProofWanted"
+      ],
+      "proof": "by\n  nth_rw 1 [← neg_zero]\n  rw [lt_neg_comm, ← mul_neg a, mul_pos_iff, neg_lt_comm, lt_neg_comm, neg_zero]",
+      "scope_open": [
+        "open ENNReal NNReal",
+        "noncomputable section",
+        "namespace EReal"
+      ],
+      "scope_close": [
+        "end EReal",
+        "end"
+      ]
+    },
+    {
+      "name": "MeasureTheory.condExpL1_smul",
+      "binders": "(c : 𝕜) (f : α → F')",
+      "statement": "condExpL1 hm μ (c • f) = c • condExpL1 hm μ f",
+      "file": "MeasureTheory/Function/ConditionalExpectation/CondexpL1.lean",
+      "namespaces": [
+        "MeasureTheory"
+      ],
+      "imports": [
+        "public import Mathlib.MeasureTheory.Function.LpSpace.CompleteOfCompleteLp",
+        "public import Mathlib.MeasureTheory.Function.ConditionalExpectation.CondexpL2",
+        "public import Mathlib.MeasureTheory.Measure.Real"
+      ],
+      "proof": "by\n  refine setToFun_smul _ ?_ c f\n  exact fun c _ x => condExpInd_smul' c x",
+      "scope_open": [
+        "noncomputable section",
+        "open TopologicalSpace MeasureTheory.Lp Filter ContinuousLinearMap",
+        "open scoped NNReal ENNReal Topology MeasureTheory",
+        "namespace MeasureTheory",
+        "variable {α F F' G G' 𝕜 : Type*} [RCLike 𝕜] [NormedAddCommGroup F] [NormedSpace 𝕜 F] [NormedAddCommGroup F'] [NormedSpace 𝕜 F'] [NormedSpace ℝ F'] [NormedAddCommGroup G] [NormedAddCommGroup G'] [NormedSpace ℝ G'] [CompleteSpace G']",
+        "section CondexpL1",
+        "variable {m m0 : MeasurableSpace α} {μ : Measure α} {hm : m ≤ m0} [SigmaFinite (μ.trim hm)] {f g : α → F'} {s : Set α}"
+      ],
+      "scope_close": [
+        "end CondexpL1",
+        "end MeasureTheory",
+        "end"
+      ]
+    },
+    {
+      "name": "preimage_coe_mem_nhds_subtype",
+      "binders": "{s t : Set α} {a : s}",
+      "statement": "(↑) ⁻¹' t ∈ 𝓝 a ↔ t ∈ 𝓝[s] ↑a",
+      "file": "Topology/NhdsWithin.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Topology.Constructions"
+      ],
+      "proof": "by\n  rw [← map_nhds_subtype_val, mem_map]",
+      "scope_open": [
+        "open Set Filter Function Topology",
+        "variable {α β γ δ : Type*} [TopologicalSpace α]"
+      ],
+      "scope_close": []
+    },
+    {
+      "name": "EquivLike.apply_inv_apply",
+      "binders": "(e : E) (b : β)",
+      "statement": "e (inv e b) = b",
+      "file": "Data/FunLike/Equiv.lean",
+      "namespaces": [
+        "EquivLike"
+      ],
+      "imports": [
+        "public import Mathlib.Data.FunLike.Embedding"
+      ],
+      "proof": "right_inv _ _",
+      "scope_open": [
+        "namespace EquivLike",
+        "variable {E F α β γ : Sort*} [EquivLike E α β] [EquivLike F β γ]"
+      ],
+      "scope_close": [
+        "end EquivLike"
+      ]
+    },
+    {
+      "name": "Int.Ioc_filter_dvd_card",
+      "binders": "",
+      "statement": "#{x ∈ Ioc a b | r ∣ x} = max (⌊b / (r : ℚ)⌋ - ⌊a / (r : ℚ)⌋) 0",
+      "file": "Data/Int/CardIntervalMod.lean",
+      "namespaces": [
+        "Int"
+      ],
+      "imports": [
+        "public import Mathlib.Data.Int.Interval",
+        "public import Mathlib.Data.Int.ModEq",
+        "public import Mathlib.Data.Nat.Count",
+        "public import Mathlib.Data.Rat.Floor",
+        "public import Mathlib.Order.Interval.Finset.Nat"
+      ],
+      "proof": "by\n  rw [Ioc_filter_dvd_eq _ _ hr, card_map, card_Ioc, toNat_eq_max]",
+      "scope_open": [
+        "open Finset Int",
+        "namespace Int",
+        "variable (a b : ℤ) {r : ℤ}",
+        "variable (hr : 0 < r)"
+      ],
+      "scope_close": [
+        "end Int"
+      ]
+    },
+    {
+      "name": "Submonoid.map_comap_map",
+      "binders": "{f : F}",
+      "statement": "((S.map f).comap f).map f = S.map f",
+      "file": "Algebra/Group/Submonoid/Operations.lean",
+      "namespaces": [
+        "Submonoid"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Group.Action.Faithful",
+        "public import Mathlib.Algebra.Group.Pi.Lemmas",
+        "public import Mathlib.Algebra.Group.Prod",
+        "public import Mathlib.Algebra.Group.Submonoid.Basic",
+        "public import Mathlib.Algebra.Group.Submonoid.MulAction",
+        "public import Mathlib.Algebra.Group.TypeTags.Basic"
+      ],
+      "proof": "\n  (gc_map_comap f).l_u_l_eq_l _",
+      "scope_open": [
+        "open Function",
+        "variable {M N P : Type*} [MulOneClass M] [MulOneClass N] [MulOneClass P] (S : Submonoid M)",
+        "namespace Submonoid",
+        "variable {F : Type*} [FunLike F M N] [mc : MonoidHomClass F M N]",
+        "open Set"
+      ],
+      "scope_close": [
+        "end Submonoid"
+      ]
+    },
+    {
+      "name": "Matrix.hadamard_zero",
+      "binders": "",
+      "statement": "A ⊙ (0 : Matrix m n α) = 0",
+      "file": "LinearAlgebra/Matrix/Hadamard.lean",
+      "namespaces": [
+        "Matrix"
+      ],
+      "imports": [
+        "public import Mathlib.LinearAlgebra.Matrix.Trace",
+        "public import Mathlib.Data.Matrix.Basic"
+      ],
+      "proof": "\n  ext fun _ _ => mul_zero _",
+      "scope_open": [
+        "variable {α m n R : Type*}",
+        "namespace Matrix",
+        "section BasicProperties",
+        "variable (A : Matrix m n α) (B : Matrix m n α) (C : Matrix m n α)",
+        "section Zero",
+        "variable [MulZeroClass α]"
+      ],
+      "scope_close": [
+        "end Zero",
+        "end BasicProperties",
+        "end Matrix"
+      ]
+    },
+    {
+      "name": "Real.deriv_log'",
+      "binders": "",
+      "statement": "deriv log = Inv.inv",
+      "file": "Analysis/SpecialFunctions/Log/Deriv.lean",
+      "namespaces": [
+        "Real"
+      ],
+      "imports": [
+        "public import Mathlib.Analysis.Calculus.Deriv.Pow",
+        "public import Mathlib.Analysis.Calculus.LogDeriv",
+        "public import Mathlib.Analysis.SpecialFunctions.Log.Basic",
+        "public import Mathlib.Analysis.SpecialFunctions.ExpDeriv",
+        "public import Mathlib.Analysis.Calculus.Deriv.MeanValue",
+        "public import Mathlib.Tactic.AdaptationNote"
+      ],
+      "proof": "\n  funext deriv_log",
+      "scope_open": [
+        "open Filter Finset Set",
+        "open scoped Topology ContDiff",
+        "namespace Real",
+        "variable {x : ℝ}"
+      ],
+      "scope_close": [
+        "end Real"
+      ]
+    },
+    {
+      "name": "Finset.mem_uIcc",
+      "binders": "",
+      "statement": "x ∈ uIcc a b ↔ a ⊓ b ≤ x ∧ x ≤ a ⊔ b",
+      "file": "Order/Interval/Finset/Defs.lean",
+      "namespaces": [
+        "Finset"
+      ],
+      "imports": [
+        "public import Mathlib.Data.Finset.Preimage",
+        "public import Mathlib.Data.Finset.Prod",
+        "public import Mathlib.Order.Hom.WithTopBot",
+        "public import Mathlib.Order.Interval.Set.UnorderedInterval"
+      ],
+      "proof": "\n  mem_Icc",
+      "scope_open": [
+        "open Finset Function",
+        "variable {α β : Type*}",
+        "namespace Finset",
+        "section Lattice",
+        "variable [Lattice α] [LocallyFiniteOrder α] {a b x : α}"
+      ],
+      "scope_close": [
+        "end Lattice",
+        "end Finset"
+      ]
+    },
+    {
+      "name": "PartOrdEmb.hom_id",
+      "binders": "{X : PartOrdEmb}",
+      "statement": "(𝟙 X : X ⟶ X).hom = RelEmbedding.refl _",
+      "file": "Order/Category/PartOrdEmb.lean",
+      "namespaces": [
+        "PartOrdEmb"
+      ],
+      "imports": [
+        "public import Mathlib.Order.Category.PartOrd",
+        "public import Mathlib.CategoryTheory.Limits.Filtered",
+        "public import Mathlib.CategoryTheory.Limits.Preserves.Filtered",
+        "public import Mathlib.CategoryTheory.Limits.Types.Filtered"
+      ],
+      "proof": "rfl",
+      "scope_open": [
+        "open CategoryTheory Limits",
+        "universe u",
+        "namespace PartOrdEmb"
+      ],
+      "scope_close": [
+        "end PartOrdEmb"
+      ]
+    },
+    {
+      "name": "MeasureTheory.absolutelyContinuous_map_div_left",
+      "binders": "(g : G)",
+      "statement": "μ ≪ map (fun h => g / h) μ",
+      "file": "MeasureTheory/Group/Prod.lean",
+      "namespaces": [
+        "MeasureTheory"
+      ],
+      "imports": [
+        "public import Mathlib.MeasureTheory.Group.Measure",
+        "public import Mathlib.MeasureTheory.Measure.Prod"
+      ],
+      "proof": "by\n  simp_rw [div_eq_mul_inv]\n  have := map_map (μ := μ) (measurable_const_mul g) measurable_inv\n  simp only [Function.comp_def] at this\n  rw [← this]\n  conv_lhs => rw [← map_mul_left_eq_self μ g]\n  exact (absolutelyContinuous_inv μ).map (measurable_const_mul g)",
+      "scope_open": [
+        "noncomputable section",
+        "open Set hiding prod_eq",
+        "open Function MeasureTheory",
+        "open Filter hiding map",
+        "open scoped ENNReal Pointwise MeasureTheory",
+        "variable (G : Type*) [MeasurableSpace G]",
+        "variable [Group G] [MeasurableMul₂ G]",
+        "variable (μ ν : Measure G) [SFinite ν] [SFinite μ] {s : Set G}",
+        "variable {G}",
+        "namespace MeasureTheory",
+        "open Measure",
+        "section LeftInvariant",
+        "variable [MeasurableInv G]",
+        "variable [IsMulLeftInvariant μ]"
+      ],
+      "scope_close": [
+        "end LeftInvariant",
+        "end MeasureTheory",
+        "end"
+      ]
+    },
+    {
+      "name": "Polynomial.eval₂_evalRingHom",
+      "binders": "(x : R)",
+      "statement": "eval₂ (evalRingHom x) = evalEval x",
+      "file": "Algebra/Polynomial/Bivariate.lean",
+      "namespaces": [
+        "Polynomial"
+      ],
+      "imports": [
+        "public import Mathlib.RingTheory.AdjoinRoot",
+        "public import Mathlib.Algebra.MvPolynomial.PDeriv",
+        "public import Mathlib.RingTheory.Derivation.MapCoeffs"
+      ],
+      "proof": "by\n  ext1; rw [← coe_evalEvalRingHom, evalEvalRingHom_eq, coe_eval₂RingHom]",
+      "scope_open": [
+        "open scoped Polynomial.Bivariate",
+        "namespace Polynomial",
+        "noncomputable section",
+        "variable {R S : Type*}",
+        "section CommSemiring",
+        "variable [CommSemiring R]"
+      ],
+      "scope_close": [
+        "end CommSemiring",
+        "end",
+        "end Polynomial"
+      ]
+    },
+    {
+      "name": "MeasurableEmbedding.id",
+      "binders": "",
+      "statement": "MeasurableEmbedding (id : α → α)",
+      "file": "MeasureTheory/MeasurableSpace/Embedding.lean",
+      "namespaces": [
+        "MeasurableEmbedding"
+      ],
+      "imports": [
+        "public import Mathlib.MeasureTheory.MeasurableSpace.Constructions",
+        "public import Mathlib.Tactic.FunProp"
+      ],
+      "proof": "\n  ⟨injective_id, measurable_id, fun s hs => by rwa [image_id]⟩",
+      "scope_open": [
+        "open Set Function Equiv MeasureTheory",
+        "universe uι",
+        "variable {α β γ δ δ' : Type*} {ι : Sort uι} {s t u : Set α}",
+        "namespace MeasurableEmbedding",
+        "variable {mα : MeasurableSpace α} [MeasurableSpace β] [MeasurableSpace γ] {f : α → β} {g : β → γ}"
+      ],
+      "scope_close": [
+        "end MeasurableEmbedding"
+      ]
+    },
+    {
+      "name": "CategoryTheory.Limits.PullbackCone.condition_one",
+      "binders": "(t : PullbackCone f g)",
+      "statement": "t.π.app WalkingCospan.one = t.fst ≫ f",
+      "file": "CategoryTheory/Limits/Shapes/Pullback/PullbackCone.lean",
+      "namespaces": [
+        "CategoryTheory.Limits",
+        "PullbackCone"
+      ],
+      "imports": [
+        "public import Mathlib.CategoryTheory.Limits.Shapes.Pullback.Cospan"
+      ],
+      "proof": "by\n  have w := t.π.naturality WalkingCospan.Hom.inl\n  dsimp at w; simpa using w",
+      "scope_open": [
+        "noncomputable section",
+        "open CategoryTheory",
+        "universe w v₁ v₂ v u u₂",
+        "namespace CategoryTheory.Limits",
+        "open WalkingSpan.Hom WalkingCospan.Hom WidePullbackShape.Hom WidePushoutShape.Hom",
+        "variable {C : Type u} [Category.{v} C] {W X Y Z : C}",
+        "namespace PullbackCone",
+        "variable {f : X ⟶ Z} {g : Y ⟶ Z}"
+      ],
+      "scope_close": [
+        "end PullbackCone",
+        "end CategoryTheory.Limits",
+        "end"
+      ]
+    },
+    {
+      "name": "List.flatten_splitBy",
+      "binders": "(r : α → α → Bool) (l : List α)",
+      "statement": "(l.splitBy r).flatten = l",
+      "file": "Data/List/SplitBy.lean",
+      "namespaces": [
+        "List"
+      ],
+      "imports": [
+        "public import Mathlib.Data.List.Chain",
+        "public import Mathlib.Data.List.Flatten"
+      ],
+      "proof": "\n  match l with\n  | nil => rfl\n  | cons _ _ => flatten_splitByLoop",
+      "scope_open": [
+        "namespace List",
+        "variable {α : Type*} {m : List α}"
+      ],
+      "scope_close": [
+        "end List"
+      ]
+    },
+    {
+      "name": "Int.ceil_sub_self_eq",
+      "binders": "(ha : fract a ≠ 0)",
+      "statement": "(⌈a⌉ : R) - a = 1 - fract a",
+      "file": "Algebra/Order/Floor/Ring.lean",
+      "namespaces": [
+        "Int"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Order.Field.Basic",
+        "public import Mathlib.Algebra.Order.Floor.Semiring",
+        "public import Mathlib.Tactic.Abel",
+        "public import Mathlib.Tactic.Field",
+        "public import Mathlib.Tactic.Linarith",
+        "public import Mathlib.Tactic.Positivity.Core"
+      ],
+      "proof": "by\n  rw [(or_iff_right ha).mp (fract_eq_zero_or_add_one_sub_ceil a)]\n  abel",
+      "scope_open": [
+        "open Set",
+        "variable {F R S : Type*}",
+        "namespace Int",
+        "variable [Ring R] [LinearOrder R] [FloorRing R] {z : ℤ} {a b : R}",
+        "section ceil",
+        "variable [IsOrderedRing R]"
+      ],
+      "scope_close": [
+        "end ceil",
+        "end Int"
+      ]
+    },
+    {
+      "name": "ContinuousAlgEquiv.continuousAt",
+      "binders": "(e : A ≃A[R] B) {a : A}",
+      "statement": "ContinuousAt e a",
+      "file": "Topology/Algebra/Algebra/Equiv.lean",
+      "namespaces": [
+        "ContinuousAlgEquiv"
+      ],
+      "imports": [
+        "public import Mathlib.Topology.Algebra.Algebra",
+        "public import Mathlib.Topology.Algebra.Module.Equiv"
+      ],
+      "proof": "\n  e.continuous.continuousAt",
+      "scope_open": [
+        "open scoped Topology",
+        "namespace ContinuousAlgEquiv",
+        "variable {R A B C : Type*} [CommSemiring R] [Semiring A] [TopologicalSpace A] [Semiring B] [TopologicalSpace B] [Semiring C] [TopologicalSpace C] [Algebra R A] [Algebra R B] [Algebra R C]"
+      ],
+      "scope_close": [
+        "end ContinuousAlgEquiv"
+      ]
+    },
+    {
+      "name": "csSup_mem_of_not_isSuccPrelimit'",
+      "binders": "(hlim : ¬ IsSuccPrelimit (sSup s))",
+      "statement": "sSup s ∈ s",
+      "file": "Order/SuccPred/CompleteLinearOrder.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Order.ConditionallyCompleteLattice.Indexed",
+        "public import Mathlib.Order.SuccPred.Limit"
+      ],
+      "proof": "by\n  obtain rfl | hs := s.eq_empty_or_nonempty\n  · simp [isSuccPrelimit_bot] at hlim\n  · apply csSup_mem_of_not_isSuccPrelimit hs _ hlim\n    contrapose! hlim\n    rw [csSup_of_not_bddAbove hlim, csSup_empty]\n    exact isSuccPrelimit_bot",
+      "scope_open": [
+        "open Order Set",
+        "variable {ι : Sort*} {α : Type*}",
+        "section ConditionallyCompleteLinearOrderBot",
+        "variable [ConditionallyCompleteLinearOrderBot α] {f : ι → α} {s : Set α} {x : α}"
+      ],
+      "scope_close": [
+        "end ConditionallyCompleteLinearOrderBot"
+      ]
+    },
+    {
+      "name": "Algebra.adjoin_insert_one",
+      "binders": "(s : Set A)",
+      "statement": "adjoin R (insert 1 s) = adjoin R s",
+      "file": "Algebra/Algebra/Subalgebra/Lattice.lean",
+      "namespaces": [
+        "Algebra"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Algebra.Operations",
+        "public import Mathlib.Algebra.Algebra.Subalgebra.Basic"
+      ],
+      "proof": "\n  mod_cast adjoin_insert_natCast R 1 s",
+      "scope_open": [
+        "universe u u' v w w'",
+        "section Adjoin",
+        "universe uR uS uA uB",
+        "open Submodule Subsemiring",
+        "variable {R : Type uR} {S : Type uS} {A : Type uA} {B : Type uB}",
+        "namespace Algebra",
+        "open Algebra",
+        "section Semiring",
+        "variable [CommSemiring R] [CommSemiring S] [Semiring A] [Semiring B]",
+        "variable [Algebra R S] [Algebra R A] [Algebra S A] [Algebra R B] [IsScalarTower R S A]",
+        "variable {s t : Set A}",
+        "variable {α : Type*}",
+        "variable (R A)",
+        "variable {A} (s)"
+      ],
+      "scope_close": [
+        "end Semiring",
+        "end Algebra",
+        "end Adjoin"
+      ]
+    },
+    {
+      "name": "UpperHalfPlane.I_im",
+      "binders": "",
+      "statement": "I.im = 1",
+      "file": "Analysis/Complex/UpperHalfPlane/Basic.lean",
+      "namespaces": [
+        "UpperHalfPlane"
+      ],
+      "imports": [
+        "public import Mathlib.Analysis.Complex.Basic"
+      ],
+      "proof": "Complex.I_im",
+      "scope_open": [
+        "noncomputable section",
+        "open UpperHalfPlane Complex",
+        "namespace UpperHalfPlane"
+      ],
+      "scope_close": [
+        "end UpperHalfPlane",
+        "end"
+      ]
+    },
+    {
+      "name": "Behrend.bound",
+      "binders": "(hN : 4096 ≤ N)",
+      "statement": "(N : ℝ) ^ (nValue N : ℝ)⁻¹ / exp 1 < dValue N",
+      "file": "Combinatorics/Additive/AP/Three/Behrend.lean",
+      "namespaces": [
+        "Behrend"
+      ],
+      "imports": [
+        "public import Mathlib.Analysis.Complex.ExponentialBounds",
+        "public import Mathlib.Analysis.InnerProductSpace.Convex",
+        "public import Mathlib.Analysis.InnerProductSpace.PiL2",
+        "public import Mathlib.Combinatorics.Additive.AP.Three.Defs",
+        "public import Mathlib.Combinatorics.Pigeonhole"
+      ],
+      "proof": "by\n  apply div_lt_floor _\n  rw [← log_le_log_iff, log_rpow, mul_comm, ← div_eq_mul_inv, nValue]\n  · grw [ceil_lt_mul]\n    · rw [mul_comm, ← div_div, div_sqrt, le_div_iff₀]\n      · norm_num [le_sqrt_log hN]\n      · norm_num1\n    · rw [cast_pos, lt_ceil, cast_zero, Real.sqrt_pos]\n      refine log_pos ?_\n      rw [one_lt_cast]\n      exact hN.trans_lt' (by norm_num1)\n    apply le_sqrt_of_sq_le\n    have : (12 : ℕ) * log 2 ≤ log N := by\n      rw [← log_rpow zero_lt_two, rpow_natCast]\n      exact log_le_log (by positivity) (mod_cast hN)\n    refine le_trans ?_ this\n    rw [← div_le_iff₀']\n    · exact log_two_gt_d9.le.trans' (by norm_num1)\n    · norm_num1\n  · rw [cast_pos]\n    exact hN.trans_lt' (by norm_num1)\n  · refine div_pos zero_lt_two ?_\n    rw [sub_pos, div_lt_one (exp_pos _)]\n    exact exp_one_gt_two\n  positivity",
+      "scope_open": [
+        "open Nat hiding log",
+        "open Finset Metric Real WithLp",
+        "open scoped Pointwise",
+        "namespace Behrend",
+        "variable {n d k N : ℕ} {x : Fin n → ℕ}",
+        "open scoped Filter Topology",
+        "open Real"
+      ],
+      "scope_close": [
+        "end Behrend"
+      ]
+    },
+    {
+      "name": "measurable_curry",
+      "binders": "",
+      "statement": "Measurable (@curry ι κ X)",
+      "file": "MeasureTheory/MeasurableSpace/Constructions.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Data.Finset.Update",
+        "public import Mathlib.Data.Prod.TProd",
+        "public import Mathlib.Data.Set.UnionLift",
+        "public import Mathlib.GroupTheory.Coset.Defs",
+        "public import Mathlib.MeasureTheory.MeasurableSpace.Basic",
+        "public import Mathlib.MeasureTheory.MeasurableSpace.Instances",
+        "public import Mathlib.Order.Disjointed"
+      ],
+      "proof": "\n  measurable_pi_lambda _ fun _ ↦ measurable_pi_lambda _ fun _ ↦ measurable_pi_apply _",
+      "scope_open": [
+        "open Set Function",
+        "universe uι",
+        "variable {α β γ δ δ' : Type*} {ι : Sort uι} {s : Set α}",
+        "section curry",
+        "variable {ι : Type*}",
+        "section Function",
+        "variable {κ X : Type*} [MeasurableSpace X]"
+      ],
+      "scope_close": [
+        "end Function",
+        "end curry"
+      ]
+    },
+    {
+      "name": "Module.Free.exists_set",
+      "binders": "[Free R M]",
+      "statement": "∃ S : Set M, Nonempty (Basis S R M)",
+      "file": "LinearAlgebra/FreeModule/Basic.lean",
+      "namespaces": [
+        "Module"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Algebra.Defs",
+        "public import Mathlib.Algebra.Module.Shrink",
+        "public import Mathlib.Algebra.Module.ULift",
+        "public import Mathlib.Data.Finsupp.Fintype",
+        "public import Mathlib.LinearAlgebra.Basis.Basic",
+        "public import Mathlib.Logic.Small.Basic"
+      ],
+      "proof": "\n  let ⟨_I, b⟩ := exists_basis R M; ⟨Set.range b, ⟨b.reindexRange⟩⟩",
+      "scope_open": [
+        "universe u v w z",
+        "variable {ι : Type*} (R : Type u) (M : Type v) (N : Type z)",
+        "namespace Module",
+        "section Basic",
+        "variable [Semiring R] [AddCommMonoid M] [Module R M]"
+      ],
+      "scope_close": [
+        "end Basic",
+        "end Module"
+      ]
+    },
+    {
+      "name": "NonarchAddGroupSeminorm.coe_zero",
+      "binders": "",
+      "statement": "⇑(0 : NonarchAddGroupSeminorm E) = 0",
+      "file": "Analysis/Normed/Group/Seminorm.lean",
+      "namespaces": [
+        "NonarchAddGroupSeminorm"
+      ],
+      "imports": [
+        "public import Mathlib.Data.NNReal.Defs",
+        "public import Mathlib.Order.ConditionallyCompleteLattice.Group"
+      ],
+      "proof": "\n  rfl",
+      "scope_open": [
+        "open Set",
+        "open NNReal",
+        "variable {R R' E F G : Type*}",
+        "namespace NonarchAddGroupSeminorm",
+        "section AddGroup",
+        "variable [AddGroup E] {p q : NonarchAddGroupSeminorm E}",
+        "variable (p q)"
+      ],
+      "scope_close": [
+        "end AddGroup",
+        "end NonarchAddGroupSeminorm"
+      ]
+    },
+    {
+      "name": "Real.arccos_one",
+      "binders": "",
+      "statement": "arccos 1 = 0",
+      "file": "Analysis/SpecialFunctions/Trigonometric/Inverse.lean",
+      "namespaces": [
+        "Real"
+      ],
+      "imports": [
+        "public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic",
+        "public import Mathlib.Topology.Order.ProjIcc"
+      ],
+      "proof": "by simp [arccos]",
+      "scope_open": [
+        "noncomputable section",
+        "open Topology Filter Set Filter Real",
+        "namespace Real",
+        "variable {x y : ℝ}"
+      ],
+      "scope_close": [
+        "end Real",
+        "end"
+      ]
+    },
+    {
+      "name": "SimpleGraph.Walk.isInduced_toSubgraph",
+      "binders": "{w : G.Walk u v}",
+      "statement": "w.toSubgraph.IsInduced ↔ w.IsChordless",
+      "file": "Combinatorics/SimpleGraph/Connectivity/Subgraph.lean",
+      "namespaces": [
+        "SimpleGraph",
+        "Walk"
+      ],
+      "imports": [
+        "public import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected",
+        "public import Mathlib.Combinatorics.SimpleGraph.Walk.Chord",
+        "public import Mathlib.Data.Set.Card"
+      ],
+      "proof": "by\n  simp_rw [Subgraph.IsInduced, IsChordless, IsChord, Sym2.forall, Sym2.lift_mk, G.mem_edgeSet,\n    mem_verts_toSubgraph, adj_toSubgraph_iff_mem_edges]\n  grind only",
+      "scope_open": [
+        "namespace SimpleGraph",
+        "universe u v",
+        "variable {V : Type u} {V' : Type v} {G : SimpleGraph V} {G' : SimpleGraph V'}",
+        "namespace Walk",
+        "variable {u v w : V}"
+      ],
+      "scope_close": [
+        "end Walk",
+        "end SimpleGraph"
+      ]
+    },
+    {
+      "name": "le_tsub_add_add",
+      "binders": "",
+      "statement": "a + b ≤ a - c + (b + c)",
+      "file": "Algebra/Order/Sub/Defs.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Algebra.Group.Basic",
+        "public import Mathlib.Algebra.Order.Monoid.Unbundled.Basic",
+        "public import Mathlib.Order.Lattice"
+      ],
+      "proof": "by\n  rw [add_comm a, add_comm (a - c)]\n  exact add_le_add_add_tsub",
+      "scope_open": [
+        "variable {α : Type*}",
+        "section OrderedAddCommSemigroup",
+        "section Preorder",
+        "variable [Preorder α]",
+        "section AddCommSemigroup",
+        "variable [AddCommSemigroup α] [Sub α] [OrderedSub α] {a b c d : α}",
+        "section Cov",
+        "variable [AddLeftMono α]"
+      ],
+      "scope_close": [
+        "end Cov",
+        "end AddCommSemigroup",
+        "end Preorder",
+        "end OrderedAddCommSemigroup"
+      ]
+    },
+    {
+      "name": "Equidecomp.refl_symm",
+      "binders": "",
+      "statement": "(refl X G).symm = refl X G",
+      "file": "Algebra/Group/Action/Equidecomp.lean",
+      "namespaces": [
+        "Equidecomp"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Group.Action.Defs",
+        "public import Mathlib.Logic.Equiv.PartialEquiv",
+        "public import Mathlib.Algebra.Group.Pointwise.Finset.Basic"
+      ],
+      "proof": "rfl",
+      "scope_open": [
+        "variable {X G : Type*} {A B C : Set X}",
+        "open Function Set Pointwise PartialEquiv",
+        "namespace Equidecomp",
+        "section Group",
+        "variable [Group G] [MulAction G X]"
+      ],
+      "scope_close": [
+        "end Group",
+        "end Equidecomp"
+      ]
+    },
+    {
+      "name": "MeasureTheory.SimpleFunc.bind_const",
+      "binders": "(f : α →ₛ β)",
+      "statement": "f.bind (const α) = f",
+      "file": "MeasureTheory/Function/SimpleFunc.lean",
+      "namespaces": [
+        "MeasureTheory",
+        "SimpleFunc"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Algebra.Pi",
+        "public import Mathlib.MeasureTheory.Constructions.BorelSpace.Order"
+      ],
+      "proof": "by ext; simp",
+      "scope_open": [
+        "noncomputable section",
+        "open Set hiding restrict restrict_apply",
+        "open Filter ENNReal",
+        "open Function (support)",
+        "open Topology NNReal ENNReal MeasureTheory",
+        "namespace MeasureTheory",
+        "variable {α β γ δ : Type*}",
+        "namespace SimpleFunc",
+        "section Measurable",
+        "variable [MeasurableSpace α]"
+      ],
+      "scope_close": [
+        "end Measurable",
+        "end SimpleFunc",
+        "end MeasureTheory",
+        "end"
+      ]
+    },
+    {
+      "name": "Polynomial.exists_max_root",
+      "binders": "[LinearOrder R] (p : R[X]) (hp : p ≠ 0)",
+      "statement": "∃ x₀, ∀ x, p.IsRoot x → x ≤ x₀",
+      "file": "Algebra/Polynomial/Roots.lean",
+      "namespaces": [
+        "Polynomial"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Polynomial.BigOperators",
+        "public import Mathlib.Algebra.Polynomial.RingDivision",
+        "public import Mathlib.Data.Set.Card",
+        "public import Mathlib.Data.Set.Finite.Lemmas",
+        "public import Mathlib.RingTheory.Coprime.Lemmas",
+        "public import Mathlib.RingTheory.Localization.FractionRing",
+        "public import Mathlib.SetTheory.Cardinal.Order"
+      ],
+      "proof": "\n  Set.exists_upper_bound_image _ _ <| finite_setOf_isRoot hp",
+      "scope_open": [
+        "open Multiset Finset",
+        "noncomputable section",
+        "namespace Polynomial",
+        "universe u v w z",
+        "variable {R : Type u} {S : Type v} {T : Type w} {a b : R} {n : ℕ}",
+        "section CommRing",
+        "variable [CommRing R] [IsDomain R] {p q : R[X]}",
+        "section Roots"
+      ],
+      "scope_close": [
+        "end Roots",
+        "end CommRing",
+        "end Polynomial",
+        "end"
+      ]
+    },
+    {
+      "name": "MeasureTheory.Integrable.toL1_zero",
+      "binders": "(h : Integrable (0 : α → β) μ)",
+      "statement": "h.toL1 0 = 0",
+      "file": "MeasureTheory/Function/L1Space/AEEqFun.lean",
+      "namespaces": [
+        "MeasureTheory",
+        "Integrable"
+      ],
+      "imports": [
+        "public import Mathlib.MeasureTheory.Function.L1Space.Integrable"
+      ],
+      "proof": "\n  rfl",
+      "scope_open": [
+        "noncomputable section",
+        "open EMetric ENNReal Filter MeasureTheory NNReal Set",
+        "variable {α β ε ε' : Type*} {m : MeasurableSpace α} {μ ν : Measure α}",
+        "variable [NormedAddCommGroup β] [TopologicalSpace ε] [ContinuousENorm ε] [TopologicalSpace ε'] [ESeminormedAddMonoid ε']",
+        "namespace MeasureTheory",
+        "namespace Integrable"
+      ],
+      "scope_close": [
+        "end Integrable",
+        "end MeasureTheory",
+        "end"
+      ]
+    },
+    {
+      "name": "TopologicalSpace.Opens.mem_interior",
+      "binders": "{s : Set α} {x : α}",
+      "statement": "x ∈ Opens.interior s ↔ x ∈ _root_.interior s",
+      "file": "Topology/Sets/Opens.lean",
+      "namespaces": [
+        "TopologicalSpace",
+        "Opens"
+      ],
+      "imports": [
+        "public import Mathlib.Order.Hom.CompleteLattice",
+        "public import Mathlib.Topology.Compactness.Bases",
+        "public import Mathlib.Topology.ContinuousMap.Basic",
+        "public import Mathlib.Order.CompactlyGenerated.Basic",
+        "public import Mathlib.Order.Copy"
+      ],
+      "proof": ".rfl",
+      "scope_open": [
+        "open Filter Function Order Set",
+        "open Topology",
+        "variable {ι α β γ : Type*} [TopologicalSpace α] [TopologicalSpace β] [TopologicalSpace γ]",
+        "namespace TopologicalSpace",
+        "namespace Opens"
+      ],
+      "scope_close": [
+        "end Opens",
+        "end TopologicalSpace"
+      ]
+    },
+    {
+      "name": "ValuativeRel.ValueGroupWithZero.embed_strictMono",
+      "binders": "[v.Compatible]",
+      "statement": "StrictMono (embed v)",
+      "file": "RingTheory/Valuation/ValuativeRel/Basic.lean",
+      "namespaces": [
+        "ValuativeRel",
+        "ValueGroupWithZero"
+      ],
+      "imports": [
+        "public import Mathlib.RingTheory.Valuation.Basic",
+        "public import Mathlib.Data.NNReal.Defs",
+        "public import Mathlib.Topology.Defs.Filter",
+        "public import Mathlib.Order.Filter.Bases.Basic"
+      ],
+      "proof": "by\n  intro a b h\n  obtain ⟨a, r, rfl⟩ := exists_valuation_div_valuation_eq a\n  obtain ⟨b, s, rfl⟩ := exists_valuation_div_valuation_eq b\n  rw [← embedding_strictMono.lt_iff_lt]\n  simp only [map_div₀]\n  rw [div_lt_div_iff₀] at h ⊢\n  any_goals simp only [zero_lt_iff, ne_eq, Valuation.apply_posSubmonoid_ne_zero, not_false_eq_true]\n  · rw [← map_mul, ← map_mul, (isEquiv (valuation R) v).lt_iff_lt] at h\n    simp only [embed, coe_mk, ZeroHom.coe_mk, lift_valuation,\n      OneMemClass.coe_one, map_one, div_one]\n    rw [embedding_restrict₀ a, embedding_restrict₀ b, embedding_restrict₀ r.1,\n      embedding_restrict₀ s.1]\n    simpa using h\n  · simp [restrict₀_apply, embed]\n  · simp [restrict₀_apply, embed]",
+      "scope_open": [
+        "noncomputable section",
+        "namespace ValuativeRel",
+        "variable {R : Type*} [Semiring R] [ValuativeRel R]",
+        "variable {R Γ : Type*} [Ring R] [ValuativeRel R] [LinearOrderedCommGroupWithZero Γ] (v : Valuation R Γ)",
+        "open MonoidWithZeroHom ValueGroup₀",
+        "namespace ValueGroupWithZero"
+      ],
+      "scope_close": [
+        "end ValueGroupWithZero",
+        "end ValuativeRel",
+        "end"
+      ]
+    },
+    {
+      "name": "PMF.bind_const",
+      "binders": "(p : PMF α) (q : PMF β)",
+      "statement": "(p.bind fun _ => q) = q",
+      "file": "Probability/ProbabilityMassFunction/Monad.lean",
+      "namespaces": [
+        "PMF"
+      ],
+      "imports": [
+        "public import Mathlib.Probability.ProbabilityMassFunction.Basic"
+      ],
+      "proof": "\n  PMF.ext fun x => by rw [bind_apply, ENNReal.tsum_mul_right, tsum_coe, one_mul]",
+      "scope_open": [
+        "noncomputable section",
+        "variable {α β γ : Type*}",
+        "open NNReal ENNReal",
+        "open MeasureTheory",
+        "namespace PMF",
+        "section Bind",
+        "variable (p : PMF α) (f : α → PMF β) (g : β → PMF γ)"
+      ],
+      "scope_close": [
+        "end Bind",
+        "end PMF",
+        "end"
+      ]
+    },
+    {
+      "name": "CategoryTheory.Equivalence.enoughInjectives_iff",
+      "binders": "(F : C ≌ D)",
+      "statement": "EnoughInjectives C ↔ EnoughInjectives D",
+      "file": "CategoryTheory/Preadditive/Injective/Basic.lean",
+      "namespaces": [
+        "CategoryTheory",
+        "Equivalence"
+      ],
+      "imports": [
+        "public import Mathlib.CategoryTheory.Preadditive.Projective.Basic"
+      ],
+      "proof": "\n  ⟨fun h => h.of_adjunction F.symm.toAdjunction, fun h => h.of_adjunction F.toAdjunction⟩",
+      "scope_open": [
+        "noncomputable section",
+        "open CategoryTheory Limits Opposite",
+        "universe v v₁ v₂ u₁ u₂",
+        "namespace CategoryTheory",
+        "variable {C : Type u₁} [Category.{v₁} C]",
+        "namespace Equivalence",
+        "variable {D : Type*} [Category* D] (F : C ≌ D)"
+      ],
+      "scope_close": [
+        "end Equivalence",
+        "end CategoryTheory",
+        "end"
+      ]
+    },
+    {
+      "name": "Subgroup.widthInfty_pos",
+      "binders": "[𝒢.IsArithmetic]",
+      "statement": "0 < 𝒢.widthInfty",
+      "file": "NumberTheory/ModularForms/Cusps.lean",
+      "namespaces": [
+        "Subgroup"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.EuclideanDomain.Int",
+        "public import Mathlib.Analysis.RCLike.Basic",
+        "public import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups",
+        "public import Mathlib.RingTheory.Localization.NumDen",
+        "public import Mathlib.Topology.Algebra.Order.ArchimedeanDiscrete",
+        "public import Mathlib.Topology.Compactification.OnePoint.ProjectiveLine"
+      ],
+      "proof": "by\n  apply strictWidthInfty_pos",
+      "scope_open": [
+        "open Matrix SpecialLinearGroup GeneralLinearGroup Filter Polynomial OnePoint",
+        "open scoped MatrixGroups LinearAlgebra.Projectivization",
+        "section Width",
+        "namespace Subgroup",
+        "section Real",
+        "variable (𝒢 : Subgroup (GL (Fin 2) ℝ))"
+      ],
+      "scope_close": [
+        "end Real",
+        "end Subgroup",
+        "end Width"
+      ]
+    },
+    {
+      "name": "NonemptyInterval.toProd_one",
+      "binders": "",
+      "statement": "(1 : NonemptyInterval α).toProd = 1",
+      "file": "Algebra/Order/Interval/Basic.lean",
+      "namespaces": [
+        "NonemptyInterval"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Ring.Prod",
+        "public import Mathlib.Algebra.Order.BigOperators.Group.Finset",
+        "public import Mathlib.Algebra.Order.Ring.Canonical",
+        "public import Mathlib.Order.Interval.Basic",
+        "public import Mathlib.Tactic.Positivity.Core",
+        "public import Mathlib.Algebra.Group.Pointwise.Set.Basic"
+      ],
+      "proof": "\n  rfl",
+      "scope_open": [
+        "open Function Set",
+        "open scoped Pointwise",
+        "universe u",
+        "variable {ι α : Type*}",
+        "section One",
+        "section Preorder",
+        "variable [Preorder α] [One α]",
+        "namespace NonemptyInterval"
+      ],
+      "scope_close": [
+        "end NonemptyInterval",
+        "end Preorder",
+        "end One"
+      ]
+    },
+    {
+      "name": "CStarAlgebra.le_one_of_one_le_inv",
+      "binders": "{a : Aˣ} (ha : 1 ≤ (↑a⁻¹ : A))",
+      "statement": "(a : A) ≤ 1",
+      "file": "Analysis/CStarAlgebra/ContinuousFunctionalCalculus/Order.lean",
+      "namespaces": [
+        "CStarAlgebra"
+      ],
+      "imports": [
+        "public import Mathlib.Analysis.CStarAlgebra.ContinuousFunctionalCalculus.Basic",
+        "public import Mathlib.Analysis.CStarAlgebra.Unitization",
+        "public import Mathlib.Analysis.SpecialFunctions.ContinuousFunctionalCalculus.Rpow.Basic",
+        "public import Mathlib.Analysis.CStarAlgebra.ContinuousFunctionalCalculus.Isometric",
+        "public import Mathlib.Topology.ContinuousMap.ContinuousSqrt",
+        "import Mathlib.Analysis.SpecialFunctions.ContinuousFunctionalCalculus.Rpow.Isometric"
+      ],
+      "proof": "by\n  simpa using CStarAlgebra.inv_le_one ha",
+      "scope_open": [
+        "open scoped NNReal CStarAlgebra",
+        "section CStar_unital",
+        "variable {A : Type*} [CStarAlgebra A]",
+        "section Inv",
+        "open CFC",
+        "variable [PartialOrder A] [StarOrderedRing A]",
+        "namespace CStarAlgebra"
+      ],
+      "scope_close": [
+        "end CStarAlgebra",
+        "end Inv",
+        "end CStar_unital"
+      ]
+    },
+    {
+      "name": "CategoryTheory.Bicategory.id_whiskerLeft_symm",
+      "binders": "{f g : a ⟶ b} (η : f ⟶ g)",
+      "statement": "η = (λ_ f).inv ≫ 𝟙 a ◁ η ≫ (λ_ g).hom",
+      "file": "CategoryTheory/Bicategory/Basic.lean",
+      "namespaces": [
+        "CategoryTheory",
+        "Bicategory"
+      ],
+      "imports": [
+        "public import Mathlib.CategoryTheory.NatIso"
+      ],
+      "proof": "by\n  simp",
+      "scope_open": [
+        "namespace CategoryTheory",
+        "universe w v u",
+        "open Category Iso",
+        "namespace Bicategory",
+        "variable {B : Type u} [Bicategory.{w, v} B] {a b c d e : B}"
+      ],
+      "scope_close": [
+        "end Bicategory",
+        "end CategoryTheory"
+      ]
+    },
+    {
+      "name": "Real.cos_pi_div_sixteen",
+      "binders": "",
+      "statement": "cos (π / 16) = √(2 + √(2 + √2)) / 2",
+      "file": "Analysis/SpecialFunctions/Trigonometric/Basic.lean",
+      "namespaces": [
+        "Real"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Field.NegOnePow",
+        "public import Mathlib.Algebra.Field.Periodic",
+        "public import Mathlib.Algebra.QuadraticDiscriminant",
+        "public import Mathlib.Analysis.SpecialFunctions.Exp"
+      ],
+      "proof": "by\n  trans cos (π / 2 ^ 4)\n  · congr\n    norm_num\n  · simp",
+      "scope_open": [
+        "noncomputable section",
+        "open Topology Filter Set",
+        "namespace Real",
+        "section CosDivSq",
+        "variable (x : ℝ)"
+      ],
+      "scope_close": [
+        "end CosDivSq",
+        "end Real",
+        "end"
+      ]
+    },
+    {
+      "name": "CliffordAlgebra.changeForm.neg_proof",
+      "binders": "",
+      "statement": "(-B).toQuadraticMap = Q - Q'",
+      "file": "LinearAlgebra/CliffordAlgebra/Contraction.lean",
+      "namespaces": [
+        "CliffordAlgebra"
+      ],
+      "imports": [
+        "public import Mathlib.LinearAlgebra.CliffordAlgebra.Conjugation",
+        "public import Mathlib.LinearAlgebra.CliffordAlgebra.Fold",
+        "public import Mathlib.LinearAlgebra.ExteriorAlgebra.Basic",
+        "public import Mathlib.LinearAlgebra.Dual.Defs"
+      ],
+      "proof": "\n  (congr_arg Neg.neg h).trans <| neg_sub _ _",
+      "scope_open": [
+        "open LinearMap (BilinMap BilinForm)",
+        "universe u1 u2 u3",
+        "variable {R : Type u1} [CommRing R]",
+        "variable {M : Type u2} [AddCommGroup M] [Module R M]",
+        "variable (Q : QuadraticForm R M)",
+        "namespace CliffordAlgebra",
+        "variable {Q}",
+        "variable {Q' Q'' : QuadraticForm R M} {B B' : BilinForm R M}",
+        "variable (h : B.toQuadraticMap = Q' - Q) (h' : B'.toQuadraticMap = Q'' - Q')"
+      ],
+      "scope_close": [
+        "end CliffordAlgebra"
+      ]
+    },
+    {
+      "name": "Asymptotics.isTheta_comm",
+      "binders": "",
+      "statement": "f =Θ[l] g ↔ g =Θ[l] f",
+      "file": "Analysis/Asymptotics/Theta.lean",
+      "namespaces": [
+        "Asymptotics"
+      ],
+      "imports": [
+        "public import Mathlib.Analysis.Asymptotics.Lemmas",
+        "public import Mathlib.Analysis.Normed.Module.Basic"
+      ],
+      "proof": "\n  ⟨fun h ↦ h.symm, fun h ↦ h.symm⟩",
+      "scope_open": [
+        "open Filter",
+        "open Topology",
+        "namespace Asymptotics",
+        "variable {α : Type*} {β : Type*} {E : Type*} {F : Type*} {G : Type*} {E' : Type*} {F' : Type*} {G' : Type*} {E'' : Type*} {F'' : Type*} {G'' : Type*} {R : Type*} {R' : Type*} {𝕜 : Type*} {𝕜' : Type*}",
+        "variable [Norm E] [Norm F] [Norm G]",
+        "variable [SeminormedAddCommGroup E'] [SeminormedAddCommGroup F'] [SeminormedAddCommGroup G'] [NormedAddCommGroup E''] [NormedAddCommGroup F''] [NormedAddCommGroup G''] [SeminormedRing R] [SeminormedRing R']",
+        "variable [NormedField 𝕜] [NormedField 𝕜']",
+        "variable {c c' c₁ c₂ : ℝ} {f : α → E} {g : α → F} {k : α → G}",
+        "variable {f' : α → E'} {g' : α → F'} {k' : α → G'}",
+        "variable {f'' : α → E''} {g'' : α → F''}",
+        "variable {l l' : Filter α}"
+      ],
+      "scope_close": [
+        "end Asymptotics"
+      ]
+    },
+    {
+      "name": "Real.le_tan",
+      "binders": "{x : ℝ} (h1 : 0 ≤ x) (h2 : x < π / 2)",
+      "statement": "x ≤ tan x",
+      "file": "Analysis/SpecialFunctions/Trigonometric/Bounds.lean",
+      "namespaces": [
+        "Real"
+      ],
+      "imports": [
+        "public import Mathlib.Analysis.Convex.SpecificFunctions.Deriv",
+        "public import Mathlib.Analysis.SpecialFunctions.Trigonometric.ArctanDeriv"
+      ],
+      "proof": "by\n  rcases eq_or_lt_of_le h1 with (rfl | h1')\n  · rw [tan_zero]\n  · exact le_of_lt (lt_tan h1' h2)",
+      "scope_open": [
+        "open Set",
+        "namespace Real",
+        "variable {x : ℝ}"
+      ],
+      "scope_close": [
+        "end Real"
+      ]
+    },
+    {
+      "name": "Finset.uIcc_eq_union",
+      "binders": "",
+      "statement": "[[a, b]] = Icc a b ∪ Icc b a",
+      "file": "Order/Interval/Finset/Basic.lean",
+      "namespaces": [
+        "Finset"
+      ],
+      "imports": [
+        "public import Mathlib.Order.Cover",
+        "public import Mathlib.Order.Interval.Finset.Defs",
+        "public import Mathlib.Order.Preorder.Finite"
+      ],
+      "proof": "\n  coe_injective <| by\n    push_cast\n    exact Set.uIcc_eq_union",
+      "scope_open": [
+        "open Function OrderDual",
+        "open FinsetInterval",
+        "variable {ι α : Type*} {a a₁ a₂ b b₁ b₂ c x : α}",
+        "namespace Finset",
+        "section LinearOrder",
+        "variable [LinearOrder α] [LocallyFiniteOrder α] {a a₁ a₂ b b₁ b₂ c : α}"
+      ],
+      "scope_close": [
+        "end LinearOrder",
+        "end Finset"
+      ]
+    },
+    {
+      "name": "Nat.Coprime.dvd_mul_right",
+      "binders": "{m n k : ℕ} (H : Coprime k n)",
+      "statement": "k ∣ m * n ↔ k ∣ m",
+      "file": "Data/Nat/GCD/Basic.lean",
+      "namespaces": [
+        "Nat"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Group.Nat.Units",
+        "public import Mathlib.Algebra.GroupWithZero.Divisibility",
+        "public import Mathlib.Algebra.GroupWithZero.Nat"
+      ],
+      "proof": "\n  ⟨H.dvd_of_dvd_mul_right, fun h => dvd_mul_of_dvd_left h n⟩",
+      "scope_open": [
+        "namespace Nat",
+        "variable {a a₁ a₂ b b₁ b₂ c : ℕ}"
+      ],
+      "scope_close": [
+        "end Nat"
+      ]
+    },
+    {
+      "name": "isOpenMap_smul₀",
+      "binders": "{c : G₀} (hc : c ≠ 0)",
+      "statement": "IsOpenMap fun x : α => c • x",
+      "file": "Topology/Algebra/ConstMulAction.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Algebra.Group.Pointwise.Set.Lattice",
+        "public import Mathlib.Algebra.GroupWithZero.Action.Pointwise.Set",
+        "public import Mathlib.Algebra.Module.ULift",
+        "public import Mathlib.GroupTheory.GroupAction.Defs",
+        "public import Mathlib.Order.Filter.Pointwise",
+        "public import Mathlib.Topology.Algebra.Constructions",
+        "public import Mathlib.Topology.Algebra.Support"
+      ],
+      "proof": "\n  (Homeomorph.smulOfNeZero c hc).isOpenMap",
+      "scope_open": [
+        "open Topology Pointwise Filter Set TopologicalSpace",
+        "variable {M α β : Type*}",
+        "section GroupWithZero",
+        "variable {G₀ : Type*} [TopologicalSpace α] [GroupWithZero G₀] [MulAction G₀ α] [ContinuousConstSMul G₀ α]",
+        "variable [TopologicalSpace β] {f : β → α} {b : β} {c : G₀} {s : Set β}"
+      ],
+      "scope_close": [
+        "end GroupWithZero"
+      ]
+    },
+    {
+      "name": "ContinuousLinearMap.opNorm_mulLeftRight_apply_le",
+      "binders": "(x : R)",
+      "statement": "‖mulLeftRight 𝕜 R x‖ ≤ ‖x‖",
+      "file": "Analysis/Normed/Operator/Mul.lean",
+      "namespaces": [
+        "ContinuousLinearMap"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Algebra.Bilinear",
+        "public import Mathlib.Analysis.Normed.Operator.NormedSpace"
+      ],
+      "proof": "\n  opNorm_le_bound _ (norm_nonneg x) (opNorm_mulLeftRight_apply_apply_le 𝕜 R x)",
+      "scope_open": [
+        "open Metric",
+        "open scoped NNReal Topology Uniformity",
+        "variable {𝕜 E : Type*} [NontriviallyNormedField 𝕜]",
+        "section SemiNormed",
+        "variable [SeminormedAddCommGroup E] [NormedSpace 𝕜 E]",
+        "namespace ContinuousLinearMap",
+        "section MultiplicationLinear",
+        "section NonUnital",
+        "variable (𝕜) (R : Type*) [NonUnitalSeminormedRing R]",
+        "variable [NormedSpace 𝕜 R] [IsScalarTower 𝕜 R R] [SMulCommClass 𝕜 R R]"
+      ],
+      "scope_close": [
+        "end NonUnital",
+        "end MultiplicationLinear",
+        "end ContinuousLinearMap",
+        "end SemiNormed"
+      ]
+    },
+    {
+      "name": "OrderIso.isLUB_image'",
+      "binders": "{s : Set α} {x : α}",
+      "statement": "IsLUB (f '' s) (f x) ↔ IsLUB s x",
+      "file": "Order/Bounds/OrderIso.lean",
+      "namespaces": [
+        "OrderIso"
+      ],
+      "imports": [
+        "public import Mathlib.Order.Bounds.Image",
+        "public import Mathlib.Order.Hom.Set"
+      ],
+      "proof": "by\n  rw [isLUB_image, f.symm_apply_apply]",
+      "scope_open": [
+        "open Set",
+        "namespace OrderIso",
+        "variable {α β : Type*} [Preorder α] [Preorder β] (f : α ≃o β)"
+      ],
+      "scope_close": [
+        "end OrderIso"
+      ]
+    },
+    {
+      "name": "CategoryTheory.SingleFunctors.hom_inv_id_hom",
+      "binders": "(e : F ≅ G) (n : A)",
+      "statement": "e.hom.hom n ≫ e.inv.hom n = 𝟙 _",
+      "file": "CategoryTheory/Shift/SingleFunctors.lean",
+      "namespaces": [
+        "CategoryTheory",
+        "SingleFunctors"
+      ],
+      "imports": [
+        "public import Mathlib.CategoryTheory.Shift.CommShift"
+      ],
+      "proof": "by\n  rw [← comp_hom, e.hom_inv_id, id_hom]",
+      "scope_open": [
+        "open CategoryTheory Category ZeroObject Limits Functor",
+        "variable (C D E E' : Type*) [Category* C] [Category* D] [Category* E] [Category* E'] (A : Type*) [AddMonoid A] [HasShift D A] [HasShift E A] [HasShift E' A]",
+        "namespace CategoryTheory",
+        "variable {C D E A}",
+        "variable (F G H : SingleFunctors C D A)",
+        "namespace SingleFunctors",
+        "variable {F G H}",
+        "variable (C D)",
+        "variable {C D}"
+      ],
+      "scope_close": [
+        "end SingleFunctors",
+        "end CategoryTheory"
+      ]
+    },
+    {
+      "name": "SeparatedNhds.isClosed_union_iff",
+      "binders": "(hst : SeparatedNhds s t)",
+      "statement": "IsClosed (s ∪ t) ↔ IsClosed s ∧ IsClosed t",
+      "file": "Topology/Separation/SeparatedNhds.lean",
+      "namespaces": [
+        "SeparatedNhds"
+      ],
+      "imports": [
+        "public import Mathlib.Topology.Continuous",
+        "public import Mathlib.Topology.NhdsSet"
+      ],
+      "proof": "\n  ⟨fun h ↦ ⟨hst.isClosed_left_of_isClosed_union h, hst.isClosed_right_of_isClosed_union h⟩,\n    fun ⟨h1, h2⟩ ↦ h1.union h2⟩",
+      "scope_open": [
+        "open Function Set Filter Topology TopologicalSpace",
+        "universe u v",
+        "variable {X : Type*} {Y : Type*} [TopologicalSpace X]",
+        "section Separation",
+        "namespace SeparatedNhds",
+        "variable {s s₁ s₂ t t₁ t₂ u : Set X}"
+      ],
+      "scope_close": [
+        "end SeparatedNhds",
+        "end Separation"
+      ]
+    },
+    {
+      "name": "OpenPartialHomeomorph.IsImage.symm_apply_mem_iff",
+      "binders": "(h : e.IsImage s t) (hy : y ∈ e.target)",
+      "statement": "e.symm y ∈ s ↔ y ∈ t",
+      "file": "Topology/OpenPartialHomeomorph/IsImage.lean",
+      "namespaces": [
+        "OpenPartialHomeomorph",
+        "IsImage"
+      ],
+      "imports": [
+        "public import Mathlib.Topology.OpenPartialHomeomorph.Continuity"
+      ],
+      "proof": "\n  h.symm hy",
+      "scope_open": [
+        "open Function Set Filter Topology",
+        "variable {X X' : Type*} {Y Y' : Type*} {Z Z' : Type*} [TopologicalSpace X] [TopologicalSpace X'] [TopologicalSpace Y] [TopologicalSpace Y'] [TopologicalSpace Z] [TopologicalSpace Z']",
+        "namespace OpenPartialHomeomorph",
+        "variable (e : OpenPartialHomeomorph X Y)",
+        "section IsImage",
+        "namespace IsImage",
+        "variable {e} {s : Set X} {t : Set Y} {x : X} {y : Y}"
+      ],
+      "scope_close": [
+        "end IsImage",
+        "end IsImage",
+        "end OpenPartialHomeomorph"
+      ]
+    },
+    {
+      "name": "Equiv.piCongrRight_refl",
+      "binders": "{β : α → Sort*}",
+      "statement": "piCongrRight (fun a ↦ .refl (β a)) = .refl (∀ a, β a)",
+      "file": "Logic/Equiv/Basic.lean",
+      "namespaces": [
+        "Equiv"
+      ],
+      "imports": [
+        "public import Mathlib.Logic.Equiv.Option",
+        "public import Mathlib.Logic.Equiv.Sum",
+        "public import Mathlib.Logic.Function.Conjugate",
+        "public import Mathlib.Tactic.Lift",
+        "public import Mathlib.Data.Int.Notation"
+      ],
+      "proof": "\n  rfl",
+      "scope_open": [
+        "universe u v w z",
+        "open Function",
+        "variable {α α₁ α₂ β β₁ β₂ γ δ : Sort*}",
+        "namespace Equiv",
+        "section"
+      ],
+      "scope_close": [
+        "end",
+        "end Equiv"
+      ]
+    },
+    {
+      "name": "WeierstrassCurve.Jacobian.addX_neg",
+      "binders": "{P : Fin 3 → R} (hP : W'.Equation P)",
+      "statement": "W'.addX P (W'.neg P) = W'.dblZ P ^ 2",
+      "file": "AlgebraicGeometry/EllipticCurve/Jacobian/Point.lean",
+      "namespaces": [
+        "WeierstrassCurve",
+        "Jacobian"
+      ],
+      "imports": [
+        "public import Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point",
+        "public import Mathlib.AlgebraicGeometry.EllipticCurve.Jacobian.Formula"
+      ],
+      "proof": "by\n  linear_combination (norm := (rw [addX, neg_X, neg_Y, neg_Z, dblZ, negY]; ring1))\n    -2 * P z ^ 2 * (equation_iff _).mp hP",
+      "scope_open": [
+        "open MvPolynomial",
+        "universe r s u v",
+        "namespace WeierstrassCurve",
+        "variable {R : Type r} {S : Type s} {A F : Type u} {B K : Type v} [CommRing R] [CommRing S] [CommRing A] [CommRing B] [Field F] [Field K] {W' : Jacobian R} {W : Jacobian F}",
+        "namespace Jacobian"
+      ],
+      "scope_close": [
+        "end Jacobian",
+        "end WeierstrassCurve"
+      ]
+    },
+    {
+      "name": "Submonoid.closure_empty",
+      "binders": "",
+      "statement": "closure (∅ : Set M) = ⊥",
+      "file": "Algebra/Group/Submonoid/Basic.lean",
+      "namespaces": [
+        "Submonoid"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Group.Hom.Defs",
+        "public import Mathlib.Algebra.Group.Submonoid.Defs",
+        "public import Mathlib.Algebra.Group.Subsemigroup.Basic",
+        "public import Mathlib.Algebra.Group.Units.Defs"
+      ],
+      "proof": "\n  (Submonoid.gi M).gc.l_bot",
+      "scope_open": [
+        "variable {M : Type*} {N : Type*}",
+        "variable {A : Type*}",
+        "section NonAssoc",
+        "variable [MulOneClass M] {s : Set M}",
+        "variable [AddZeroClass A] {t : Set A}",
+        "namespace Submonoid",
+        "variable (S : Submonoid M)",
+        "variable {S}",
+        "open Set",
+        "variable (S)",
+        "variable (M)",
+        "variable {M}"
+      ],
+      "scope_close": [
+        "end Submonoid",
+        "end NonAssoc"
+      ]
+    },
+    {
+      "name": "FreeRing.of_ne_zero",
+      "binders": "(x : α)",
+      "statement": "of x ≠ 0",
+      "file": "RingTheory/FreeRing.lean",
+      "namespaces": [
+        "FreeRing"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.FreeMonoid.Basic",
+        "public import Mathlib.GroupTheory.FreeAbelianGroup"
+      ],
+      "proof": "FreeAbelianGroup.of_ne_zero _",
+      "scope_open": [
+        "universe u v",
+        "namespace FreeRing",
+        "variable {α : Type u}"
+      ],
+      "scope_close": [
+        "end FreeRing"
+      ]
+    },
+    {
+      "name": "UniformSpace.Completion.mapRingHom_id",
+      "binders": "",
+      "statement": "mapRingHom (.id α) continuous_id = .id (Completion α)",
+      "file": "Topology/Algebra/UniformRing.lean",
+      "namespaces": [
+        "UniformSpace.Completion"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Algebra.Defs",
+        "public import Mathlib.Algebra.Module.Submodule.Lattice",
+        "public import Mathlib.Algebra.Ring.TransferInstance",
+        "public import Mathlib.Topology.Algebra.GroupCompletion",
+        "public import Mathlib.Topology.Algebra.Ring.Ideal",
+        "public import Mathlib.Topology.Algebra.IsUniformGroup.Basic",
+        "public import Mathlib.Topology.Algebra.SeparationQuotient.Basic"
+      ],
+      "proof": "by\n  simp [RingHom.ext_iff, mapRingHom_apply]",
+      "scope_open": [
+        "noncomputable section",
+        "universe u",
+        "namespace UniformSpace.Completion",
+        "open IsDenseInducing UniformSpace Function",
+        "variable {α : Type*} [Ring α] [UniformSpace α] [IsTopologicalRing α]",
+        "variable [IsUniformAddGroup α]",
+        "variable {β : Type u} [UniformSpace β] [Ring β] [IsUniformAddGroup β] [IsTopologicalRing β] (f : α →+* β) (hf : Continuous f)",
+        "variable {f}"
+      ],
+      "scope_close": [
+        "end UniformSpace.Completion",
+        "end"
+      ]
+    },
+    {
+      "name": "Module.Basis.repr_self_apply",
+      "binders": "(j) [Decidable (i = j)]",
+      "statement": "b.repr (b i) j = if i = j then 1 else 0",
+      "file": "LinearAlgebra/Basis/Defs.lean",
+      "namespaces": [
+        "Module",
+        "Basis"
+      ],
+      "imports": [
+        "public import Mathlib.LinearAlgebra.Finsupp.LinearCombination"
+      ],
+      "proof": "by\n  rw [repr_self, Finsupp.single_apply]",
+      "scope_open": [
+        "noncomputable section",
+        "universe u",
+        "open Function Set Submodule Finsupp",
+        "variable {ι : Type*} {ι' : Type*} {R : Type*} {R₂ : Type*} {K : Type*}",
+        "variable {M : Type*} {M' M'' : Type*} {V : Type u} {V' : Type*}",
+        "namespace Module",
+        "variable [Semiring R]",
+        "variable [AddCommMonoid M] [Module R M] [AddCommMonoid M'] [Module R M']",
+        "namespace Basis",
+        "variable (b b₁ : Basis ι R M) (i : ι) (c : R) (x : M)",
+        "section repr"
+      ],
+      "scope_close": [
+        "end repr",
+        "end Basis",
+        "end Module",
+        "end"
+      ]
+    },
+    {
+      "name": "Profinite.NobelingProof.GoodProducts.union",
+      "binders": "",
+      "statement": "range C = ⋃ (e : {o' // o' < o}), (smaller C e.val)",
+      "file": "Topology/Category/Profinite/Nobeling/ZeroLimit.lean",
+      "namespaces": [
+        "Profinite.NobelingProof"
+      ],
+      "imports": [
+        "public import Mathlib.LinearAlgebra.LinearIndependent.Basic",
+        "public import Mathlib.Topology.Category.Profinite.Nobeling.Basic"
+      ],
+      "proof": "by\n  ext p\n  simp only [smaller, range, Set.mem_iUnion, Set.mem_image, Set.mem_range, Subtype.exists]\n  refine ⟨fun hp ↦ ?_, fun hp ↦ ?_⟩\n  · obtain ⟨l, hl, rfl⟩ := hp\n    rw [contained_eq_proj C o hsC, Products.limitOrdinal C ho] at hl\n    obtain ⟨o', ho'⟩ := hl\n    refine ⟨o', ho'.1, eval (π C (ord I · < o')) ⟨l, ho'.2⟩, ⟨l, ho'.2, rfl⟩, ?_⟩\n    exact Products.eval_πs C (Products.prop_of_isGood C _ ho'.2)\n  · obtain ⟨o', h, _, ⟨l, hl, rfl⟩, rfl⟩ := hp\n    refine ⟨l, ?_, (Products.eval_πs C (Products.prop_of_isGood  C _ hl)).symm⟩\n    rw [contained_eq_proj C o hsC]\n    exact Products.isGood_mono C (le_of_lt h) hl",
+      "scope_open": [
+        "universe u",
+        "namespace Profinite.NobelingProof",
+        "variable {I : Type u} (C : Set (I → Bool)) [LinearOrder I]",
+        "variable [WellFoundedLT I]",
+        "section Limit",
+        "variable {o : Ordinal} (ho : Order.IsSuccLimit o)",
+        "variable (hsC : contained C o)"
+      ],
+      "scope_close": [
+        "end Limit",
+        "end Profinite.NobelingProof"
+      ]
+    },
+    {
+      "name": "LieSubmodule.mem_comap",
+      "binders": "{m : M}",
+      "statement": "m ∈ comap f N' ↔ f m ∈ N'",
+      "file": "Algebra/Lie/Submodule.lean",
+      "namespaces": [
+        "LieSubmodule"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Lie.Subalgebra",
+        "public import Mathlib.LinearAlgebra.Finsupp.Span"
+      ],
+      "proof": "\n  Iff.rfl",
+      "scope_open": [
+        "universe u v w w₁ w₂",
+        "section LieSubmoduleMapAndComap",
+        "variable {R : Type u} {L : Type v} {L' : Type w₂} {M : Type w} {M' : Type w₁}",
+        "variable [CommRing R] [LieRing L] [LieRing L'] [LieAlgebra R L']",
+        "variable [AddCommGroup M] [Module R M] [LieRingModule L M]",
+        "variable [AddCommGroup M'] [Module R M'] [LieRingModule L M']",
+        "namespace LieSubmodule",
+        "variable (f : M →ₗ⁅R,L⁆ M') (N N₂ : LieSubmodule R L M) (N' : LieSubmodule R L M')",
+        "variable {f N N₂ N'}"
+      ],
+      "scope_close": [
+        "end LieSubmodule",
+        "end LieSubmoduleMapAndComap"
+      ]
+    },
+    {
+      "name": "Filter.principal_sdiff_principal",
+      "binders": "{s t : Set α}",
+      "statement": "𝓟 s \\ 𝓟 t = 𝓟 (s \\ t)",
+      "file": "Order/Filter/Basic.lean",
+      "namespaces": [
+        "Filter"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Group.Pi.Basic",
+        "public import Mathlib.Data.Set.Lattice",
+        "public import Mathlib.Order.Filter.Defs",
+        "public import Mathlib.Tactic.ToFun"
+      ],
+      "proof": "\n  Filter.ext fun _ => by simp [← le_principal_iff, principal_mono]",
+      "scope_open": [
+        "open Function Set Order",
+        "open scoped symmDiff",
+        "universe u v w x y",
+        "namespace Filter",
+        "variable {α : Type u} {β : Type v} {γ : Type w} {δ : Type*} {ι : Sort x}",
+        "section Lattice",
+        "variable {f g : Filter α} {s t : Set α}"
+      ],
+      "scope_close": [
+        "end Lattice",
+        "end Filter"
+      ]
+    },
+    {
+      "name": "CategoryTheory.Pretriangulated.Triangle.isZero₂_of_isIso₃",
+      "binders": "(h : IsIso T.mor₃)",
+      "statement": "IsZero T.obj₂",
+      "file": "CategoryTheory/Triangulated/Pretriangulated.lean",
+      "namespaces": [
+        "CategoryTheory",
+        "Pretriangulated",
+        "Triangle"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Homology.ShortComplex.Basic",
+        "public import Mathlib.CategoryTheory.Limits.Constructions.FiniteProductsOfBinaryProducts",
+        "public import Mathlib.CategoryTheory.Triangulated.TriangleShift"
+      ],
+      "proof": "(T.isZero₂_iff_isIso₃ hT).2 h",
+      "scope_open": [
+        "noncomputable section",
+        "open CategoryTheory Preadditive Limits",
+        "universe v v₀ v₁ v₂ u u₀ u₁ u₂",
+        "namespace CategoryTheory",
+        "open Category Pretriangulated ZeroObject",
+        "variable (C : Type u) [Category.{v} C] [HasZeroObject C] [HasShift C ℤ] [Preadditive C]",
+        "namespace Pretriangulated",
+        "variable [∀ n : ℤ, Functor.Additive (CategoryTheory.shiftFunctor C n)] [hC : Pretriangulated C]",
+        "variable {C}",
+        "namespace Triangle",
+        "variable (T : Triangle C) (hT : T ∈ distTriang C)"
+      ],
+      "scope_close": [
+        "end Triangle",
+        "end Pretriangulated",
+        "end CategoryTheory",
+        "end"
+      ]
+    },
+    {
+      "name": "List.bagInter_sublist_left",
+      "binders": "{l₁ l₂ : List α}",
+      "statement": "l₁.bagInter l₂ <+ l₁",
+      "file": "Data/List/Lattice.lean",
+      "namespaces": [
+        "List"
+      ],
+      "imports": [
+        "public import Mathlib.Data.List.Basic"
+      ],
+      "proof": "by\n  fun_induction List.bagInter with grind",
+      "scope_open": [
+        "open Nat",
+        "namespace List",
+        "variable {α : Type*} {l₁ l₂ : List α} {p : α → Prop} {a : α}",
+        "variable [DecidableEq α]",
+        "section BagInter"
+      ],
+      "scope_close": [
+        "end BagInter",
+        "end List"
+      ]
+    },
+    {
+      "name": "Equiv.Perm.IsCycle.two_le_card_support",
+      "binders": "(h : IsCycle f)",
+      "statement": "2 ≤ #f.support",
+      "file": "GroupTheory/Perm/Cycle/Basic.lean",
+      "namespaces": [
+        "Equiv.Perm"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Module.BigOperators",
+        "public import Mathlib.GroupTheory.Perm.Basic",
+        "public import Mathlib.GroupTheory.Perm.Finite",
+        "public import Mathlib.GroupTheory.Perm.List",
+        "public import Mathlib.GroupTheory.Perm.Sign"
+      ],
+      "proof": "\n  two_le_card_support_of_ne_one h.ne_one",
+      "scope_open": [
+        "open Equiv Function Finset",
+        "variable {ι α β : Type*}",
+        "namespace Equiv.Perm",
+        "section IsCycle",
+        "variable {f g : Perm α} {x y : α}",
+        "variable [DecidableEq α]",
+        "variable [Fintype α]"
+      ],
+      "scope_close": [
+        "end IsCycle",
+        "end Equiv.Perm"
+      ]
+    },
+    {
+      "name": "Real.sqrt_le_left",
+      "binders": "(hy : 0 ≤ y)",
+      "statement": "√x ≤ y ↔ x ≤ y ^ 2",
+      "file": "Analysis/Real/Sqrt.lean",
+      "namespaces": [
+        "Real"
+      ],
+      "imports": [
+        "public import Mathlib.Topology.Instances.NNReal.Lemmas",
+        "public import Mathlib.Topology.Order.MonotoneContinuity"
+      ],
+      "proof": "by\n  rw [sqrt, ← Real.le_toNNReal_iff_coe_le hy, NNReal.sqrt_le_iff_le_sq, sq, ← Real.toNNReal_mul hy,\n    Real.toNNReal_le_toNNReal_iff (mul_self_nonneg y), sq]",
+      "scope_open": [
+        "open Set Filter",
+        "open scoped Filter NNReal Topology",
+        "namespace Real",
+        "variable {x y : ℝ}"
+      ],
+      "scope_close": [
+        "end Real"
+      ]
+    },
+    {
+      "name": "MvPolynomial.idealOfVars_fg",
+      "binders": "[Finite σ]",
+      "statement": "(idealOfVars σ R).FG",
+      "file": "RingTheory/MvPolynomial/Ideal.lean",
+      "namespaces": [
+        "MvPolynomial"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.MonoidAlgebra.Ideal",
+        "public import Mathlib.Algebra.MvPolynomial.Division",
+        "public import Mathlib.RingTheory.Ideal.Quotient.Operations",
+        "public import Mathlib.RingTheory.MvPolynomial.MonomialOrder",
+        "public import Mathlib.RingTheory.MvPolynomial.Basic",
+        "import Mathlib.Algebra.Order.Group.Pointwise.Interval",
+        "import Mathlib.RingTheory.Ideal.Operations"
+      ],
+      "proof": "\n  Submodule.fg_span <| Set.finite_range _",
+      "scope_open": [
+        "variable {σ R : Type*}",
+        "namespace MvPolynomial",
+        "variable [CommSemiring R]",
+        "section idealOfVars",
+        "open Finset Finsupp",
+        "variable (σ R) in"
+      ],
+      "scope_close": [
+        "end idealOfVars",
+        "end MvPolynomial"
+      ]
+    },
+    {
+      "name": "HasFDerivAt.isBigOTVS_sub",
+      "binders": "(h : HasFDerivAt f f' x)",
+      "statement": "(f · - f x) =O[𝕜; 𝓝 x] (· - x)",
+      "file": "Analysis/Calculus/FDeriv/Basic.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Analysis.Asymptotics.AsymptoticEquivalent",
+        "public import Mathlib.Analysis.Calculus.FDeriv.Defs",
+        "public import Mathlib.Analysis.Normed.Operator.Asymptotics",
+        "public import Mathlib.Analysis.Calculus.TangentCone.Basic",
+        "import Mathlib.Analysis.Asymptotics.Lemmas",
+        "import Mathlib.Analysis.Calculus.TangentCone.DimOne"
+      ],
+      "proof": "by\n  simpa using! HasFDerivAtFilter.isBigOTVS_sub h",
+      "scope_open": [
+        "open Filter Asymptotics ContinuousLinearMap Set Metric Topology NNReal ENNReal",
+        "noncomputable section",
+        "section",
+        "variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]",
+        "variable {E : Type*} [AddCommGroup E] [Module 𝕜 E] [TopologicalSpace E]",
+        "variable {F : Type*} [AddCommGroup F] [Module 𝕜 F] [TopologicalSpace F]",
+        "variable {f f₀ f₁ g : E → F}",
+        "variable {f' f₀' f₁' g' : E →L[𝕜] F}",
+        "variable {x : E}",
+        "variable {s t : Set E}",
+        "variable {L L₁ L₂ : Filter (E × E)}",
+        "section Asymptotics",
+        "variable [ContinuousAdd F] [ContinuousSMul 𝕜 F]"
+      ],
+      "scope_close": [
+        "end Asymptotics",
+        "end",
+        "end"
+      ]
+    },
+    {
+      "name": "SubmodulesBasis.nonarchimedean",
+      "binders": "(hB : SubmodulesBasis B)",
+      "statement": "@NonarchimedeanAddGroup M _ hB.topology",
+      "file": "Topology/Algebra/Nonarchimedean/Bases.lean",
+      "namespaces": [
+        "SubmodulesBasis"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Algebra.Basic",
+        "public import Mathlib.Topology.Algebra.FilterBasis",
+        "public import Mathlib.Topology.Algebra.Nonarchimedean.Basic"
+      ],
+      "proof": "by\n  letI := hB.topology\n  constructor\n  intro U hU\n  obtain ⟨-, ⟨i, rfl⟩, hi : (B i : Set M) ⊆ U⟩ :=\n    hB.toModuleFilterBasis.toAddGroupFilterBasis.nhds_zero_hasBasis.mem_iff.mp hU\n  exact ⟨hB.openAddSubgroup i, hi⟩",
+      "scope_open": [
+        "open Set Filter Function Lattice",
+        "open Topology Filter Pointwise",
+        "variable {ι R A : Type*} [CommRing R] [CommRing A] [Algebra R A]",
+        "variable {M : Type*} [AddCommGroup M] [Module R M]",
+        "namespace SubmodulesBasis",
+        "variable [TopologicalSpace R] [Nonempty ι] {B : ι → Submodule R M} (hB : SubmodulesBasis B)"
+      ],
+      "scope_close": [
+        "end SubmodulesBasis"
+      ]
+    },
+    {
+      "name": "isPrimePow_iff_unique_prime_dvd",
+      "binders": "{n : ℕ}",
+      "statement": "IsPrimePow n ↔ ∃! p : ℕ, p.Prime ∧ p ∣ n",
+      "file": "Data/Nat/Factorization/PrimePow.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Algebra.IsPrimePow",
+        "public import Mathlib.Data.Nat.Factorization.Basic",
+        "public import Mathlib.Data.Nat.Prime.Pow",
+        "public import Mathlib.NumberTheory.Divisors"
+      ],
+      "proof": "by\n  rw [isPrimePow_nat_iff]\n  constructor\n  · rintro ⟨p, k, hp, hk, rfl⟩\n    refine ⟨p, ⟨hp, dvd_pow_self _ hk.ne'⟩, ?_⟩\n    rintro q ⟨hq, hq'⟩\n    exact (Nat.prime_dvd_prime_iff_eq hq hp).1 (hq.dvd_of_dvd_pow hq')\n  rintro ⟨p, ⟨hp, hn⟩, hq⟩\n  rcases eq_or_ne n 0 with (rfl | hn₀)\n  · cases (hq 2 ⟨Nat.prime_two, dvd_zero 2⟩).trans (hq 3 ⟨Nat.prime_three, dvd_zero 3⟩).symm\n  refine ⟨p, n.factorization p, hp, hp.factorization_pos_of_dvd hn₀ hn, ?_⟩\n  simp only [and_imp] at hq\n  apply Nat.dvd_antisymm (Nat.ordProj_dvd _ _)\n  -- We need to show n ∣ p ^ n.factorization p\n  apply Nat.dvd_of_primeFactorsList_subperm hn₀\n  rw [hp.primeFactorsList_pow, List.subperm_ext_iff]\n  intro q hq'\n  rw [Nat.mem_primeFactorsList hn₀] at hq'\n  cases hq _ hq'.1 hq'.2\n  simp",
+      "scope_open": [],
+      "scope_close": []
+    },
+    {
+      "name": "ENNReal.image_coe_Ioo",
+      "binders": "(x y : ℝ≥0)",
+      "statement": "(↑) '' Ioo x y = Ioo (x : ℝ≥0∞) y",
+      "file": "Data/ENNReal/Operations.lean",
+      "namespaces": [
+        "ENNReal"
+      ],
+      "imports": [
+        "public import Mathlib.Data.ENNReal.Real",
+        "public import Mathlib.Tactic.Finiteness"
+      ],
+      "proof": "WithTop.image_coe_Ioo",
+      "scope_open": [
+        "open Set NNReal ENNReal",
+        "namespace ENNReal",
+        "variable {a b c d : ℝ≥0∞} {r p q : ℝ≥0}",
+        "section Interval",
+        "variable {x y z : ℝ≥0∞} {ε ε₁ ε₂ : ℝ≥0∞} {s : Set ℝ≥0∞}"
+      ],
+      "scope_close": [
+        "end Interval",
+        "end ENNReal"
+      ]
+    },
+    {
+      "name": "Rat.cast_inv_nat",
+      "binders": "(n : ℕ)",
+      "statement": "((n⁻¹ : ℚ) : α) = (n : α)⁻¹",
+      "file": "Data/Rat/Cast/Lemmas.lean",
+      "namespaces": [
+        "Rat"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Order.Nonneg.Field",
+        "public import Mathlib.Data.Rat.Cast.Defs",
+        "public import Mathlib.Tactic.Positivity.Basic"
+      ],
+      "proof": "by\n  rcases n with - | n\n  · simp\n  rw [cast_def, inv_natCast_num, inv_natCast_den, if_neg n.succ_ne_zero,\n    Int.sign_eq_one_of_pos (Int.ofNat_succ_pos n), Int.cast_one, one_div]",
+      "scope_open": [
+        "namespace Rat",
+        "variable {α : Type*} [DivisionRing α]"
+      ],
+      "scope_close": [
+        "end Rat"
+      ]
+    },
+    {
+      "name": "Seminorm.coe_add",
+      "binders": "(p q : Seminorm 𝕜 E)",
+      "statement": "⇑(p + q) = p + q",
+      "file": "Analysis/Seminorm.lean",
+      "namespaces": [
+        "Seminorm"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Order.Pi",
+        "public import Mathlib.Analysis.Convex.Function",
+        "public import Mathlib.Analysis.LocallyConvex.Basic",
+        "public import Mathlib.Analysis.Normed.Module.Basic",
+        "public import Mathlib.Data.Real.Pointwise"
+      ],
+      "proof": "\n  rfl",
+      "scope_open": [
+        "open NormedField Set Filter",
+        "open scoped NNReal Pointwise Topology Uniformity",
+        "variable {R R' 𝕜 𝕜₂ 𝕜₃ 𝕝 E E₂ E₃ F ι : Type*}",
+        "namespace Seminorm",
+        "section SeminormedRing",
+        "variable [SeminormedRing 𝕜]",
+        "section AddGroup",
+        "variable [AddGroup E]",
+        "section SMul",
+        "variable [SMul 𝕜 E]",
+        "variable (p : Seminorm 𝕜 E) (x : E) (r : ℝ)"
+      ],
+      "scope_close": [
+        "end SMul",
+        "end AddGroup",
+        "end SeminormedRing",
+        "end Seminorm"
+      ]
+    },
+    {
+      "name": "CategoryTheory.Limits.equalizer.ι_of_eq",
+      "binders": "[HasEqualizer f g] (h : f = g)",
+      "statement": "IsIso (equalizer.ι f g)",
+      "file": "CategoryTheory/Limits/Shapes/Equalizers.lean",
+      "namespaces": [
+        "CategoryTheory.Limits"
+      ],
+      "imports": [
+        "public import Mathlib.CategoryTheory.EpiMono",
+        "public import Mathlib.CategoryTheory.Limits.HasLimits",
+        "public import Mathlib.CategoryTheory.Limits.Shapes.Pullback.HasPullback"
+      ],
+      "proof": "\n  isIso_limit_cone_parallelPair_of_eq h <| limit.isLimit _",
+      "scope_open": [
+        "section",
+        "open CategoryTheory Opposite",
+        "namespace CategoryTheory.Limits",
+        "universe v v₂ u u₂",
+        "open WalkingParallelPair",
+        "open WalkingParallelPairHom",
+        "variable {C : Type u}",
+        "variable {X Y : C}",
+        "variable [Category.{v} C]",
+        "variable {f g : X ⟶ Y}",
+        "variable (f g)",
+        "section",
+        "variable {f g}"
+      ],
+      "scope_close": [
+        "end",
+        "end CategoryTheory.Limits",
+        "end"
+      ]
+    },
+    {
+      "name": "EuclideanGeometry.right_dist_ne_zero_of_angle_eq_pi",
+      "binders": "{p₁ p₂ p₃ : P} (h : ∠ p₁ p₂ p₃ = π)",
+      "statement": "dist p₃ p₂ ≠ 0",
+      "file": "Geometry/Euclidean/Angle/Unoriented/Affine.lean",
+      "namespaces": [
+        "EuclideanGeometry"
+      ],
+      "imports": [
+        "public import Mathlib.Analysis.Convex.Between",
+        "public import Mathlib.Analysis.Normed.Group.AddTorsor",
+        "public import Mathlib.Geometry.Euclidean.Angle.Unoriented.Basic",
+        "public import Mathlib.Analysis.Normed.Affine.Isometry"
+      ],
+      "proof": "\n  left_dist_ne_zero_of_angle_eq_pi <| (angle_comm _ _ _).trans h",
+      "scope_open": [
+        "noncomputable section",
+        "open Real RealInnerProductSpace",
+        "namespace EuclideanGeometry",
+        "open InnerProductGeometry",
+        "variable {V P : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] {p p₀ : P}"
+      ],
+      "scope_close": [
+        "end EuclideanGeometry",
+        "end"
+      ]
+    },
+    {
+      "name": "Ordinal.veblen_eq_of_lt_invVeblen₁",
+      "binders": "(h : o < invVeblen₁ x)",
+      "statement": "veblen o x = x",
+      "file": "SetTheory/Ordinal/Veblen.lean",
+      "namespaces": [
+        "Ordinal"
+      ],
+      "imports": [
+        "public import Mathlib.SetTheory.Ordinal.FixedPoint"
+      ],
+      "proof": "by\n  simpa using notMem_of_lt_csInf' h",
+      "scope_open": [
+        "noncomputable section",
+        "open Order Set",
+        "universe u",
+        "namespace Ordinal",
+        "variable {f : Ordinal.{u} → Ordinal.{u}} {o o₁ o₂ a b x : Ordinal.{u}}"
+      ],
+      "scope_close": [
+        "end Ordinal",
+        "end"
+      ]
+    },
+    {
+      "name": "Nat.stirlingSecond_succ_zero",
+      "binders": "(n : ℕ)",
+      "statement": "stirlingSecond (succ n) 0 = 0",
+      "file": "Combinatorics/Enumerative/Stirling.lean",
+      "namespaces": [
+        "Nat"
+      ],
+      "imports": [
+        "public import Mathlib.Data.Nat.Factorial.Basic",
+        "public import Mathlib.Data.Nat.Choose.Basic",
+        "public import Mathlib.Tactic.NormNum.Inv",
+        "public import Mathlib.Tactic.NormNum.Pow"
+      ],
+      "proof": "\n  rfl",
+      "scope_open": [
+        "open Nat",
+        "namespace Nat"
+      ],
+      "scope_close": [
+        "end Nat"
+      ]
+    },
+    {
+      "name": "Int.ediv_two_mul_two_add_one_of_odd",
+      "binders": "",
+      "statement": "Odd n → n / 2 * 2 + 1 = n",
+      "file": "Algebra/Ring/Int/Parity.lean",
+      "namespaces": [
+        "Int"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Ring.Parity",
+        "public import Mathlib.Algebra.Ring.Int.Defs",
+        "public import Mathlib.Algebra.Group.Int.Even"
+      ],
+      "proof": "by grind",
+      "scope_open": [
+        "namespace Int",
+        "variable {m n : ℤ}"
+      ],
+      "scope_close": [
+        "end Int"
+      ]
+    },
+    {
+      "name": "CategoryTheory.IsHomLift.fac",
+      "binders": "",
+      "statement": "f = eqToHom (domain_eq p f φ).symm ≫ p.map φ ≫ eqToHom (codomain_eq p f φ)",
+      "file": "CategoryTheory/FiberedCategory/HomLift.lean",
+      "namespaces": [
+        "CategoryTheory",
+        "IsHomLift"
+      ],
+      "imports": [
+        "public import Mathlib.CategoryTheory.Functor.Category",
+        "public import Mathlib.CategoryTheory.CommSq"
+      ],
+      "proof": "by\n  subst_hom_lift p f φ; simp",
+      "scope_open": [
+        "universe u₁ v₁ u₂ v₂",
+        "open CategoryTheory Category",
+        "variable {𝒮 : Type u₁} {𝒳 : Type u₂} [Category.{v₁} 𝒳] [Category.{v₂} 𝒮] (p : 𝒳 ⥤ 𝒮)",
+        "namespace CategoryTheory",
+        "namespace IsHomLift",
+        "section",
+        "variable {R S : 𝒮} {a b : 𝒳}",
+        "variable (f : R ⟶ S) (φ : a ⟶ b) [p.IsHomLift f φ]"
+      ],
+      "scope_close": [
+        "end",
+        "end IsHomLift",
+        "end CategoryTheory"
+      ]
+    },
+    {
+      "name": "Finset.mem_map",
+      "binders": "{b : β}",
+      "statement": "b ∈ s.map f ↔ ∃ a ∈ s, f a = b",
+      "file": "Data/Finset/Image.lean",
+      "namespaces": [
+        "Finset"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.NeZero",
+        "public import Mathlib.Data.Finset.Attach",
+        "public import Mathlib.Data.Finset.Disjoint",
+        "public import Mathlib.Data.Finset.Erase",
+        "public import Mathlib.Data.Finset.Filter",
+        "public import Mathlib.Data.Finset.Range",
+        "public import Mathlib.Data.Finset.Lattice.Lemmas",
+        "public import Mathlib.Data.Finset.SDiff",
+        "public import Mathlib.Data.Fintype.Defs"
+      ],
+      "proof": "\n  Multiset.mem_map",
+      "scope_open": [
+        "variable {α β γ : Type*}",
+        "open Multiset",
+        "open Function",
+        "namespace Finset",
+        "section Map",
+        "variable {f : α ↪ β} {s : Finset α}"
+      ],
+      "scope_close": [
+        "end Map",
+        "end Finset"
+      ]
+    },
+    {
+      "name": "continuous_curry",
+      "binders": "{g : X × Y → Z} (x : X) (h : Continuous g)",
+      "statement": "Continuous (curry g x)",
+      "file": "Topology/Constructions/SumProd.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Topology.Homeomorph.Defs",
+        "public import Mathlib.Topology.Maps.Basic",
+        "public import Mathlib.Topology.Separation.SeparatedNhds"
+      ],
+      "proof": "\n  Continuous.uncurry_left x h",
+      "scope_open": [
+        "noncomputable section",
+        "open Topology TopologicalSpace Set Filter Function",
+        "universe u v u' v'",
+        "variable {X : Type u} {Y : Type v} {W Z ε ζ : Type*}",
+        "section Prod",
+        "variable [TopologicalSpace X] [TopologicalSpace Y] [TopologicalSpace Z] [TopologicalSpace W] [TopologicalSpace ε] [TopologicalSpace ζ]"
+      ],
+      "scope_close": [
+        "end Prod",
+        "end"
+      ]
+    },
+    {
+      "name": "Derivative.normalizedDerivOfComplex_neg",
+      "binders": "(F : ℍ → ℂ) (hF : MDiff F)",
+      "statement": "D (-F) = -D F",
+      "file": "NumberTheory/ModularForms/Derivative.lean",
+      "namespaces": [
+        "Derivative"
+      ],
+      "imports": [
+        "public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.MDifferentiable"
+      ],
+      "proof": "by\n  have : -F = (-1 : ℂ) • F := by ext; simp\n  rw [this, normalizedDerivOfComplex_smul _ _ hF]\n  ext\n  simp",
+      "scope_open": [
+        "open UpperHalfPlane hiding I",
+        "open Real Complex",
+        "open scoped Manifold",
+        "namespace Derivative"
+      ],
+      "scope_close": [
+        "end Derivative"
+      ]
+    },
+    {
+      "name": "lie_zero",
+      "binders": "",
+      "statement": "⁅x, 0⁆ = (0 : M)",
+      "file": "Algebra/Lie/Basic.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Algebra.Module.Submodule.Equiv",
+        "public import Mathlib.Algebra.Module.Equiv.Basic",
+        "public import Mathlib.Algebra.Module.Rat",
+        "public import Mathlib.Data.Bracket",
+        "public import Mathlib.Tactic.Abel"
+      ],
+      "proof": "\n  (AddMonoidHom.mk' _ (lie_add x)).map_zero",
+      "scope_open": [
+        "universe u v w w₁ w₂",
+        "open Function",
+        "section BasicProperties",
+        "variable {R : Type u} {L : Type v} {M : Type w} {N : Type w₁}",
+        "variable [CommRing R] [LieRing L] [LieAlgebra R L]",
+        "variable [AddCommGroup M] [Module R M] [LieRingModule L M] [LieModule R L M]",
+        "variable [AddCommGroup N] [Module R N] [LieRingModule L N] [LieModule R L N]",
+        "variable (t : R) (x y z : L) (m n : M)"
+      ],
+      "scope_close": [
+        "end BasicProperties"
+      ]
+    },
+    {
+      "name": "Equiv.uncountable_iff",
+      "binders": "(e : α ≃ β)",
+      "statement": "Uncountable α ↔ Uncountable β",
+      "file": "Data/Countable/Defs.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Data.Finite.Defs",
+        "public import Mathlib.Data.Bool.Basic",
+        "public import Mathlib.Data.Subtype",
+        "public import Mathlib.Tactic.MkIffOfInductiveProp"
+      ],
+      "proof": "\n  ⟨fun h => @Uncountable.of_equiv _ _ h e, fun h => @Uncountable.of_equiv _ _ h e.symm⟩",
+      "scope_open": [
+        "open Function",
+        "universe u v",
+        "variable {α : Sort u} {β : Sort v}"
+      ],
+      "scope_close": []
+    },
+    {
+      "name": "Submodule.span_closure",
+      "binders": "{s : Set M}",
+      "statement": "span R (AddSubmonoid.closure s : Set M) = span R s",
+      "file": "LinearAlgebra/Span/Defs.lean",
+      "namespaces": [
+        "Submodule"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Module.Submodule.Lattice",
+        "public import Mathlib.Algebra.Group.Pointwise.Set.Basic"
+      ],
+      "proof": "\n  le_antisymm (span_le.mpr closure_subset_span) (span_mono AddSubmonoid.subset_closure)",
+      "scope_open": [
+        "variable {R R₂ K M M₂ V S : Type*}",
+        "namespace Submodule",
+        "open Function Set",
+        "open scoped Pointwise",
+        "section AddCommMonoid",
+        "variable [Semiring R] [AddCommMonoid M] [Module R M]",
+        "variable {x : M} (p p' : Submodule R M)",
+        "variable [Semiring R₂] {σ₁₂ : R →+* R₂}",
+        "variable [AddCommMonoid M₂] [Module R₂ M₂]",
+        "variable {F : Type*} [FunLike F M M₂] [SemilinearMapClass F σ₁₂ M M₂]",
+        "variable {s t : Set M}"
+      ],
+      "scope_close": [
+        "end AddCommMonoid",
+        "end Submodule"
+      ]
+    },
+    {
+      "name": "Set.Unbounded.rel_mono",
+      "binders": "{r' : α → α → Prop} (hr : r' ≤ r) (h : Unbounded r s)",
+      "statement": "Unbounded r' s",
+      "file": "Order/Bounded.lean",
+      "namespaces": [
+        "Set"
+      ],
+      "imports": [
+        "public import Mathlib.Order.RelClasses",
+        "public import Mathlib.Order.Interval.Set.Basic",
+        "public import Mathlib.Order.Bounds.Defs"
+      ],
+      "proof": "\n  fun a =>\n  let ⟨b, hb, hba⟩ := h a\n  ⟨b, hb, fun hba' => hba (hr b a hba')⟩",
+      "scope_open": [
+        "namespace Set",
+        "variable {α : Type*} {r : α → α → Prop} {s t : Set α}"
+      ],
+      "scope_close": [
+        "end Set"
+      ]
+    },
+    {
+      "name": "Hyperreal.stdPart_omega",
+      "binders": "",
+      "statement": "stdPart ω = 0",
+      "file": "Analysis/Real/Hyperreal.lean",
+      "namespaces": [
+        "Hyperreal"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Order.Ring.StandardPart",
+        "public import Mathlib.Analysis.SpecificLimits.Basic",
+        "public import Mathlib.Order.Filter.FilterProduct"
+      ],
+      "proof": "by\n  rw [stdPart_eq_zero]\n  exact archimedeanClassMk_omega_neg.ne",
+      "scope_open": [
+        "open ArchimedeanClass Filter Germ Topology",
+        "noncomputable section",
+        "namespace Hyperreal"
+      ],
+      "scope_close": [
+        "end Hyperreal",
+        "end"
+      ]
+    },
+    {
+      "name": "DFunLike.finite",
+      "binders": "[Finite α] [∀ i, Finite (β i)]",
+      "statement": "Finite F",
+      "file": "Data/FunLike/Fintype.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Data.Fintype.Basic",
+        "public import Mathlib.Data.FunLike.Basic",
+        "public import Mathlib.Data.Finite.Prod"
+      ],
+      "proof": "\n  Finite.of_injective _ DFunLike.coe_injective",
+      "scope_open": [
+        "section Sort'",
+        "variable (F G : Sort*) {α γ : Sort*} {β : α → Sort*} [DFunLike F α β] [FunLike G α γ]"
+      ],
+      "scope_close": [
+        "end Sort'"
+      ]
+    },
+    {
+      "name": "Set.image_subtype_val_Ioo_Ici",
+      "binders": "{a b : α} (c : Ioo a b)",
+      "statement": "Subtype.val '' Ici c = Ico c.1 b",
+      "file": "Order/Interval/Set/Image.lean",
+      "namespaces": [
+        "Set"
+      ],
+      "imports": [
+        "public import Mathlib.Order.Interval.Set.Basic",
+        "public import Mathlib.Data.Set.Function",
+        "public import Mathlib.Order.Directed"
+      ],
+      "proof": "\n  image_subtype_val_Ixx_Ixi c c.2.1.trans_le",
+      "scope_open": [
+        "variable {α β : Type*} {f : α → β}",
+        "open Set",
+        "namespace Set",
+        "variable [Preorder α] {p : α → Prop}"
+      ],
+      "scope_close": [
+        "end Set"
+      ]
+    },
+    {
+      "name": "Chebyshev.psi_ge",
+      "binders": "(n : ℕ)",
+      "statement": "n * log 2 - log (n + 1) ≤ ψ n",
+      "file": "NumberTheory/Chebyshev.lean",
+      "namespaces": [
+        "Chebyshev"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Order.Floor.Semifield",
+        "public import Mathlib.Analysis.SpecialFunctions.Pow.Real",
+        "public import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic",
+        "public import Mathlib.NumberTheory.AbelSummation",
+        "public import Mathlib.NumberTheory.PrimeCounting",
+        "public import Mathlib.NumberTheory.Primorial",
+        "public import Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt",
+        "import Mathlib.Algebra.GCDMonoid.FinsetLemmas",
+        "import Mathlib.Data.Nat.Prime.Factorial",
+        "import Mathlib.Analysis.SpecialFunctions.Log.Base",
+        "import Mathlib.Analysis.SpecialFunctions.Log.InvLog",
+        "import Mathlib.Data.Nat.Prime.Int"
+      ],
+      "proof": "by\n  rw [tsub_le_iff_left, psi_eq_log_lcmUpto, ← log_pow 2,\n    ← log_mul (by positivity) (by simp [lcmUpto_ne_zero])]\n  exact log_le_log (by positivity) <| mod_cast two_pow_le_mul_lcmUpto n",
+      "scope_open": [
+        "open Nat hiding log",
+        "open Finset Real",
+        "open ArithmeticFunction hiding log id",
+        "open scoped Nat.Prime",
+        "namespace Chebyshev"
+      ],
+      "scope_close": [
+        "end Chebyshev"
+      ]
+    },
+    {
+      "name": "Equiv.swap_comm",
+      "binders": "(a b : α)",
+      "statement": "swap a b = swap b a",
+      "file": "Logic/Equiv/Basic.lean",
+      "namespaces": [
+        "Equiv"
+      ],
+      "imports": [
+        "public import Mathlib.Logic.Equiv.Option",
+        "public import Mathlib.Logic.Equiv.Sum",
+        "public import Mathlib.Logic.Function.Conjugate",
+        "public import Mathlib.Tactic.Lift",
+        "public import Mathlib.Data.Int.Notation"
+      ],
+      "proof": "\n  ext fun r => swapCore_comm r _ _",
+      "scope_open": [
+        "universe u v w z",
+        "open Function",
+        "variable {α α₁ α₂ β β₁ β₂ γ δ : Sort*}",
+        "namespace Equiv",
+        "section Swap",
+        "variable [DecidableEq α]"
+      ],
+      "scope_close": [
+        "end Swap",
+        "end Equiv"
+      ]
+    },
+    {
+      "name": "IsDedekindDomainInv.isNoetherianRing",
+      "binders": "",
+      "statement": "IsNoetherianRing A",
+      "file": "RingTheory/DedekindDomain/Ideal/Basic.lean",
+      "namespaces": [
+        "IsDedekindDomainInv"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Algebra.Subalgebra.Pointwise",
+        "public import Mathlib.RingTheory.DedekindDomain.Basic",
+        "public import Mathlib.RingTheory.FractionalIdeal.Inverse",
+        "public import Mathlib.RingTheory.Spectrum.Prime.Basic"
+      ],
+      "proof": "by\n  let := h.commGroupWithZero (K := FractionRing A)\n  refine isNoetherianRing_iff.mpr ⟨fun I : Ideal A => ?_⟩\n  by_cases hI : I = ⊥\n  · rw [hI]; apply Submodule.fg_bot\n  have hI : (I : FractionalIdeal A⁰ (FractionRing A)) ≠ 0 := coeIdeal_ne_zero.mpr hI\n  exact I.fg_of_isUnit (IsFractionRing.injective A (FractionRing A)) hI.isUnit",
+      "scope_open": [
+        "variable (R A K : Type*) [CommRing R] [CommRing A] [Field K]",
+        "open scoped nonZeroDivisors Polynomial",
+        "section Inverse",
+        "section IsDedekindDomainInv",
+        "variable [IsDomain A]",
+        "open FractionalIdeal",
+        "variable {R A K}",
+        "namespace IsDedekindDomainInv",
+        "variable [Algebra A K] [IsFractionRing A K] (h : IsDedekindDomainInv A) {I J : FractionalIdeal A⁰ K}"
+      ],
+      "scope_close": [
+        "end IsDedekindDomainInv",
+        "end IsDedekindDomainInv",
+        "end Inverse"
+      ]
+    },
+    {
+      "name": "Finset.surjOn_iff_subset_image",
+      "binders": "",
+      "statement": "Set.SurjOn f s t ↔ t ⊆ s.image f",
+      "file": "Data/Finset/Image.lean",
+      "namespaces": [
+        "Finset"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.NeZero",
+        "public import Mathlib.Data.Finset.Attach",
+        "public import Mathlib.Data.Finset.Disjoint",
+        "public import Mathlib.Data.Finset.Erase",
+        "public import Mathlib.Data.Finset.Filter",
+        "public import Mathlib.Data.Finset.Range",
+        "public import Mathlib.Data.Finset.Lattice.Lemmas",
+        "public import Mathlib.Data.Finset.SDiff",
+        "public import Mathlib.Data.Fintype.Defs"
+      ],
+      "proof": "by\n  simp only [Set.SurjOn]\n  norm_cast",
+      "scope_open": [
+        "variable {α β γ : Type*}",
+        "open Multiset",
+        "open Function",
+        "namespace Finset",
+        "section Image",
+        "variable [DecidableEq β]",
+        "variable {f g : α → β} {s : Finset α} {t : Finset β} {a : α} {b c : β}"
+      ],
+      "scope_close": [
+        "end Image",
+        "end Finset"
+      ]
+    },
+    {
+      "name": "Int.gcd_nonneg",
+      "binders": "(i j : ℤ)",
+      "statement": "0 ≤ GCDMonoid.gcd i j",
+      "file": "Algebra/GCDMonoid/Nat.lean",
+      "namespaces": [
+        "Int"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.GCDMonoid.Basic",
+        "public import Mathlib.Algebra.Order.Group.Unbundled.Int",
+        "public import Mathlib.Algebra.Ring.Int.Units",
+        "public import Mathlib.Algebra.GroupWithZero.Nat"
+      ],
+      "proof": "by simp [← coe_gcd]",
+      "scope_open": [
+        "namespace Int",
+        "section GCDMonoid"
+      ],
+      "scope_close": [
+        "end GCDMonoid",
+        "end Int"
+      ]
+    },
+    {
+      "name": "Filter.mem_kernMap_iff_compl",
+      "binders": "{s : Set β}",
+      "statement": "s ∈ kernMap m f ↔ ∃ t, tᶜ ∈ f ∧ m '' t = sᶜ",
+      "file": "Order/Filter/Map.lean",
+      "namespaces": [
+        "Filter"
+      ],
+      "imports": [
+        "public import Mathlib.Control.Basic",
+        "public import Mathlib.Data.Set.Lattice.Image",
+        "public import Mathlib.Order.Filter.Basic"
+      ],
+      "proof": "by\n  rw [mem_kernMap, compl_surjective.exists]\n  refine exists_congr (fun x ↦ and_congr_right fun _ ↦ ?_)\n  rw [kernImage_compl, compl_eq_comm, eq_comm]",
+      "scope_open": [
+        "open Function Set Order",
+        "open scoped symmDiff",
+        "universe u v w x y",
+        "namespace Filter",
+        "variable {α β γ δ : Type*} {ι : Sort*} {F : Filter α} {G : Filter β}",
+        "section Map",
+        "variable {f f₁ f₂ : Filter α} {g g₁ g₂ : Filter β} {m : α → β} {m' : β → γ} {s : Set α} {t : Set β}",
+        "section KernMap",
+        "variable {m : α → β} {f : Filter α}"
+      ],
+      "scope_close": [
+        "end KernMap",
+        "end Map",
+        "end Filter"
+      ]
+    },
+    {
+      "name": "Set.restrict_apply",
+      "binders": "(f : (a : α) → π a) (s : Set α) (x : s)",
+      "statement": "s.restrict f x = f x",
+      "file": "Data/Set/Restrict.lean",
+      "namespaces": [
+        "Set"
+      ],
+      "imports": [
+        "public import Mathlib.Data.Set.Image"
+      ],
+      "proof": "\n  rfl",
+      "scope_open": [
+        "variable {α β γ δ : Type*} {ι : Sort*} {π : α → Type*}",
+        "open Equiv Equiv.Perm Function",
+        "namespace Set",
+        "section restrict"
+      ],
+      "scope_close": [
+        "end restrict",
+        "end Set"
+      ]
+    },
+    {
+      "name": "HomologicalComplex₂.total.map_id",
+      "binders": "",
+      "statement": "map (𝟙 K) c₁₂ = 𝟙 _",
+      "file": "Algebra/Homology/TotalComplex.lean",
+      "namespaces": [
+        "HomologicalComplex₂",
+        "total"
+      ],
+      "imports": [
+        "public import Mathlib.CategoryTheory.Linear.Basic",
+        "public import Mathlib.Algebra.Homology.ComplexShapeSigns",
+        "public import Mathlib.Algebra.Homology.HomologicalBicomplex",
+        "public import Mathlib.Algebra.Module.Basic"
+      ],
+      "proof": "by\n  apply (HomologicalComplex.forget _ _).map_injective\n  apply GradedObject.mapMap_id",
+      "scope_open": [
+        "open CategoryTheory Category Limits Preadditive",
+        "namespace HomologicalComplex₂",
+        "variable {C : Type*} [Category* C] [Preadditive C] {I₁ I₂ I₁₂ : Type*} {c₁ : ComplexShape I₁} {c₂ : ComplexShape I₂} (K L M : HomologicalComplex₂ C c₁ c₂) (φ : K ⟶ L) (e : K ≅ L) (ψ : L ⟶ M) (c₁₂ : ComplexShape I₁₂) [TotalComplexShape c₁ c₂ c₁₂]",
+        "variable [DecidableEq I₁₂] [K.HasTotal c₁₂]",
+        "namespace total",
+        "variable {K L M}",
+        "variable [L.HasTotal c₁₂]",
+        "variable (K) in"
+      ],
+      "scope_close": [
+        "end total",
+        "end HomologicalComplex₂"
+      ]
+    },
+    {
+      "name": "Units.mk_val",
+      "binders": "(u : αˣ) (y h₁ h₂)",
+      "statement": "mk (u : α) y h₁ h₂ = u",
+      "file": "Algebra/Group/Units/Defs.lean",
+      "namespaces": [
+        "Units"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Group.Commute.Defs"
+      ],
+      "proof": "\n  ext rfl",
+      "scope_open": [
+        "open Function",
+        "universe u",
+        "variable {α : Type u}",
+        "namespace Units",
+        "section Monoid",
+        "variable [Monoid α]"
+      ],
+      "scope_close": [
+        "end Monoid",
+        "end Units"
+      ]
+    },
+    {
+      "name": "Set.Icc.le_one",
+      "binders": "{t : Icc (0 : R) 1}",
+      "statement": "t ≤ 1",
+      "file": "Algebra/Order/Interval/Set/Instances.lean",
+      "namespaces": [
+        "Set.Icc"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.GroupWithZero.InjSurj",
+        "public import Mathlib.Algebra.GroupWithZero.Hom",
+        "public import Mathlib.Algebra.Order.Ring.Defs",
+        "public import Mathlib.Algebra.Group.Hom.Defs",
+        "public import Mathlib.Algebra.Ring.Regular",
+        "public import Mathlib.Order.Interval.Set.Basic",
+        "public import Mathlib.Tactic.FastInstance"
+      ],
+      "proof": "\n  t.2.2",
+      "scope_open": [
+        "open Set",
+        "variable {R : Type*}",
+        "section OrderedSemiring",
+        "variable [Semiring R] [PartialOrder R] [IsOrderedRing R]",
+        "namespace Set.Icc"
+      ],
+      "scope_close": [
+        "end Set.Icc",
+        "end OrderedSemiring"
+      ]
+    },
+    {
+      "name": "Tuple.comp_perm_comp_sort_eq_comp_sort",
+      "binders": "",
+      "statement": "(f ∘ σ) ∘ sort (f ∘ σ) = f ∘ sort f",
+      "file": "Data/Fin/Tuple/Sort.lean",
+      "namespaces": [
+        "Tuple"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Group.End",
+        "public import Mathlib.Data.Finset.Sort",
+        "public import Mathlib.Data.Prod.Lex",
+        "public import Mathlib.Order.Interval.Finset.Fin",
+        "public import Mathlib.Data.Fintype.Fin"
+      ],
+      "proof": "by\n  rw [Function.comp_assoc, ← Equiv.Perm.coe_mul]\n  exact unique_monotone (monotone_sort (f ∘ σ)) (monotone_sort f)",
+      "scope_open": [
+        "namespace Tuple",
+        "open List",
+        "variable {n : ℕ} {α : Type*}",
+        "variable [LinearOrder α] {f : Fin n → α} {σ : Equiv.Perm (Fin n)}"
+      ],
+      "scope_close": [
+        "end Tuple"
+      ]
+    },
+    {
+      "name": "RelIso.rel_symm_apply",
+      "binders": "(e : r ≃r s) {x y}",
+      "statement": "r x (e.symm y) ↔ s (e x) y",
+      "file": "Order/RelIso/Basic.lean",
+      "namespaces": [
+        "RelIso"
+      ],
+      "imports": [
+        "public import Mathlib.Logic.Embedding.Basic",
+        "public import Mathlib.Order.RelClasses"
+      ],
+      "proof": "by\n  rw [← e.map_rel_iff, e.apply_symm_apply]",
+      "scope_open": [
+        "open Function",
+        "universe u v w",
+        "variable {α β γ δ : Type*} {r : α → α → Prop} {s : β → β → Prop} {t : γ → γ → Prop} {u : δ → δ → Prop}",
+        "namespace RelIso"
+      ],
+      "scope_close": [
+        "end RelIso"
+      ]
+    },
+    {
+      "name": "Configuration.ProjectivePlane.two_lt_pointCount",
+      "binders": "[Finite P] [Finite L] (l : L)",
+      "statement": "2 < pointCount P l",
+      "file": "Combinatorics/Configuration.lean",
+      "namespaces": [
+        "Configuration",
+        "ProjectivePlane"
+      ],
+      "imports": [
+        "public import Mathlib.Combinatorics.Hall.Basic",
+        "public import Mathlib.LinearAlgebra.Matrix.Rank",
+        "public import Mathlib.LinearAlgebra.Projectivization.Constructions"
+      ],
+      "proof": "by\n  simpa only [pointCount_eq P l, Nat.succ_lt_succ_iff] using one_lt_order P L",
+      "scope_open": [
+        "open Finset",
+        "namespace Configuration",
+        "variable (P L : Type*) [Membership P L]",
+        "open Nondegenerate",
+        "open HasPoints (mkPoint mkPoint_ax)",
+        "open HasLines (mkLine mkLine_ax)",
+        "variable {P L}",
+        "variable (L)",
+        "variable (P) {L}",
+        "variable (L)",
+        "variable {P L}",
+        "variable (P L)",
+        "variable {P L}",
+        "variable (P L)",
+        "namespace ProjectivePlane",
+        "variable [ProjectivePlane P L]",
+        "variable {P}",
+        "variable (P) {L}",
+        "variable {P}",
+        "variable (P L)",
+        "variable {P}",
+        "variable (P) {L}",
+        "variable (L)",
+        "variable {P}",
+        "variable (P) {L}"
+      ],
+      "scope_close": [
+        "end ProjectivePlane",
+        "end Configuration"
+      ]
+    },
+    {
+      "name": "Finset.image₂_right",
+      "binders": "[DecidableEq β] (h : s.Nonempty)",
+      "statement": "image₂ (fun _ y => y) s t = t",
+      "file": "Data/Finset/NAry.lean",
+      "namespaces": [
+        "Finset"
+      ],
+      "imports": [
+        "public import Mathlib.Data.Finset.Lattice.Prod",
+        "public import Mathlib.Data.Finite.Prod",
+        "public import Mathlib.Data.Set.Lattice.Image"
+      ],
+      "proof": "\n  coe_injective <| by\n    push_cast\n    exact image2_right h",
+      "scope_open": [
+        "open Function Set",
+        "variable {α α' β β' γ γ' δ δ' ε ε' ζ ζ' ν : Type*}",
+        "namespace Finset",
+        "variable [DecidableEq α'] [DecidableEq β'] [DecidableEq γ] [DecidableEq γ'] [DecidableEq δ'] [DecidableEq ε] [DecidableEq ε'] {f f' : α → β → γ} {g g' : α → β → γ → δ} {s s' : Finset α} {t t' : Finset β} {u u' : Finset γ} {a a' : α} {b b' : β} {c : γ}",
+        "variable (s t)",
+        "variable {s t}",
+        "section",
+        "variable [DecidableEq δ]"
+      ],
+      "scope_close": [
+        "end",
+        "end Finset"
+      ]
+    },
+    {
+      "name": "Quantale.sup_mul_distrib",
+      "binders": "",
+      "statement": "(x ⊔ y) * z = (x * z) ⊔ (y * z)",
+      "file": "Algebra/Order/Quantale.lean",
+      "namespaces": [
+        "Quantale"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Order.Monoid.Unbundled.Basic",
+        "public import Mathlib.Order.CompleteLattice.Basic",
+        "public import Mathlib.Tactic.Variable"
+      ],
+      "proof": "by\n  rw [← (@iSup_pair _ _ _ (fun _? => _? * z) _ _), ← sSup_pair, sSup_mul_distrib]",
+      "scope_open": [
+        "open Function",
+        "namespace Quantale",
+        "variable {α : Type*} {ι : Type*} {x y z : α} {s : Set α} {f : ι → α}",
+        "variable [Semigroup α] [CompleteLattice α] [IsQuantale α]"
+      ],
+      "scope_close": [
+        "end Quantale"
+      ]
+    },
+    {
+      "name": "le_of_forall_rat_lt_imp_le",
+      "binders": "(h : ∀ q : ℚ, (q : K) < x → (q : K) ≤ y)",
+      "statement": "x ≤ y",
+      "file": "Algebra/Order/Archimedean/Basic.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Algebra.Field.Defs",
+        "public import Mathlib.Algebra.Order.Archimedean.Defs",
+        "public import Mathlib.Algebra.Order.Floor.Semiring",
+        "public import Mathlib.Order.Directed",
+        "public import Mathlib.Data.Rat.Floor",
+        "import Mathlib.Algebra.Order.Group.Basic",
+        "import Mathlib.Algebra.Order.Monoid.Units",
+        "import Mathlib.Algebra.Order.Ring.Pow",
+        "import Mathlib.Data.Int.LeastGreatest"
+      ],
+      "proof": "\n  le_of_not_gt fun hyx =>\n    let ⟨_, hy, hx⟩ := exists_rat_btwn hyx\n    hy.not_ge <| h _ hx",
+      "scope_open": [
+        "open Int Set",
+        "variable {G M R K : Type*}",
+        "section LinearOrderedField",
+        "variable [Field K] [LinearOrder K] [IsStrictOrderedRing K]",
+        "variable [Archimedean K] {x y ε : K}"
+      ],
+      "scope_close": [
+        "end LinearOrderedField"
+      ]
+    },
+    {
+      "name": "sInf_sup_eq",
+      "binders": "",
+      "statement": "sInf s ⊔ b = ⨅ a ∈ s, a ⊔ b",
+      "file": "Order/CompleteBooleanAlgebra.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Logic.Equiv.Set",
+        "public import Mathlib.Logic.Pairwise",
+        "public import Mathlib.Order.CompleteLattice.Lemmas",
+        "public import Mathlib.Order.Directed",
+        "public import Mathlib.Order.GaloisConnection.Basic"
+      ],
+      "proof": "\n  @sSup_inf_eq αᵒᵈ _ _ _",
+      "scope_open": [
+        "open Function Set",
+        "universe u v w w'",
+        "variable {α : Type u} {β : Type v} {ι : Sort w} {κ : ι → Sort w'}",
+        "open Order",
+        "section Coframe",
+        "variable [Coframe α] {s t : Set α} {a b c d : α}"
+      ],
+      "scope_close": [
+        "end Coframe"
+      ]
+    },
+    {
+      "name": "ADEInequality.admissible_D'",
+      "binders": "(n : ℕ+)",
+      "statement": "Admissible (D' n)",
+      "file": "NumberTheory/ADEInequality.lean",
+      "namespaces": [
+        "ADEInequality"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Order.Ring.Rat",
+        "public import Mathlib.Data.Multiset.Sort",
+        "public import Mathlib.Data.PNat.Basic",
+        "public import Mathlib.Data.PNat.Interval",
+        "public import Mathlib.Tactic.NormNum",
+        "public import Mathlib.Tactic.FinCases"
+      ],
+      "proof": "\n  Or.inr <| Or.inl ⟨n, rfl⟩",
+      "scope_open": [
+        "namespace ADEInequality",
+        "open Multiset"
+      ],
+      "scope_close": [
+        "end ADEInequality"
+      ]
+    },
+    {
+      "name": "MeasureTheory.ae_le_toMeasurable",
+      "binders": "",
+      "statement": "s ≤ᵐ[μ] toMeasurable μ s",
+      "file": "MeasureTheory/Measure/MeasureSpaceDef.lean",
+      "namespaces": [
+        "MeasureTheory"
+      ],
+      "imports": [
+        "public import Mathlib.MeasureTheory.OuterMeasure.Induced",
+        "public import Mathlib.MeasureTheory.OuterMeasure.AE"
+      ],
+      "proof": "\n  HasSubset.Subset.eventuallyLE (subset_toMeasurable _ _)",
+      "scope_open": [
+        "noncomputable section",
+        "open Set Function MeasurableSpace Topology Filter ENNReal NNReal",
+        "open Filter hiding map",
+        "variable {α β γ δ : Type*} {ι : Sort*}",
+        "namespace MeasureTheory",
+        "section",
+        "variable [MeasurableSpace α] {μ μ₁ μ₂ : Measure α} {s s₁ s₂ t : Set α}"
+      ],
+      "scope_close": [
+        "end",
+        "end MeasureTheory",
+        "end"
+      ]
+    },
+    {
+      "name": "Cardinal.isSuccPrelimit_zero",
+      "binders": "",
+      "statement": "IsSuccPrelimit (0 : Cardinal)",
+      "file": "SetTheory/Cardinal/Order.lean",
+      "namespaces": [
+        "Cardinal"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Order.Ring.Canonical",
+        "public import Mathlib.Data.Fintype.Option",
+        "public import Mathlib.Order.InitialSeg",
+        "public import Mathlib.Order.Nat",
+        "public import Mathlib.Order.SuccPred.CompleteLinearOrder",
+        "public import Mathlib.SetTheory.Cardinal.Defs",
+        "public import Mathlib.SetTheory.Cardinal.SchroederBernstein"
+      ],
+      "proof": "\n  isSuccPrelimit_bot",
+      "scope_open": [
+        "open List Function Order Set",
+        "noncomputable section",
+        "universe u v w v' w'",
+        "variable {α β : Type u}",
+        "namespace Cardinal"
+      ],
+      "scope_close": [
+        "end Cardinal",
+        "end"
+      ]
+    },
+    {
+      "name": "ultrafilter_isClosed_basic",
+      "binders": "(s : Set α)",
+      "statement": "IsClosed { u : Ultrafilter α | s ∈ u }",
+      "file": "Topology/Compactification/StoneCech.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Topology.Bases",
+        "public import Mathlib.Topology.DenseEmbedding",
+        "public import Mathlib.Topology.Connected.TotallyDisconnected"
+      ],
+      "proof": "by\n  rw [← isOpen_compl_iff]\n  convert! ultrafilter_isOpen_basic sᶜ using 1\n  ext u\n  exact Ultrafilter.compl_mem_iff_notMem.symm",
+      "scope_open": [
+        "noncomputable section",
+        "open Filter Set",
+        "open Topology",
+        "universe u v",
+        "section Ultrafilter",
+        "variable {α : Type u}"
+      ],
+      "scope_close": [
+        "end Ultrafilter",
+        "end"
+      ]
+    },
+    {
+      "name": "Ordinal.cof_preOmega",
+      "binders": "{o : Ordinal} (ho : IsSuccPrelimit o)",
+      "statement": "(preOmega o).cof = o.cof",
+      "file": "SetTheory/Cardinal/Cofinality/Ordinal.lean",
+      "namespaces": [
+        "Ordinal"
+      ],
+      "imports": [
+        "public import Mathlib.SetTheory.Cardinal.Arithmetic",
+        "public import Mathlib.SetTheory.Cardinal.Cofinality.Basic",
+        "public import Mathlib.SetTheory.Ordinal.FixedPoint"
+      ],
+      "proof": "by\n  by_cases h : IsMin o\n  · simp [h.eq_bot]\n  · exact cof_map_of_isNormal isNormal_preOmega ⟨h, ho⟩",
+      "scope_open": [
+        "open Function Cardinal Set Order",
+        "open scoped Ordinal",
+        "universe u v w",
+        "variable {α γ : Type u} {β : Type v}",
+        "namespace Ordinal"
+      ],
+      "scope_close": [
+        "end Ordinal"
+      ]
+    },
+    {
+      "name": "balancedCore_nonempty_iff",
+      "binders": "",
+      "statement": "(balancedCore 𝕜 s).Nonempty ↔ (0 : E) ∈ s",
+      "file": "Analysis/LocallyConvex/BalancedCoreHull.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Analysis.LocallyConvex.Basic"
+      ],
+      "proof": "\n  ⟨fun h => zero_subset.1 <| (zero_smul_set h).superset.trans <|\n    (balancedCore_balanced s (0 : 𝕜) <| norm_zero.trans_le zero_le_one).trans <|\n      balancedCore_subset _,\n    fun h => ⟨0, balancedCore_zero_mem h⟩⟩",
+      "scope_open": [
+        "open Set Pointwise Topology Filter",
+        "variable {𝕜 E ι : Type*}",
+        "section balancedHull",
+        "section SeminormedRing",
+        "variable [SeminormedRing 𝕜]",
+        "section Module",
+        "variable [AddCommGroup E] [Module 𝕜 E] {s : Set E}"
+      ],
+      "scope_close": [
+        "end Module",
+        "end SeminormedRing",
+        "end balancedHull"
+      ]
+    },
+    {
+      "name": "PartialEquiv.self_trans_symm",
+      "binders": "",
+      "statement": "e.trans e.symm ≈ ofSet e.source",
+      "file": "Logic/Equiv/PartialEquiv.lean",
+      "namespaces": [
+        "PartialEquiv"
+      ],
+      "imports": [
+        "public import Mathlib.Data.Set.Piecewise",
+        "public import Mathlib.Logic.Equiv.Defs",
+        "public import Mathlib.Tactic.Core",
+        "public import Mathlib.Tactic.Attr.Core"
+      ],
+      "proof": "by\n  have A : (e.trans e.symm).source = e.source := by mfld_set_tac\n  refine ⟨by rw [A, ofSet_source], fun x hx => ?_⟩\n  rw [A] at hx\n  simp only [hx, mfld_simps]",
+      "scope_open": [
+        "open Lean Meta Elab Tactic",
+        "open Function Set",
+        "variable {α : Type*} {β : Type*} {γ : Type*} {δ : Type*}",
+        "namespace PartialEquiv",
+        "variable (e : PartialEquiv α β) (e' : PartialEquiv β γ)"
+      ],
+      "scope_close": [
+        "end PartialEquiv"
+      ]
+    },
+    {
+      "name": "Nat.log_zero_right",
+      "binders": "(b : ℕ)",
+      "statement": "log b 0 = 0",
+      "file": "Data/Nat/Log.lean",
+      "namespaces": [
+        "Nat"
+      ],
+      "imports": [
+        "public import Mathlib.Data.Nat.BinaryRec",
+        "public import Mathlib.Order.Interval.Set.Defs",
+        "public import Mathlib.Order.Monotone.Basic",
+        "public import Mathlib.Tactic.Bound.Attribute",
+        "public import Mathlib.Tactic.Contrapose",
+        "public import Mathlib.Tactic.Monotonicity.Attr"
+      ],
+      "proof": "\n  log_eq_zero_iff.2 (le_total 1 b)",
+      "scope_open": [
+        "namespace Nat"
+      ],
+      "scope_close": [
+        "end Nat"
+      ]
+    },
+    {
+      "name": "Real.differentiableOn_arcosh",
+      "binders": "",
+      "statement": "DifferentiableOn ℝ arcosh (Ioi 1)",
+      "file": "Analysis/SpecialFunctions/Arcosh.lean",
+      "namespaces": [
+        "Real"
+      ],
+      "imports": [
+        "public import Mathlib.Analysis.SpecialFunctions.Log.Basic",
+        "public import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp"
+      ],
+      "proof": "fun _ hx =>\n  (differentiableAt_arcosh hx).differentiableWithinAt",
+      "scope_open": [
+        "noncomputable section",
+        "open Function Filter Set",
+        "open scoped Topology",
+        "namespace Real",
+        "variable {x y : ℝ}"
+      ],
+      "scope_close": [
+        "end Real",
+        "end"
+      ]
+    },
+    {
+      "name": "IteratedWreathProduct_zero",
+      "binders": "",
+      "statement": "IteratedWreathProduct G 0 = PUnit",
+      "file": "GroupTheory/RegularWreathProduct.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Algebra.Group.PUnit",
+        "public import Mathlib.Data.Finite.Perm",
+        "public import Mathlib.Data.Nat.Multiplicity",
+        "public import Mathlib.GroupTheory.Sylow"
+      ],
+      "proof": "rfl",
+      "scope_open": [
+        "variable (D Q : Type*) [Group D] [Group Q]",
+        "section iterated",
+        "universe u",
+        "variable (G : Type u) (n : ℕ)"
+      ],
+      "scope_close": [
+        "end iterated"
+      ]
+    },
+    {
+      "name": "ArithmeticFunction.pmul_comm",
+      "binders": "[CommMonoidWithZero R] (f g : ArithmeticFunction R)",
+      "statement": "f.pmul g = g.pmul f",
+      "file": "NumberTheory/ArithmeticFunction/Zeta.lean",
+      "namespaces": [
+        "ArithmeticFunction"
+      ],
+      "imports": [
+        "public import Mathlib.NumberTheory.ArithmeticFunction.Defs"
+      ],
+      "proof": "by\n  ext\n  simp [mul_comm]",
+      "scope_open": [
+        "open Finset Nat",
+        "variable {R : Type*}",
+        "namespace ArithmeticFunction",
+        "open scoped zeta",
+        "section Pmul"
+      ],
+      "scope_close": [
+        "end Pmul",
+        "end ArithmeticFunction"
+      ]
+    },
+    {
+      "name": "nonempty_denumerable",
+      "binders": "(α : Type*) [Countable α] [Infinite α]",
+      "statement": "Nonempty (Denumerable α)",
+      "file": "Logic/Denumerable.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Data.Fintype.EquivFin",
+        "public import Mathlib.Data.List.MinMax",
+        "public import Mathlib.Data.Nat.Order.Lemmas",
+        "public import Mathlib.Logic.Encodable.Basic"
+      ],
+      "proof": "\n  (nonempty_encodable α).map fun h => @Denumerable.ofEncodableOfInfinite _ h _",
+      "scope_open": [
+        "variable {α β : Type*}",
+        "open Finset Nat"
+      ],
+      "scope_close": []
+    },
+    {
+      "name": "NonarchAddGroupSeminorm.smul_apply",
+      "binders": "(r : R) (p : NonarchAddGroupSeminorm E) (x : E)",
+      "statement": "(r • p) x = r • p x",
+      "file": "Analysis/Normed/Group/Seminorm.lean",
+      "namespaces": [
+        "NonarchAddGroupSeminorm"
+      ],
+      "imports": [
+        "public import Mathlib.Data.NNReal.Defs",
+        "public import Mathlib.Order.ConditionallyCompleteLattice.Group"
+      ],
+      "proof": "\n  rfl",
+      "scope_open": [
+        "open Set",
+        "open NNReal",
+        "variable {R R' E F G : Type*}",
+        "namespace NonarchAddGroupSeminorm",
+        "variable [AddGroup E] [SMul R ℝ] [SMul R ℝ≥0] [IsScalarTower R ℝ≥0 ℝ]"
+      ],
+      "scope_close": [
+        "end NonarchAddGroupSeminorm"
+      ]
+    },
+    {
+      "name": "CategoryTheory.Limits.IsInitial.isZero",
+      "binders": "{X : C} (hX : IsInitial X)",
+      "statement": "IsZero X",
+      "file": "CategoryTheory/Limits/Shapes/ZeroMorphisms.lean",
+      "namespaces": [
+        "CategoryTheory.Limits"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Notation.Pi.Basic",
+        "public import Mathlib.CategoryTheory.Limits.Shapes.Products",
+        "public import Mathlib.CategoryTheory.Limits.Shapes.Images",
+        "public import Mathlib.CategoryTheory.IsomorphismClasses",
+        "public import Mathlib.CategoryTheory.Limits.Shapes.ZeroObjects"
+      ],
+      "proof": "by\n  rw [IsZero.iff_id_eq_zero]\n  apply hX.hom_ext",
+      "scope_open": [
+        "noncomputable section",
+        "universe w v v' u u'",
+        "open CategoryTheory",
+        "open CategoryTheory.Category",
+        "namespace CategoryTheory.Limits",
+        "variable (C : Type u) [Category.{v} C]",
+        "variable (D : Type u') [Category.{v'} D]",
+        "variable {C}",
+        "open Opposite HasZeroMorphisms",
+        "open ZeroObject",
+        "variable {D}",
+        "section",
+        "variable [HasZeroMorphisms C]"
+      ],
+      "scope_close": [
+        "end",
+        "end CategoryTheory.Limits",
+        "end"
+      ]
+    },
+    {
+      "name": "Set.Ioo_union_Ioi'",
+      "binders": "(h₁ : c < b)",
+      "statement": "Ioo a b ∪ Ioi c = Ioi (min a c)",
+      "file": "Order/Interval/Set/LinearOrder.lean",
+      "namespaces": [
+        "Set"
+      ],
+      "imports": [
+        "public import Mathlib.Order.Interval.Set.Basic"
+      ],
+      "proof": "\n  Ioo_union_Ioi (h₁.trans_le (le_max_right ..))",
+      "scope_open": [
+        "open Function",
+        "namespace Set",
+        "variable {α : Type*} [LinearOrder α] {a a₁ a₂ b b₁ b₂ c d : α}"
+      ],
+      "scope_close": [
+        "end Set"
+      ]
+    },
+    {
+      "name": "Set.infinite_univ",
+      "binders": "[h : Infinite α]",
+      "statement": "(@univ α).Infinite",
+      "file": "Data/Set/Finite/Basic.lean",
+      "namespaces": [
+        "Set"
+      ],
+      "imports": [
+        "public import Mathlib.Data.Fintype.EquivFin",
+        "public import Mathlib.Tactic.Nontriviality"
+      ],
+      "proof": "\n  infinite_univ_iff.2 h",
+      "scope_open": [
+        "open Set Function",
+        "open scoped symmDiff",
+        "universe u v w x",
+        "variable {α : Type u} {β : Type v} {ι : Sort w} {γ : Type x}",
+        "namespace Set",
+        "variable {s t : Set α}"
+      ],
+      "scope_close": [
+        "end Set"
+      ]
+    },
+    {
+      "name": "AlgebraicGeometry.Scheme.Cover.ι_fromGlued",
+      "binders": "(x : 𝒰.I₀)",
+      "statement": "𝒰.gluedCover.ι x ≫ 𝒰.fromGlued = 𝒰.f x",
+      "file": "AlgebraicGeometry/Gluing.lean",
+      "namespaces": [
+        "AlgebraicGeometry",
+        "Scheme",
+        "Cover"
+      ],
+      "imports": [
+        "public import Mathlib.AlgebraicGeometry.Restrict",
+        "public import Mathlib.CategoryTheory.LocallyDirected",
+        "public import Mathlib.CategoryTheory.MorphismProperty.Local",
+        "public import Mathlib.Geometry.RingedSpace.PresheafedSpace.Gluing"
+      ],
+      "proof": "\n  Multicoequalizer.π_desc _ _ _ _ _",
+      "scope_open": [
+        "noncomputable section",
+        "universe v u",
+        "open TopologicalSpace CategoryTheory Opposite Topology",
+        "open CategoryTheory.Limits AlgebraicGeometry.PresheafedSpace",
+        "open CategoryTheory.GlueData",
+        "namespace AlgebraicGeometry",
+        "namespace Scheme",
+        "namespace Cover",
+        "variable {X : Scheme.{u}} (𝒰 : OpenCover.{u} X)"
+      ],
+      "scope_close": [
+        "end Cover",
+        "end Scheme",
+        "end AlgebraicGeometry",
+        "end"
+      ]
+    },
+    {
+      "name": "Equiv.optionSubtypeNe_symm_self",
+      "binders": "(a : α)",
+      "statement": "(optionSubtypeNe a).symm a = none",
+      "file": "Logic/Equiv/Option.lean",
+      "namespaces": [
+        "Equiv"
+      ],
+      "imports": [
+        "public import Mathlib.Control.EquivFunctor",
+        "public import Mathlib.Data.Option.Basic",
+        "public import Mathlib.Data.Subtype",
+        "public import Mathlib.Logic.Equiv.Defs"
+      ],
+      "proof": "by simp",
+      "scope_open": [
+        "universe u",
+        "namespace Equiv",
+        "open Option",
+        "variable {α β γ : Type*}",
+        "variable [DecidableEq α] {a b : α}"
+      ],
+      "scope_close": [
+        "end Equiv"
+      ]
+    },
+    {
+      "name": "SimpleGraph.edgeSet_sup",
+      "binders": "",
+      "statement": "(G₁ ⊔ G₂).edgeSet = G₁.edgeSet ∪ G₂.edgeSet",
+      "file": "Combinatorics/SimpleGraph/Basic.lean",
+      "namespaces": [
+        "SimpleGraph"
+      ],
+      "imports": [
+        "public import Mathlib.Combinatorics.SimpleGraph.Init",
+        "public import Mathlib.Data.Finite.Prod",
+        "public import Mathlib.Data.Rel",
+        "public import Mathlib.Data.Set.Finite.Basic",
+        "public import Mathlib.Data.Sym.Sym2",
+        "public import Mathlib.Order.CompleteBooleanAlgebra"
+      ],
+      "proof": "by\n  ext ⟨x, y⟩\n  rfl",
+      "scope_open": [
+        "open Finset Function",
+        "universe u v w",
+        "namespace SimpleGraph",
+        "variable {ι : Sort*} {V : Type u} (G : SimpleGraph V) {a b c u v w : V} {e : Sym2 V}",
+        "section EdgeSet",
+        "variable {G₁ G₂ : SimpleGraph V}",
+        "variable (G₁ G₂)"
+      ],
+      "scope_close": [
+        "end EdgeSet",
+        "end SimpleGraph"
+      ]
+    },
+    {
+      "name": "Polynomial.ne_zero_of_mem_roots",
+      "binders": "(h : a ∈ p.roots)",
+      "statement": "p ≠ 0",
+      "file": "Algebra/Polynomial/Roots.lean",
+      "namespaces": [
+        "Polynomial"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Polynomial.BigOperators",
+        "public import Mathlib.Algebra.Polynomial.RingDivision",
+        "public import Mathlib.Data.Set.Card",
+        "public import Mathlib.Data.Set.Finite.Lemmas",
+        "public import Mathlib.RingTheory.Coprime.Lemmas",
+        "public import Mathlib.RingTheory.Localization.FractionRing",
+        "public import Mathlib.SetTheory.Cardinal.Order"
+      ],
+      "proof": "\n  (mem_roots'.1 h).1",
+      "scope_open": [
+        "open Multiset Finset",
+        "noncomputable section",
+        "namespace Polynomial",
+        "universe u v w z",
+        "variable {R : Type u} {S : Type v} {T : Type w} {a b : R} {n : ℕ}",
+        "section CommRing",
+        "variable [CommRing R] [IsDomain R] {p q : R[X]}",
+        "section Roots"
+      ],
+      "scope_close": [
+        "end Roots",
+        "end CommRing",
+        "end Polynomial",
+        "end"
+      ]
+    },
+    {
+      "name": "PowerSeries.span_X_isPrime",
+      "binders": "",
+      "statement": "(Ideal.span ({X} : Set R⟦X⟧)).IsPrime",
+      "file": "RingTheory/PowerSeries/NoZeroDivisors.lean",
+      "namespaces": [
+        "PowerSeries"
+      ],
+      "imports": [
+        "public import Mathlib.RingTheory.PowerSeries.Order",
+        "public import Mathlib.RingTheory.Ideal.Maps"
+      ],
+      "proof": "by\n  suffices Ideal.span ({X} : Set R⟦X⟧) = RingHom.ker constantCoeff by\n    rw [this]\n    exact RingHom.ker_isPrime _\n  apply Ideal.ext\n  intro φ\n  rw [RingHom.mem_ker, Ideal.mem_span_singleton, X_dvd_iff]",
+      "scope_open": [
+        "variable {R : Type*}",
+        "namespace PowerSeries",
+        "section IsDomain",
+        "variable [CommRing R] [IsDomain R]"
+      ],
+      "scope_close": [
+        "end IsDomain",
+        "end PowerSeries"
+      ]
+    },
+    {
+      "name": "dist_vadd_cancel_right",
+      "binders": "(v₁ v₂ : V) (x : P)",
+      "statement": "dist (v₁ +ᵥ x) (v₂ +ᵥ x) = dist v₁ v₂",
+      "file": "Analysis/Normed/Group/AddTorsor.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Analysis.Normed.Group.Constructions",
+        "public import Mathlib.Analysis.Normed.Group.Submodule",
+        "public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic",
+        "public import Mathlib.Topology.Algebra.Group.AddTorsor",
+        "public import Mathlib.Topology.MetricSpace.IsometricSMul"
+      ],
+      "proof": "by\n  rw [dist_eq_norm_vsub V, dist_eq_norm, vadd_vsub_vadd_cancel_right]",
+      "scope_open": [
+        "noncomputable section",
+        "open NNReal Topology",
+        "open Filter",
+        "variable {α V P W Q : Type*} [SeminormedAddCommGroup V] [PseudoMetricSpace P] [NormedAddTorsor V P] [SeminormedAddCommGroup W] [PseudoMetricSpace Q] [NormedAddTorsor W Q]"
+      ],
+      "scope_close": [
+        "end"
+      ]
+    },
+    {
+      "name": "Asymptotics.isLittleO_completion_left",
+      "binders": "",
+      "statement": "(fun x ↦ g x : α → F̂) =o[l] f ↔ g =o[l] f",
+      "file": "Analysis/Asymptotics/Completion.lean",
+      "namespaces": [
+        "Asymptotics"
+      ],
+      "imports": [
+        "public import Mathlib.Analysis.Normed.Group.Completion",
+        "public import Mathlib.Analysis.Asymptotics.Defs",
+        "public import Mathlib.Topology.Algebra.InfiniteSum.Order"
+      ],
+      "proof": "by\n  simp only [isLittleO_iff, norm_coe]",
+      "scope_open": [
+        "variable {α E F : Type*} [Norm E] [SeminormedAddCommGroup F] {f : α → E} {g : α → F} {l : Filter α}",
+        "open UniformSpace.Completion",
+        "namespace Asymptotics"
+      ],
+      "scope_close": [
+        "end Asymptotics"
+      ]
+    },
+    {
+      "name": "UpperSet.coe_mul",
+      "binders": "(s t : UpperSet α)",
+      "statement": "(↑(s * t) : Set α) = s * t",
+      "file": "Algebra/Order/UpperLower.lean",
+      "namespaces": [
+        "UpperSet"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Group.Action.Pointwise.Set.Basic",
+        "public import Mathlib.Algebra.Group.Pointwise.Set.Lattice",
+        "public import Mathlib.Algebra.Order.Group.Defs",
+        "public import Mathlib.Algebra.Order.Group.OrderIso",
+        "public import Mathlib.Algebra.Order.Monoid.OrderDual",
+        "public import Mathlib.Order.UpperLower.Closure"
+      ],
+      "proof": "\n  rfl",
+      "scope_open": [
+        "open Set",
+        "open scoped Pointwise",
+        "section OrderedCommGroup",
+        "variable {α : Type*} [CommGroup α] [Preorder α] [IsOrderedMonoid α] {s t : Set α} {a : α}",
+        "namespace UpperSet"
+      ],
+      "scope_close": [
+        "end UpperSet",
+        "end OrderedCommGroup"
+      ]
+    },
+    {
+      "name": "lp._root_.algebraMap_memℓp_infty",
+      "binders": "(k : 𝕜)",
+      "statement": "Memℓp (algebraMap 𝕜 (∀ i, B i) k) ∞",
+      "file": "Analysis/Normed/Lp/lpSpace.lean",
+      "namespaces": [
+        "lp"
+      ],
+      "imports": [
+        "public import Mathlib.Analysis.MeanInequalities",
+        "public import Mathlib.Analysis.MeanInequalitiesPow",
+        "public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity",
+        "public import Mathlib.Data.Set.Image",
+        "public import Mathlib.Topology.Algebra.ContinuousMonoidHom",
+        "public import Mathlib.Algebra.Order.Group.Pointwise.Bounds"
+      ],
+      "proof": "by\n  rw [Algebra.algebraMap_eq_smul_one]\n  exact (one_memℓp_infty.const_smul k : Memℓp (k • (1 : ∀ i, B i)) ∞)",
+      "scope_open": [
+        "noncomputable section",
+        "open scoped NNReal ENNReal Function",
+        "variable {𝕜 𝕜' : Type*} {α : Type*} {E : α → Type*} {p q : ℝ≥0∞} [∀ i, NormedAddCommGroup (E i)]",
+        "namespace lp",
+        "variable (E p)",
+        "variable {E p}",
+        "section Algebra",
+        "variable {I : Type*} {B : I → Type*}",
+        "variable [NormedField 𝕜] [∀ i, NormedRing (B i)] [∀ i, NormedAlgebra 𝕜 (B i)]",
+        "variable [∀ i, NormOneClass (B i)]"
+      ],
+      "scope_close": [
+        "end Algebra",
+        "end lp",
+        "end"
+      ]
+    },
+    {
+      "name": "Filter.eventually_comap",
+      "binders": "",
+      "statement": "(∀ᶠ a in comap f l, p a) ↔ ∀ᶠ b in l, ∀ a, f a = b → p a",
+      "file": "Order/Filter/Map.lean",
+      "namespaces": [
+        "Filter"
+      ],
+      "imports": [
+        "public import Mathlib.Control.Basic",
+        "public import Mathlib.Data.Set.Lattice.Image",
+        "public import Mathlib.Order.Filter.Basic"
+      ],
+      "proof": "\n  mem_comap'",
+      "scope_open": [
+        "open Function Set Order",
+        "open scoped symmDiff",
+        "universe u v w x y",
+        "namespace Filter",
+        "variable {α β γ δ : Type*} {ι : Sort*} {F : Filter α} {G : Filter β}",
+        "section Comap",
+        "variable {f : α → β} {l : Filter β} {p : α → Prop} {s : Set α}"
+      ],
+      "scope_close": [
+        "end Comap",
+        "end Filter"
+      ]
+    },
+    {
+      "name": "AddCircle.homeomorphCircle'_apply_mk",
+      "binders": "(x : ℝ)",
+      "statement": "homeomorphCircle' x = Circle.exp x",
+      "file": "Analysis/SpecialFunctions/Complex/Circle.lean",
+      "namespaces": [
+        "AddCircle"
+      ],
+      "imports": [
+        "public import Mathlib.Analysis.Complex.Circle",
+        "public import Mathlib.Analysis.SpecialFunctions.Complex.Log",
+        "public import Mathlib.Topology.Covering.AddCircle",
+        "public import Mathlib.Analysis.Convex.PathConnected"
+      ],
+      "proof": "rfl",
+      "scope_open": [
+        "open Complex Function Set",
+        "open Real",
+        "namespace AddCircle",
+        "variable {T : ℝ}"
+      ],
+      "scope_close": [
+        "end AddCircle"
+      ]
+    },
+    {
+      "name": "Module.Basis.flag_zero",
+      "binders": "(b : Basis (Fin n) R M)",
+      "statement": "b.flag 0 = ⊥",
+      "file": "LinearAlgebra/Basis/Flag.lean",
+      "namespaces": [
+        "Module.Basis"
+      ],
+      "imports": [
+        "public import Mathlib.Data.Fin.FlagRange",
+        "public import Mathlib.LinearAlgebra.Basis.Basic",
+        "public import Mathlib.LinearAlgebra.Dual.Basis",
+        "public import Mathlib.RingTheory.SimpleRing.Basic"
+      ],
+      "proof": "by simp [flag]",
+      "scope_open": [
+        "open Set Submodule",
+        "namespace Module.Basis",
+        "section Semiring",
+        "variable {R M : Type*} [Semiring R] [AddCommMonoid M] [Module R M] {n : ℕ} {b : Basis (Fin n) R M} {i j : Fin (n + 1)}"
+      ],
+      "scope_close": [
+        "end Semiring",
+        "end Module.Basis"
+      ]
+    },
+    {
+      "name": "Real.one_lt_cosh",
+      "binders": "",
+      "statement": "1 < cosh x ↔ x ≠ 0",
+      "file": "Analysis/SpecialFunctions/Trigonometric/DerivHyp.lean",
+      "namespaces": [
+        "Real"
+      ],
+      "imports": [
+        "public import Mathlib.Order.Monotone.Odd",
+        "public import Mathlib.Analysis.Calculus.LogDeriv",
+        "public import Mathlib.Analysis.SpecialFunctions.ExpDeriv",
+        "public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic",
+        "public import Mathlib.Analysis.Calculus.Deriv.MeanValue"
+      ],
+      "proof": "\n  cosh_zero ▸ cosh_lt_cosh.trans (by simp only [_root_.abs_zero, abs_pos])",
+      "scope_open": [
+        "noncomputable section",
+        "open scoped Asymptotics Topology Filter",
+        "open Set",
+        "namespace Real",
+        "variable {x y z : ℝ}"
+      ],
+      "scope_close": [
+        "end Real",
+        "end"
+      ]
+    },
+    {
+      "name": "IsFractionRing.coeSubmodule_injective",
+      "binders": "",
+      "statement": "Function.Injective (coeSubmodule K : Ideal R → Submodule R K)",
+      "file": "RingTheory/Localization/Submodule.lean",
+      "namespaces": [
+        "IsFractionRing"
+      ],
+      "imports": [
+        "public import Mathlib.RingTheory.Localization.FractionRing",
+        "public import Mathlib.RingTheory.Localization.Ideal",
+        "public import Mathlib.RingTheory.Noetherian.Defs",
+        "public import Mathlib.RingTheory.EssentialFiniteness"
+      ],
+      "proof": "\n  .of_eq_imp_le fun hl => coeSubmodule_le_coeSubmodule.mp hl.le",
+      "scope_open": [
+        "variable {R : Type*} [CommSemiring R] (M : Submonoid R) (S : Type*) [CommSemiring S]",
+        "variable [Algebra R S]",
+        "namespace IsFractionRing",
+        "open IsLocalization",
+        "variable {R K : Type*}",
+        "section CommRing",
+        "variable [CommRing R] [CommRing K] [Algebra R K] [IsFractionRing R K]",
+        "variable (R K)"
+      ],
+      "scope_close": [
+        "end CommRing",
+        "end IsFractionRing"
+      ]
+    },
+    {
+      "name": "HahnSeries.mem_support",
+      "binders": "(x : R⟦Γ⟧) (a : Γ)",
+      "statement": "a ∈ x.support ↔ x.coeff a ≠ 0",
+      "file": "RingTheory/HahnSeries/Basic.lean",
+      "namespaces": [
+        "HahnSeries"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Notation.Support",
+        "public import Mathlib.Algebra.Order.Monoid.Unbundled.WithTop",
+        "public import Mathlib.Data.Finsupp.Defs",
+        "public import Mathlib.Order.WellFoundedSet"
+      ],
+      "proof": "\n  .rfl",
+      "scope_open": [
+        "open Finset Function",
+        "noncomputable section",
+        "variable {Γ Γ' R S : Type*}",
+        "namespace HahnSeries",
+        "section Zero",
+        "variable [PartialOrder Γ] [Zero R]"
+      ],
+      "scope_close": [
+        "end Zero",
+        "end HahnSeries",
+        "end"
+      ]
+    },
+    {
+      "name": "AlternatingMap.sub_apply",
+      "binders": "(m : ι → M)",
+      "statement": "(g - g₂) m = g m - g₂ m",
+      "file": "LinearAlgebra/Alternating/Basic.lean",
+      "namespaces": [
+        "AlternatingMap"
+      ],
+      "imports": [
+        "public import Mathlib.GroupTheory.Perm.Sign",
+        "public import Mathlib.LinearAlgebra.LinearIndependent.Defs",
+        "public import Mathlib.LinearAlgebra.Multilinear.Basis"
+      ],
+      "proof": "\n  rfl",
+      "scope_open": [
+        "open Module",
+        "variable {R : Type*} [Semiring R]",
+        "variable {M : Type*} [AddCommMonoid M] [Module R M]",
+        "variable {N : Type*} [AddCommMonoid N] [Module R N]",
+        "variable {P : Type*} [AddCommMonoid P] [Module R P]",
+        "variable {M' : Type*} [AddCommGroup M'] [Module R M']",
+        "variable {N' : Type*} [AddCommGroup N'] [Module R N']",
+        "variable {ι ι' ι'' : Type*}",
+        "namespace AlternatingMap",
+        "variable (f f' : M [⋀^ι]→ₗ[R] N)",
+        "variable (g g₂ : M [⋀^ι]→ₗ[R] N')",
+        "variable (g' : M' [⋀^ι]→ₗ[R] N')",
+        "variable (v : ι → M) (v' : ι → M')",
+        "open Function"
+      ],
+      "scope_close": [
+        "end AlternatingMap"
+      ]
+    },
+    {
+      "name": "Matrix.of_row",
+      "binders": "(f : m → n → α)",
+      "statement": "(Matrix.of f).row = f",
+      "file": "LinearAlgebra/Matrix/Defs.lean",
+      "namespaces": [
+        "Matrix"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Module.Pi",
+        "public import Mathlib.Logic.Nontrivial.Basic"
+      ],
+      "proof": "rfl",
+      "scope_open": [
+        "universe u u' v w",
+        "variable {l m n o : Type*} {m' : o → Type*} {n' : o → Type*}",
+        "variable {R : Type*} {S : Type*} {α : Type v} {β : Type w} {γ : Type*}",
+        "open Matrix",
+        "namespace Matrix",
+        "section RowCol"
+      ],
+      "scope_close": [
+        "end RowCol",
+        "end Matrix"
+      ]
+    },
+    {
+      "name": "Polynomial.coeffList_eq_nil",
+      "binders": "{P : R[X]}",
+      "statement": "P.coeffList = [] ↔ P = 0",
+      "file": "Algebra/Polynomial/CoeffList.lean",
+      "namespaces": [
+        "Polynomial"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Polynomial.Degree.Defs",
+        "public import Mathlib.Algebra.Polynomial.EraseLead",
+        "public import Mathlib.Data.List.Range"
+      ],
+      "proof": "by\n  simp [coeffList]",
+      "scope_open": [
+        "namespace Polynomial",
+        "variable {R : Type*}",
+        "section Semiring",
+        "variable [Semiring R]",
+        "variable {P : R[X]}"
+      ],
+      "scope_close": [
+        "end Semiring",
+        "end Polynomial"
+      ]
+    },
+    {
+      "name": "NNReal.image_coe_Ico",
+      "binders": "(x y : ℝ≥0)",
+      "statement": "toReal '' Ico x y = Ico ↑x ↑y",
+      "file": "Data/NNReal/Basic.lean",
+      "namespaces": [
+        "NNReal"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.BigOperators.Finsupp.Basic",
+        "public import Mathlib.Algebra.BigOperators.Expect",
+        "public import Mathlib.Algebra.Order.BigOperators.Group.Finset",
+        "public import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset",
+        "public import Mathlib.Algebra.Order.Field.Canonical",
+        "public import Mathlib.Algebra.Order.Nonneg.Floor",
+        "public import Mathlib.Data.Real.Pointwise",
+        "public import Mathlib.Data.NNReal.Defs",
+        "public import Mathlib.Order.ConditionallyCompleteLattice.Group",
+        "public import Mathlib.Data.Nat.Lattice"
+      ],
+      "proof": "\n  image_subtype_val_Ico (s := Ici 0) ..",
+      "scope_open": [
+        "open Function Set",
+        "open scoped BigOperators",
+        "namespace NNReal",
+        "variable {M : Type*} [Zero M]",
+        "variable {ι : Type*} {s : Finset ι} {f : ι → ℝ}",
+        "open Real"
+      ],
+      "scope_close": [
+        "end NNReal"
+      ]
+    },
+    {
+      "name": "Finsupp.floorDiv_def",
+      "binders": "(f : ι →₀ β) (a : α)",
+      "statement": "f ⌊/⌋ a = f.mapRange (· ⌊/⌋ a) (zero_floorDiv _)",
+      "file": "Algebra/Order/Floor/Div.lean",
+      "namespaces": [
+        "Finsupp"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.GroupWithZero.Action.Pi",
+        "public import Mathlib.Algebra.Order.Group.Nat",
+        "public import Mathlib.Algebra.Order.Module.Defs",
+        "public import Mathlib.Algebra.Order.Sub.Basic",
+        "public import Mathlib.Data.Finsupp.SMulWithZero",
+        "public import Mathlib.Order.Preorder.Finsupp"
+      ],
+      "proof": "rfl",
+      "scope_open": [
+        "variable {ι α β : Type*}",
+        "namespace Finsupp",
+        "variable [AddCommMonoid α] [PartialOrder α] [AddCommMonoid β] [PartialOrder β] [SMulZeroClass α β]",
+        "section FloorDiv",
+        "variable [FloorDiv α β] {f : ι →₀ β} {a : α}"
+      ],
+      "scope_close": [
+        "end FloorDiv",
+        "end Finsupp"
+      ]
+    },
+    {
+      "name": "Associates.dvdNotUnit_iff_lt",
+      "binders": "{a b : Associates M}",
+      "statement": "DvdNotUnit a b ↔ a < b",
+      "file": "Algebra/GroupWithZero/Associated.lean",
+      "namespaces": [
+        "Associates"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Order.IsBotOne",
+        "public import Mathlib.Algebra.Prime.Lemmas",
+        "public import Mathlib.Order.BoundedOrder.Basic"
+      ],
+      "proof": "\n  dvd_and_not_dvd_iff.symm",
+      "scope_open": [
+        "variable {M : Type*}",
+        "namespace Associates",
+        "open Associated",
+        "section CancelCommMonoidWithZero",
+        "variable [CommMonoidWithZero M] [IsCancelMulZero M]"
+      ],
+      "scope_close": [
+        "end CancelCommMonoidWithZero",
+        "end Associates"
+      ]
+    },
+    {
+      "name": "Finsupp.card_Icc",
+      "binders": "",
+      "statement": "#(Icc f g) = ∏ i ∈ f.support ∪ g.support, #(Icc (f i) (g i))",
+      "file": "Data/Finsupp/Interval.lean",
+      "namespaces": [
+        "Finsupp"
+      ],
+      "imports": [
+        "public import Mathlib.Data.Finset.Finsupp",
+        "public import Mathlib.Data.Finsupp.Order",
+        "public import Mathlib.Order.Interval.Finset.Basic"
+      ],
+      "proof": "by\n  simp_rw [Icc_eq, card_finsupp, coe_rangeIcc]",
+      "scope_open": [
+        "noncomputable section",
+        "open Finset Finsupp Function Pointwise",
+        "variable {ι α : Type*}",
+        "namespace Finsupp",
+        "section PartialOrder",
+        "variable [PartialOrder α] [Zero α] [LocallyFiniteOrder α] [DecidableEq ι] [DecidableEq α]",
+        "variable (f g : ι →₀ α)"
+      ],
+      "scope_close": [
+        "end PartialOrder",
+        "end Finsupp",
+        "end"
+      ]
+    },
+    {
+      "name": "RCLike.finrank_le_two",
+      "binders": "",
+      "statement": "Module.finrank ℝ K ≤ 2",
+      "file": "Analysis/RCLike/Lemmas.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Analysis.Normed.Module.FiniteDimension",
+        "public import Mathlib.Analysis.RCLike.Basic",
+        "public import Mathlib.Topology.Instances.RealVectorSpace"
+      ],
+      "proof": "\n  Module.finrank_le_of_rank_le <| rank_le_two _",
+      "scope_open": [
+        "open scoped Finset",
+        "variable {K E : Type*} [RCLike K]",
+        "variable (K) in"
+      ],
+      "scope_close": []
+    },
+    {
+      "name": "Real.natCast_lt_toNNReal",
+      "binders": "{r : ℝ} {n : ℕ}",
+      "statement": "n < r.toNNReal ↔ n < r",
+      "file": "Data/NNReal/Defs.lean",
+      "namespaces": [
+        "Real"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Algebra.Defs",
+        "public import Mathlib.Algebra.Order.Archimedean.Real.Basic",
+        "public import Mathlib.Algebra.Order.Nonneg.Module",
+        "public import Mathlib.Order.ConditionallyCompleteLattice.Indexed"
+      ],
+      "proof": "by\n  simpa only [not_le] using toNNReal_le_natCast.not",
+      "scope_open": [
+        "open Function",
+        "open NNReal",
+        "namespace Real",
+        "section ToNNReal"
+      ],
+      "scope_close": [
+        "end ToNNReal",
+        "end Real"
+      ]
+    },
+    {
+      "name": "Submonoid.nontrivial_iff",
+      "binders": "",
+      "statement": "Nontrivial (Submonoid M) ↔ Nontrivial M",
+      "file": "Algebra/Group/Submonoid/Defs.lean",
+      "namespaces": [
+        "Submonoid"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Group.Hom.Defs",
+        "public import Mathlib.Algebra.Group.Subsemigroup.Defs",
+        "public import Mathlib.Tactic.FastInstance",
+        "public import Mathlib.Data.Set.Insert"
+      ],
+      "proof": "\n  not_iff_not.mp\n    ((not_nontrivial_iff_subsingleton.trans subsingleton_iff).trans\n      not_nontrivial_iff_subsingleton.symm)",
+      "scope_open": [
+        "variable {M : Type*} {N : Type*}",
+        "section NonAssoc",
+        "variable [MulOneClass M] {s : Set M}",
+        "namespace Submonoid",
+        "variable {S : Submonoid M}",
+        "variable (S)"
+      ],
+      "scope_close": [
+        "end Submonoid",
+        "end NonAssoc"
+      ]
+    },
+    {
+      "name": "PSet.mem_asymm",
+      "binders": "{x y : PSet}",
+      "statement": "x ∈ y → y ∉ x",
+      "file": "SetTheory/ZFC/PSet.lean",
+      "namespaces": [
+        "PSet"
+      ],
+      "imports": [
+        "public import Mathlib.Data.Set.Lattice"
+      ],
+      "proof": "\n  asymm_of (· ∈ ·)",
+      "scope_open": [
+        "universe u v",
+        "namespace PSet"
+      ],
+      "scope_close": [
+        "end PSet"
+      ]
+    },
+    {
+      "name": "Seminorm.mem_closedBall",
+      "binders": "",
+      "statement": "y ∈ closedBall p x r ↔ p (y - x) ≤ r",
+      "file": "Analysis/Seminorm.lean",
+      "namespaces": [
+        "Seminorm"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Order.Pi",
+        "public import Mathlib.Analysis.Convex.Function",
+        "public import Mathlib.Analysis.LocallyConvex.Basic",
+        "public import Mathlib.Analysis.Normed.Module.Basic",
+        "public import Mathlib.Data.Real.Pointwise"
+      ],
+      "proof": "\n  Iff.rfl",
+      "scope_open": [
+        "open NormedField Set Filter",
+        "open scoped NNReal Pointwise Topology Uniformity",
+        "variable {R R' 𝕜 𝕜₂ 𝕜₃ 𝕝 E E₂ E₃ F ι : Type*}",
+        "namespace Seminorm",
+        "section SeminormedRing",
+        "variable [SeminormedRing 𝕜]",
+        "section AddCommGroup",
+        "variable [AddCommGroup E]",
+        "section SMul",
+        "variable [SMul 𝕜 E] (p : Seminorm 𝕜 E)",
+        "variable {x y : E} {r : ℝ}"
+      ],
+      "scope_close": [
+        "end SMul",
+        "end AddCommGroup",
+        "end SeminormedRing",
+        "end Seminorm"
+      ]
+    },
+    {
+      "name": "exists_mem_nhds_isCompact_isClosed",
+      "binders": "(x : X)",
+      "statement": "∃ K ∈ 𝓝 x, IsCompact K ∧ IsClosed K",
+      "file": "Topology/Separation/Basic.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Algebra.Notation.Support",
+        "public import Mathlib.Topology.Inseparable",
+        "public import Mathlib.Topology.Piecewise",
+        "public import Mathlib.Topology.Separation.SeparatedNhds",
+        "public import Mathlib.Topology.Compactness.LocallyCompact",
+        "public import Mathlib.Topology.Bases",
+        "public import Mathlib.Tactic.CrossRefAttribute"
+      ],
+      "proof": "\n  (isCompact_isClosed_basis_nhds x).ex_mem",
+      "scope_open": [
+        "open Function Set Filter Topology TopologicalSpace",
+        "universe u v",
+        "variable {X : Type*} {Y : Type*} [TopologicalSpace X]",
+        "section Separation",
+        "section R1Space",
+        "variable [R1Space X] {x y : X}",
+        "variable [WeaklyLocallyCompactSpace X]"
+      ],
+      "scope_close": [
+        "end R1Space",
+        "end Separation"
+      ]
+    },
+    {
+      "name": "frequently_lt_nhds",
+      "binders": "(a : α) [NeBot (𝓝[<] a)]",
+      "statement": "∃ᶠ x in 𝓝 a, x < a",
+      "file": "Topology/Order/LeftRight.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Order.Antichain",
+        "public import Mathlib.Topology.ContinuousOn",
+        "public import Mathlib.Order.Interval.Set.UnorderedInterval"
+      ],
+      "proof": "\n  frequently_iff_neBot.2 ‹_›",
+      "scope_open": [
+        "open Set Filter Topology",
+        "section Preorder",
+        "variable {α : Type*} [TopologicalSpace α] [Preorder α]"
+      ],
+      "scope_close": [
+        "end Preorder"
+      ]
+    },
+    {
+      "name": "FrameHom.coe_copy",
+      "binders": "(f : FrameHom α β) (f' : α → β) (h : f' = f)",
+      "statement": "⇑(f.copy f' h) = f'",
+      "file": "Order/Hom/CompleteLattice.lean",
+      "namespaces": [
+        "FrameHom"
+      ],
+      "imports": [
+        "public import Mathlib.Data.Set.Lattice.Image",
+        "public import Mathlib.Order.Hom.BoundedLattice"
+      ],
+      "proof": "\n  rfl",
+      "scope_open": [
+        "open Function OrderDual Set",
+        "variable {F α β γ δ : Type*} {ι : Sort*} {κ : ι → Sort*}",
+        "variable [FunLike F α β]",
+        "namespace FrameHom",
+        "variable [CompleteLattice α] [CompleteLattice β] [CompleteLattice γ] [CompleteLattice δ]"
+      ],
+      "scope_close": [
+        "end FrameHom"
+      ]
+    },
+    {
+      "name": "Submonoid.LocalizationMap.toMonoidHom_injective",
+      "binders": "",
+      "statement": "Injective (toMonoidHom : LocalizationMap S N → M →* N)",
+      "file": "GroupTheory/MonoidLocalization/Basic.lean",
+      "namespaces": [
+        "Submonoid",
+        "LocalizationMap"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.BigOperators.Group.Finset.Basic",
+        "public import Mathlib.Algebra.Group.Submonoid.Operations",
+        "public import Mathlib.Algebra.Regular.Basic",
+        "public import Mathlib.GroupTheory.Congruence.Hom",
+        "public import Mathlib.GroupTheory.OreLocalization.Basic"
+      ],
+      "proof": "\n  fun f g ↦ by cases f; congr! with eq; ext; exact congr($eq _)",
+      "scope_open": [
+        "open Function",
+        "section CommMonoid",
+        "variable {M : Type*} [CommMonoid M] (S : Submonoid M) (N : Type*) [CommMonoid N] {P : Type*} [CommMonoid P]",
+        "variable {S N}",
+        "namespace Submonoid",
+        "namespace LocalizationMap"
+      ],
+      "scope_close": [
+        "end LocalizationMap",
+        "end Submonoid",
+        "end CommMonoid"
+      ]
+    },
+    {
+      "name": "Set.Ioc_subset_Ioo_union_Icc",
+      "binders": "",
+      "statement": "Ioc a c ⊆ Ioo a b ∪ Icc b c",
+      "file": "Order/Interval/Set/LinearOrder.lean",
+      "namespaces": [
+        "Set"
+      ],
+      "imports": [
+        "public import Mathlib.Order.Interval.Set.Basic"
+      ],
+      "proof": "fun x hx =>\n  (lt_or_ge x b).elim (fun hxb => Or.inl ⟨hx.1, hxb⟩) fun hxb => Or.inr ⟨hxb, hx.2⟩",
+      "scope_open": [
+        "open Function",
+        "namespace Set",
+        "variable {α : Type*} [LinearOrder α] {a a₁ a₂ b b₁ b₂ c d : α}"
+      ],
+      "scope_close": [
+        "end Set"
+      ]
+    },
+    {
+      "name": "ZerothHomotopy.isQuotientMap_mk",
+      "binders": "",
+      "statement": "IsQuotientMap (ZerothHomotopy.mk (X",
+      "file": "Topology/Connected/PathConnected.lean",
+      "namespaces": [
+        "ZerothHomotopy"
+      ],
+      "imports": [
+        "public import Mathlib.Topology.Path"
+      ],
+      "proof": "X)) :=\n  isQuotientMap_quotient_mk'",
+      "scope_open": [
+        "noncomputable section",
+        "open Topology Filter unitInterval Set Function Pointwise Fin",
+        "variable {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y] {x y z : X} {ι : Type*}",
+        "variable (X)",
+        "namespace ZerothHomotopy",
+        "variable {X}"
+      ],
+      "scope_close": [
+        "end ZerothHomotopy",
+        "end"
+      ]
+    },
+    {
+      "name": "Equiv.piCongr_apply_apply",
+      "binders": "(f : ∀ a, W a) (a : α)",
+      "statement": "h₁.piCongr h₂ f (h₁ a) = h₂ a (f a)",
+      "file": "Logic/Equiv/Basic.lean",
+      "namespaces": [
+        "Equiv"
+      ],
+      "imports": [
+        "public import Mathlib.Logic.Equiv.Option",
+        "public import Mathlib.Logic.Equiv.Sum",
+        "public import Mathlib.Logic.Function.Conjugate",
+        "public import Mathlib.Tactic.Lift",
+        "public import Mathlib.Data.Int.Notation"
+      ],
+      "proof": "by\n  rw [piCongr, trans_apply, piCongrLeft_apply_apply, piCongrRight_apply, Pi.map_apply]",
+      "scope_open": [
+        "universe u v w z",
+        "open Function",
+        "variable {α α₁ α₂ β β₁ β₂ γ δ : Sort*}",
+        "namespace Equiv",
+        "section",
+        "variable {W : α → Sort w} {Z : β → Sort z} (h₁ : α ≃ β) (h₂ : ∀ a : α, W a ≃ Z (h₁ a))"
+      ],
+      "scope_close": [
+        "end",
+        "end Equiv"
+      ]
+    },
+    {
+      "name": "iSup_mono",
+      "binders": "(h : ∀ i, f i ≤ g i)",
+      "statement": "iSup f ≤ iSup g",
+      "file": "Order/CompleteLattice/Basic.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Data.Set.NAry",
+        "public import Mathlib.Data.ULift",
+        "public import Mathlib.Order.Bounds.Image",
+        "public import Mathlib.Order.CompleteLattice.Defs",
+        "public import Mathlib.Order.Hom.Set"
+      ],
+      "proof": "\n  iSup_le fun i => le_iSup_of_le i <| h i",
+      "scope_open": [
+        "open Function OrderDual Set",
+        "variable {α β γ : Type*} {ι ι' : Sort*} {κ : ι → Sort*} {κ' : ι' → Sort*}",
+        "open OrderDual",
+        "section",
+        "variable [CompleteLattice α] {f g s : ι → α} {a b : α}"
+      ],
+      "scope_close": [
+        "end"
+      ]
+    },
+    {
+      "name": "pow_ne_zero",
+      "binders": "(n : ℕ) (h : a ≠ 0)",
+      "statement": "a ^ n ≠ 0",
+      "file": "Algebra/GroupWithZero/Basic.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Algebra.Group.Basic",
+        "public import Mathlib.Algebra.GroupWithZero.NeZero",
+        "public import Mathlib.Logic.Unique",
+        "public import Mathlib.Tactic.Conv",
+        "public import Batteries.Tactic.SeqFocus"
+      ],
+      "proof": "mt eq_zero_of_pow_eq_zero h",
+      "scope_open": [
+        "open Function",
+        "variable {M₀ G₀ : Type*}",
+        "section MonoidWithZero",
+        "variable [MonoidWithZero M₀] {a : M₀} {n : ℕ}",
+        "variable [IsReduced M₀]"
+      ],
+      "scope_close": [
+        "end MonoidWithZero"
+      ]
+    },
+    {
+      "name": "Set.mulIndicator_of_mem",
+      "binders": "(h : a ∈ s) (f : α → M)",
+      "statement": "mulIndicator s f a = f a",
+      "file": "Algebra/Notation/Indicator.lean",
+      "namespaces": [
+        "Set"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Notation.Support",
+        "public import Mathlib.Data.Set.Piecewise"
+      ],
+      "proof": "if_pos h",
+      "scope_open": [
+        "open Function",
+        "variable {α β M N : Type*}",
+        "namespace Set",
+        "variable [One M] [One N] {s t : Set α} {f g : α → M} {a : α}"
+      ],
+      "scope_close": [
+        "end Set"
+      ]
+    },
+    {
+      "name": "LiouvilleWith.add_rat",
+      "binders": "(h : LiouvilleWith p x) (r : ℚ)",
+      "statement": "LiouvilleWith p (x + r)",
+      "file": "NumberTheory/Transcendental/Liouville/LiouvilleWith.lean",
+      "namespaces": [
+        "LiouvilleWith"
+      ],
+      "imports": [
+        "public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics",
+        "public import Mathlib.NumberTheory.Transcendental.Liouville.Basic",
+        "public import Mathlib.Topology.Instances.Irrational"
+      ],
+      "proof": "by\n  rcases h.exists_pos with ⟨C, _hC₀, hC⟩\n  refine ⟨r.den ^ p * C, (tendsto_id.nsmul_atTop r.pos).frequently (hC.mono ?_)⟩\n  rintro n ⟨hn, m, hne, hlt⟩\n  have : (↑(r.den * m + r.num * n : ℤ) / ↑(r.den • id n) : ℝ) = m / n + r := by\n    rw [smul_eq_mul, id]\n    nth_rewrite 4 [← Rat.num_div_den r]\n    push_cast\n    rw [add_div, mul_div_mul_left _ _ (by positivity), mul_div_mul_right _ _ (by positivity)]\n  refine ⟨r.den * m + r.num * n, ?_⟩; rw [this, add_sub_add_right_eq_sub]\n  refine ⟨by simpa, hlt.trans_le (le_of_eq ?_)⟩\n  have : (r.den ^ p : ℝ) ≠ 0 := by positivity\n  simp [mul_rpow, mul_div_mul_left, this]",
+      "scope_open": [
+        "open Filter Metric Real Set",
+        "open scoped Filter Topology",
+        "namespace LiouvilleWith",
+        "variable {p q x : ℝ} {r : ℚ} {m : ℤ} {n : ℕ}"
+      ],
+      "scope_close": [
+        "end LiouvilleWith"
+      ]
+    },
+    {
+      "name": "Valuation.HasExtension.val_smul",
+      "binders": "(r : vR.integer) (a : vA.integer)",
+      "statement": "↑(r • a : vA.integer) = (r : R) • (a : A)",
+      "file": "RingTheory/Valuation/Extension.lean",
+      "namespaces": [
+        "Valuation",
+        "HasExtension"
+      ],
+      "imports": [
+        "public import Mathlib.RingTheory.Valuation.ValuationSubring",
+        "public import Mathlib.Algebra.NoZeroSMulDivisors.Basic"
+      ],
+      "proof": "by\n  rfl",
+      "scope_open": [
+        "open Module",
+        "namespace Valuation",
+        "variable {R A ΓR ΓA : Type*} [CommRing R] [Ring A] [LinearOrderedCommMonoidWithZero ΓR] [LinearOrderedCommMonoidWithZero ΓA] [Algebra R A] (vR : Valuation R ΓR) (vA : Valuation A ΓA)",
+        "namespace HasExtension",
+        "section integer",
+        "variable {K : Type*} [Field K] [Algebra K A] {ΓR ΓA ΓK : Type*} [LinearOrderedCommGroupWithZero ΓR] [LinearOrderedCommGroupWithZero ΓK] [LinearOrderedCommGroupWithZero ΓA] {vR : Valuation R ΓR} {vK : Valuation K ΓK} {vA : Valuation A ΓA} [vR.HasExtension vA]"
+      ],
+      "scope_close": [
+        "end integer",
+        "end HasExtension",
+        "end Valuation"
+      ]
+    },
+    {
+      "name": "RelSeries.head_mem",
+      "binders": "(x : RelSeries r)",
+      "statement": "x.head ∈ x",
+      "file": "Order/RelSeries.lean",
+      "namespaces": [
+        "RelSeries"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.GroupWithZero.Nat",
+        "public import Mathlib.Algebra.Order.Group.Nat",
+        "public import Mathlib.Algebra.Order.Monoid.NatCast",
+        "public import Mathlib.Data.Fin.VecNotation",
+        "public import Mathlib.Data.Fintype.Pi",
+        "public import Mathlib.Data.Fintype.Pigeonhole",
+        "public import Mathlib.Data.Fintype.Sigma",
+        "public import Mathlib.Data.Rel",
+        "public import Mathlib.Order.OrderIsoNat"
+      ],
+      "proof": "⟨_, rfl⟩",
+      "scope_open": [
+        "open scoped SetRel",
+        "variable {α : Type*} (r : SetRel α α)",
+        "variable {β : Type*} (s : SetRel β β)",
+        "namespace RelSeries",
+        "section",
+        "variable {r} {s : RelSeries r} {x : α}"
+      ],
+      "scope_close": [
+        "end",
+        "end RelSeries"
+      ]
+    },
+    {
+      "name": "DFinsupp.iSup_range_lsingle",
+      "binders": "",
+      "statement": "⨆ i, LinearMap.range (lsingle (R",
+      "file": "LinearAlgebra/DFinsupp.lean",
+      "namespaces": [
+        "DFinsupp"
+      ],
+      "imports": [
+        "public import Mathlib.Data.DFinsupp.Submonoid",
+        "public import Mathlib.Data.DFinsupp.Sigma",
+        "public import Mathlib.Data.Finsupp.ToDFinsupp",
+        "public import Mathlib.LinearAlgebra.Finsupp.SumProd",
+        "public import Mathlib.LinearAlgebra.LinearIndependent.Lemmas"
+      ],
+      "proof": "R) (M := M) i) = ⊤ :=\n  top_le_iff.mp fun m _ ↦ by\n    rw [← LinearMap.id_apply (R := R) m, ← lsum_lsingle ℕ]\n    exact dfinsuppSumAddHom_mem _ _ _ fun i _ ↦ Submodule.mem_iSup_of_mem i ⟨_, rfl⟩",
+      "scope_open": [
+        "open Module",
+        "variable {ι ι' : Type*} {R : Type*} {S : Type*} {M : ι → Type*} {N : Type*}",
+        "namespace DFinsupp",
+        "variable [Semiring R] [∀ i, AddCommMonoid (M i)] [∀ i, Module R (M i)]",
+        "variable [AddCommMonoid N] [Module R N]",
+        "section Lsum",
+        "variable (S)",
+        "variable [DecidableEq ι]"
+      ],
+      "scope_close": [
+        "end Lsum",
+        "end DFinsupp"
+      ]
+    },
+    {
+      "name": "MvPolynomial.IsSymmetric.neg",
+      "binders": "(hφ : IsSymmetric φ)",
+      "statement": "IsSymmetric (-φ)",
+      "file": "RingTheory/MvPolynomial/Symmetric/Defs.lean",
+      "namespaces": [
+        "MvPolynomial",
+        "IsSymmetric"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Algebra.Subalgebra.Basic",
+        "public import Mathlib.Algebra.MvPolynomial.CommRing",
+        "public import Mathlib.Combinatorics.Enumerative.Partition.Basic"
+      ],
+      "proof": "\n  (symmetricSubalgebra σ R).neg_mem hφ",
+      "scope_open": [
+        "open Equiv (Perm)",
+        "noncomputable section",
+        "namespace MvPolynomial",
+        "variable {σ τ : Type*} {R S : Type*}",
+        "namespace IsSymmetric",
+        "section CommRing",
+        "variable [CommRing R] {φ ψ : MvPolynomial σ R}"
+      ],
+      "scope_close": [
+        "end CommRing",
+        "end IsSymmetric",
+        "end MvPolynomial",
+        "end"
+      ]
+    },
+    {
+      "name": "ENNReal.inv_iSup",
+      "binders": "(f : ι → ℝ≥0∞)",
+      "statement": "(⨆ i, f i)⁻¹ = ⨅ i, (f i)⁻¹",
+      "file": "Data/ENNReal/Inv.lean",
+      "namespaces": [
+        "ENNReal"
+      ],
+      "imports": [
+        "public import Mathlib.Data.ENNReal.Operations"
+      ],
+      "proof": "OrderIso.invENNReal.map_iSup _",
+      "scope_open": [
+        "open Set NNReal",
+        "namespace ENNReal",
+        "noncomputable section Inv",
+        "variable {a b c d : ℝ≥0∞} {r p q : ℝ≥0}",
+        "variable {ι κ : Sort*} {f g : ι → ℝ≥0∞} {s : Set ℝ≥0∞} {a : ℝ≥0∞}"
+      ],
+      "scope_close": [
+        "end Inv",
+        "end ENNReal"
+      ]
+    },
+    {
+      "name": "OnePoint.range_coe_inter_infty",
+      "binders": "",
+      "statement": "range ((↑) : X → OnePoint X) ∩ {∞} = ∅",
+      "file": "Topology/Compactification/OnePoint/Basic.lean",
+      "namespaces": [
+        "OnePoint"
+      ],
+      "imports": [
+        "public import Mathlib.Data.Fintype.Option",
+        "public import Mathlib.Topology.Homeomorph.Lemmas",
+        "public import Mathlib.Topology.Sets.Opens",
+        "import Mathlib.Topology.WithTopology"
+      ],
+      "proof": "by simp",
+      "scope_open": [
+        "open Set Filter Topology",
+        "variable {X Y : Type*}",
+        "namespace OnePoint"
+      ],
+      "scope_close": [
+        "end OnePoint"
+      ]
+    },
+    {
+      "name": "Polynomial.Chebyshev.U_neg_one",
+      "binders": "",
+      "statement": "U R (-1) = 0",
+      "file": "RingTheory/Polynomial/Chebyshev.lean",
+      "namespaces": [
+        "Polynomial.Chebyshev"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Polynomial.AlgebraMap",
+        "public import Mathlib.Algebra.Polynomial.Derivative",
+        "public import Mathlib.Algebra.Polynomial.Degree.Lemmas",
+        "public import Mathlib.Algebra.Polynomial.Sequence",
+        "public import Mathlib.Algebra.Ring.NegOnePow",
+        "public import Mathlib.Tactic.LinearCombination",
+        "public import Mathlib.LinearAlgebra.Span.Basic"
+      ],
+      "proof": "by simpa using U_sub_one R 0",
+      "scope_open": [
+        "namespace Polynomial.Chebyshev",
+        "open Polynomial",
+        "variable (R R' : Type*) [CommRing R] [CommRing R']"
+      ],
+      "scope_close": [
+        "end Polynomial.Chebyshev"
+      ]
+    },
+    {
+      "name": "Finset.mem_union",
+      "binders": "",
+      "statement": "a ∈ s ∪ t ↔ a ∈ s ∨ a ∈ t",
+      "file": "Data/Finset/Lattice/Basic.lean",
+      "namespaces": [
+        "Finset"
+      ],
+      "imports": [
+        "public import Mathlib.Data.Finset.Defs",
+        "public import Mathlib.Data.Multiset.FinsetOps"
+      ],
+      "proof": "\n  mem_ndunion",
+      "scope_open": [
+        "open Multiset Subtype Function",
+        "universe u",
+        "variable {α : Type*}",
+        "namespace Finset",
+        "section Lattice",
+        "variable [DecidableEq α] {s s₁ s₂ t t₁ t₂ u v : Finset α} {a : α}"
+      ],
+      "scope_close": [
+        "end Lattice",
+        "end Finset"
+      ]
+    },
+    {
+      "name": "CategoryTheory.GrothendieckTopology.top_covering",
+      "binders": "",
+      "statement": "S ∈ (⊤ : GrothendieckTopology C) X",
+      "file": "CategoryTheory/Sites/Grothendieck.lean",
+      "namespaces": [
+        "CategoryTheory",
+        "GrothendieckTopology"
+      ],
+      "imports": [
+        "public import Mathlib.CategoryTheory.Sites.Sieves",
+        "public import Mathlib.CategoryTheory.Limits.Shapes.Multiequalizer",
+        "public import Mathlib.CategoryTheory.Category.Preorder",
+        "public import Mathlib.Order.Copy",
+        "public import Mathlib.Data.Set.Subsingleton"
+      ],
+      "proof": "\n  ⟨⟩",
+      "scope_open": [
+        "universe v₁ u₁ v u",
+        "namespace CategoryTheory",
+        "open Category",
+        "variable (C : Type u) [Category.{v} C]",
+        "namespace GrothendieckTopology",
+        "variable {C}",
+        "variable {X Y : C} {S R : Sieve X}",
+        "variable (J : GrothendieckTopology C)",
+        "variable (C)",
+        "variable {C}"
+      ],
+      "scope_close": [
+        "end GrothendieckTopology",
+        "end CategoryTheory"
+      ]
+    },
+    {
+      "name": "GroupSeminorm.coe_comp",
+      "binders": "",
+      "statement": "⇑(p.comp f) = p ∘ f",
+      "file": "Analysis/Normed/Group/Seminorm.lean",
+      "namespaces": [
+        "GroupSeminorm"
+      ],
+      "imports": [
+        "public import Mathlib.Data.NNReal.Defs",
+        "public import Mathlib.Order.ConditionallyCompleteLattice.Group"
+      ],
+      "proof": "\n  rfl",
+      "scope_open": [
+        "open Set",
+        "open NNReal",
+        "variable {R R' E F G : Type*}",
+        "namespace GroupSeminorm",
+        "section Group",
+        "variable [Group E] [Group F] [Group G] {p q : GroupSeminorm E}",
+        "variable (p q) (f : F →* E)"
+      ],
+      "scope_close": [
+        "end Group",
+        "end GroupSeminorm"
+      ]
+    },
+    {
+      "name": "ArithmeticFunction.not_LSeriesSummable_moebius_at_one",
+      "binders": "",
+      "statement": "¬ LSeriesSummable ↗μ 1",
+      "file": "NumberTheory/LSeries/Dirichlet.lean",
+      "namespaces": [
+        "ArithmeticFunction"
+      ],
+      "imports": [
+        "public import Mathlib.NumberTheory.DirichletCharacter.Bounds",
+        "public import Mathlib.NumberTheory.LSeries.Convolution",
+        "public import Mathlib.NumberTheory.LSeries.Deriv",
+        "public import Mathlib.NumberTheory.LSeries.Positivity",
+        "public import Mathlib.NumberTheory.LSeries.RiemannZeta",
+        "public import Mathlib.NumberTheory.SumPrimeReciprocals",
+        "public import Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt"
+      ],
+      "proof": "by\n  refine fun h ↦ not_summable_one_div_on_primes <| summable_ofReal.mp <| .of_neg ?_\n  refine (h.indicator {n | n.Prime}).congr fun n ↦ ?_\n  by_cases hn : n.Prime\n  · simp [hn, hn.ne_zero, moebius_apply_prime hn, push_cast, neg_div]\n  · simp [hn]",
+      "scope_open": [
+        "open scoped LSeries.notation",
+        "section Moebius",
+        "namespace ArithmeticFunction",
+        "open scoped Moebius",
+        "open LSeries Nat Complex"
+      ],
+      "scope_close": [
+        "end ArithmeticFunction",
+        "end Moebius"
+      ]
+    },
+    {
+      "name": "SimpleGraph.adj_le_reachable",
+      "binders": "(G : SimpleGraph V)",
+      "statement": "G.Adj ≤ G.Reachable",
+      "file": "Combinatorics/SimpleGraph/Connectivity/Connected.lean",
+      "namespaces": [
+        "SimpleGraph"
+      ],
+      "imports": [
+        "public import Mathlib.Combinatorics.SimpleGraph.Paths",
+        "public import Mathlib.Combinatorics.SimpleGraph.Subgraph",
+        "public import Mathlib.Combinatorics.SimpleGraph.Operations"
+      ],
+      "proof": "\n  fun _ _ ↦ Adj.reachable",
+      "scope_open": [
+        "open Function",
+        "universe u v w",
+        "namespace SimpleGraph",
+        "variable {V : Type u} {V' : Type v} {V'' : Type w}",
+        "variable (G : SimpleGraph V) (G' : SimpleGraph V') (G'' : SimpleGraph V'')",
+        "variable {G}"
+      ],
+      "scope_close": [
+        "end SimpleGraph"
+      ]
+    },
+    {
+      "name": "Convexity.IsAffineMap.sub",
+      "binders": "(hf : IsAffineMap R f) (hg : IsAffineMap R g)",
+      "statement": "IsAffineMap R (f - g)",
+      "file": "Geometry/Convex/ConvexSpace/Module.lean",
+      "namespaces": [
+        "Convexity"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Group.Pointwise.Set.Basic",
+        "public import Mathlib.Geometry.Convex.Star",
+        "public import Mathlib.LinearAlgebra.AffineSpace.Combination",
+        "public import Mathlib.LinearAlgebra.AffineSpace.AffineMap"
+      ],
+      "proof": "by\n  simpa [sub_eq_add_neg] using hf.add hg.neg",
+      "scope_open": [
+        "open scoped Pointwise",
+        "namespace Convexity",
+        "variable {F R M N I : Type*} [Semiring R] [PartialOrder R] [IsStrictOrderedRing R]",
+        "section AddCommGroup",
+        "variable [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] [ConvexSpace R M] [IsModuleConvexSpace R M] [ConvexSpace R N] [IsModuleConvexSpace R N] {x y : M} {s t : Set M} {f g : M → N}"
+      ],
+      "scope_close": [
+        "end AddCommGroup",
+        "end Convexity"
+      ]
+    },
+    {
+      "name": "Fin.preimage_castAdd_Iic_castAdd",
+      "binders": "(m) (i : Fin n)",
+      "statement": "castAdd m ⁻¹' Iic (castAdd m i) = Iic i",
+      "file": "Order/Interval/Set/Fin.lean",
+      "namespaces": [
+        "Fin"
+      ],
+      "imports": [
+        "public import Mathlib.Order.Fin.Basic",
+        "public import Mathlib.Order.Interval.Set.UnorderedInterval"
+      ],
+      "proof": "\n  rfl",
+      "scope_open": [
+        "open Function Set",
+        "namespace Fin",
+        "variable {m n : ℕ}"
+      ],
+      "scope_close": [
+        "end Fin"
+      ]
+    },
+    {
+      "name": "Function.one_lt_const",
+      "binders": "",
+      "statement": "1 < const β a ↔ 1 < a",
+      "file": "Algebra/Order/Pi.lean",
+      "namespaces": [
+        "Function"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Notation.Lemmas",
+        "public import Mathlib.Algebra.Order.Monoid.Canonical.Defs",
+        "public import Mathlib.Algebra.Order.Ring.Defs",
+        "public import Mathlib.Algebra.Ring.Pi"
+      ],
+      "proof": "\n  const_lt_const",
+      "scope_open": [
+        "variable {I α β γ : Type*}",
+        "variable {f : I → Type*}",
+        "namespace Function",
+        "section const",
+        "variable (β) [One α] [Preorder α] {a : α}",
+        "variable {β} [Nonempty β]"
+      ],
+      "scope_close": [
+        "end const",
+        "end Function"
+      ]
+    },
+    {
+      "name": "mdifferentiableAt_mul_right",
+      "binders": "{a b : G}",
+      "statement": "MDiffAt (· * a) b",
+      "file": "Geometry/Manifold/Algebra/Monoid.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Geometry.Manifold.ContMDiffMap",
+        "import Mathlib.Geometry.Manifold.Notation",
+        "public import Mathlib.Geometry.Manifold.MFDeriv.Basic"
+      ],
+      "proof": "\n  contMDiffAt_mul_right.mdifferentiableAt one_ne_zero",
+      "scope_open": [
+        "open scoped Manifold ContDiff",
+        "section ContMDiffMul",
+        "variable {𝕜 : Type*} [NontriviallyNormedField 𝕜] {H : Type*} [TopologicalSpace H] {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E] {I : ModelWithCorners 𝕜 E H} {n : ℕ∞ω} {G : Type*} [Mul G] [TopologicalSpace G] [ChartedSpace H G] {E' : Type*} [NormedAddCommGroup E'] [NormedSpace 𝕜 E'] {H' : Type*} [TopologicalSpace H'] {I' : ModelWithCorners 𝕜 E' H'} {M : Type*} [TopologicalSpace M] [ChartedSpace H' M]",
+        "section",
+        "variable [ContMDiffMul I 1 G]"
+      ],
+      "scope_close": [
+        "end",
+        "end ContMDiffMul"
+      ]
+    },
+    {
+      "name": "SimpleGraph.cliqueFreeOn_empty",
+      "binders": "",
+      "statement": "G.CliqueFreeOn ∅ n ↔ n ≠ 0",
+      "file": "Combinatorics/SimpleGraph/Clique.lean",
+      "namespaces": [
+        "SimpleGraph"
+      ],
+      "imports": [
+        "public import Mathlib.Combinatorics.SimpleGraph.Copy",
+        "public import Mathlib.Combinatorics.SimpleGraph.Operations",
+        "public import Mathlib.Combinatorics.SimpleGraph.Paths",
+        "public import Mathlib.Data.Finset.Pairwise",
+        "public import Mathlib.Data.Fintype.Pigeonhole",
+        "public import Mathlib.Data.Fintype.Powerset",
+        "public import Mathlib.Data.Nat.Lattice",
+        "public import Mathlib.SetTheory.Cardinal.Finite"
+      ],
+      "proof": "by\n  simp [CliqueFreeOn, Set.subset_empty_iff]",
+      "scope_open": [
+        "open Finset Fintype Function SimpleGraph.Walk",
+        "namespace SimpleGraph",
+        "variable {α β : Type*} (G H : SimpleGraph α)",
+        "section CliqueFreeOn",
+        "variable {s s₁ s₂ : Set α} {a : α} {m n : ℕ}"
+      ],
+      "scope_close": [
+        "end CliqueFreeOn",
+        "end SimpleGraph"
+      ]
+    },
+    {
+      "name": "iSup_singleton",
+      "binders": "{f : β → α} {b : β}",
+      "statement": "⨆ x ∈ (singleton b : Set β), f x = f b",
+      "file": "Order/CompleteLattice/Basic.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Data.Set.NAry",
+        "public import Mathlib.Data.ULift",
+        "public import Mathlib.Order.Bounds.Image",
+        "public import Mathlib.Order.CompleteLattice.Defs",
+        "public import Mathlib.Order.Hom.Set"
+      ],
+      "proof": "by simp",
+      "scope_open": [
+        "open Function OrderDual Set",
+        "variable {α β γ : Type*} {ι ι' : Sort*} {κ : ι → Sort*} {κ' : ι' → Sort*}",
+        "open OrderDual",
+        "section",
+        "variable [CompleteLattice α] {f g s : ι → α} {a b : α}"
+      ],
+      "scope_close": [
+        "end"
+      ]
+    },
+    {
+      "name": "CategoryTheory.MonoidalClosed.curry_id_eq_coev",
+      "binders": "",
+      "statement": "curry (𝟙 _) = (ihom.coev A).app X",
+      "file": "CategoryTheory/Monoidal/Closed/Basic.lean",
+      "namespaces": [
+        "CategoryTheory",
+        "MonoidalClosed"
+      ],
+      "imports": [
+        "public import Mathlib.CategoryTheory.Monoidal.Functor",
+        "public import Mathlib.CategoryTheory.Monoidal.CoherenceLemmas",
+        "public import Mathlib.CategoryTheory.Adjunction.Limits",
+        "public import Mathlib.CategoryTheory.Adjunction.Mates",
+        "public import Mathlib.CategoryTheory.Adjunction.Parametrized",
+        "public import Mathlib.Tactic.BDSimp"
+      ],
+      "proof": "by\n  rw [curry_eq, (ihom A).map_id (A ⊗ _)]\n  apply comp_id",
+      "scope_open": [
+        "universe v u u₂ v₂",
+        "namespace CategoryTheory",
+        "open Category MonoidalCategory",
+        "variable {C : Type u} [Category.{v} C] [MonoidalCategory.{v} C]",
+        "variable (A B : C) {X X' Y Y' Z : C}",
+        "variable [Closed A]",
+        "open CategoryTheory.Limits",
+        "variable {A}",
+        "namespace MonoidalClosed",
+        "variable (A X)"
+      ],
+      "scope_close": [
+        "end MonoidalClosed",
+        "end CategoryTheory"
+      ]
+    },
+    {
+      "name": "MvPFunctor.const.get_map",
+      "binders": "(f : α ⟹ β) (x : const n A α)",
+      "statement": "const.get (f <$$> x) = const.get x",
+      "file": "Data/PFunctor/Multivariate/Basic.lean",
+      "namespaces": [
+        "MvPFunctor"
+      ],
+      "imports": [
+        "public import Mathlib.Control.Functor.Multivariate",
+        "public import Mathlib.Data.PFunctor.Univariate.Basic"
+      ],
+      "proof": "by\n  cases x\n  rfl",
+      "scope_open": [
+        "universe u v",
+        "open MvFunctor",
+        "namespace MvPFunctor",
+        "open MvFunctor (LiftP LiftR)",
+        "variable {n m : ℕ} (P : MvPFunctor.{u} n)",
+        "section Const",
+        "variable (n) {A : Type u} {α β : TypeVec.{u} n}",
+        "variable {n}"
+      ],
+      "scope_close": [
+        "end Const",
+        "end MvPFunctor"
+      ]
+    },
+    {
+      "name": "BoundedOrderHom.id_apply",
+      "binders": "(a : α)",
+      "statement": "BoundedOrderHom.id α a = a",
+      "file": "Order/Hom/Bounded.lean",
+      "namespaces": [
+        "BoundedOrderHom"
+      ],
+      "imports": [
+        "public import Mathlib.Order.Hom.Basic"
+      ],
+      "proof": "\n  rfl",
+      "scope_open": [
+        "open Function OrderDual",
+        "variable {F α β γ δ : Type*}",
+        "variable [FunLike F α β]",
+        "namespace BoundedOrderHom",
+        "variable [Preorder α] [Preorder β] [Preorder γ] [Preorder δ] [BoundedOrder α] [BoundedOrder β] [BoundedOrder γ] [BoundedOrder δ]",
+        "variable (α)",
+        "variable {α}"
+      ],
+      "scope_close": [
+        "end BoundedOrderHom"
+      ]
+    },
+    {
+      "name": "mabs_div_le_one",
+      "binders": "",
+      "statement": "|a / b|ₘ ≤ 1 ↔ a = b",
+      "file": "Algebra/Order/Group/Abs.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Mathlib.Algebra.Order.Group.Defs",
+        "public import Mathlib.Algebra.Order.Group.Unbundled.Abs",
+        "public import Mathlib.Algebra.Order.Monoid.Unbundled.Pow"
+      ],
+      "proof": "\n  ⟨eq_of_mabs_div_le_one, by rintro rfl; rw [div_self', mabs_one]⟩",
+      "scope_open": [
+        "open Function",
+        "variable {G : Type*}",
+        "section LinearOrderedCommGroup",
+        "variable [CommGroup G] [LinearOrder G] [IsOrderedMonoid G] {a b c : G}"
+      ],
+      "scope_close": [
+        "end LinearOrderedCommGroup"
+      ]
+    },
+    {
+      "name": "Polynomial.degree_ne_bot",
+      "binders": "",
+      "statement": "degree p ≠ ⊥ ↔ p ≠ 0",
+      "file": "Algebra/Polynomial/Degree/Defs.lean",
+      "namespaces": [
+        "Polynomial"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.MonoidAlgebra.Degree",
+        "public import Mathlib.Algebra.Order.Ring.WithTop",
+        "public import Mathlib.Algebra.Polynomial.Basic",
+        "public import Mathlib.Data.Nat.Cast.WithTop",
+        "public import Mathlib.Data.Nat.SuccPred",
+        "public import Mathlib.Order.SuccPred.WithBot"
+      ],
+      "proof": "degree_eq_bot.not",
+      "scope_open": [
+        "open Finset",
+        "namespace Polynomial",
+        "universe u v",
+        "variable {R : Type u} {S : Type v} {a b c d : R} {n m : ℕ}",
+        "section Semiring",
+        "variable [Semiring R] {p q r : R[X]}"
+      ],
+      "scope_close": [
+        "end Semiring",
+        "end Polynomial"
+      ]
+    },
+    {
+      "name": "Polynomial.smul_modByMonic",
+      "binders": "(c : R) (p : R[X])",
+      "statement": "c • p %ₘ q = c • (p %ₘ q)",
+      "file": "Algebra/Polynomial/RingDivision.lean",
+      "namespaces": [
+        "Polynomial"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Polynomial.AlgebraMap",
+        "public import Mathlib.Algebra.Polynomial.Div",
+        "public import Mathlib.RingTheory.Coprime.Basic",
+        "import Mathlib.Tactic.ComputeDegree"
+      ],
+      "proof": "by\n  by_cases hq : q.Monic\n  · rcases subsingleton_or_nontrivial R with hR | hR\n    · simp only [eq_iff_true_of_subsingleton]\n    · exact\n      (div_modByMonic_unique (c • (p /ₘ q)) (c • (p %ₘ q)) hq\n          ⟨by rw [mul_smul_comm, ← smul_add, modByMonic_add_div],\n            (degree_smul_le _ _).trans_lt (degree_modByMonic_lt _ hq)⟩).2\n  · simp_rw [modByMonic_eq_of_not_monic _ hq]",
+      "scope_open": [
+        "noncomputable section",
+        "open Polynomial",
+        "open Finset",
+        "namespace Polynomial",
+        "universe u v w z",
+        "variable {R : Type u} {S : Type v} {T : Type w} {a b : R} {n : ℕ}",
+        "section CommRing",
+        "variable [CommRing R] {p q : R[X]}"
+      ],
+      "scope_close": [
+        "end CommRing",
+        "end Polynomial",
+        "end"
+      ]
+    },
+    {
+      "name": "Nat.pairwise_one_le_dist",
+      "binders": "",
+      "statement": "Pairwise fun m n : ℕ => 1 ≤ dist m n",
+      "file": "Topology/Instances/Nat.lean",
+      "namespaces": [
+        "Nat"
+      ],
+      "imports": [
+        "public import Mathlib.Data.Nat.Lattice",
+        "public import Mathlib.Topology.Instances.Int"
+      ],
+      "proof": "fun _ _ hne =>\n  Int.pairwise_one_le_dist <| mod_cast hne",
+      "scope_open": [
+        "noncomputable section",
+        "open Filter Metric Set Topology",
+        "namespace Nat"
+      ],
+      "scope_close": [
+        "end Nat",
+        "end"
+      ]
+    },
+    {
+      "name": "div_eq_mul_inv",
+      "binders": "(a b : G)",
+      "statement": "a / b = a * b⁻¹",
+      "file": "Algebra/Group/Defs.lean",
+      "namespaces": [],
+      "imports": [
+        "public import Batteries.Logic",
+        "public import Batteries.Util.LibraryNote",
+        "public import Mathlib.Algebra.Notation.Defs",
+        "public import Mathlib.Algebra.Regular.Defs",
+        "public import Mathlib.Data.Int.Notation",
+        "public import Mathlib.Data.Nat.BinaryRec",
+        "public import Mathlib.Tactic.MkIffOfInductiveProp",
+        "public import Mathlib.Tactic.OfNat",
+        "public import Mathlib.Data.Nat.Notation",
+        "public import Mathlib.Tactic.Simps.Basic",
+        "public import Mathlib.Tactic.AdaptationNote",
+        "public import Mathlib.Tactic.CrossRefAttribute"
+      ],
+      "proof": "\n  DivInvMonoid.div_eq_mul_inv _ _",
+      "scope_open": [
+        "universe u v w",
+        "open Function",
+        "variable {G : Type*}",
+        "section DivInvMonoid",
+        "variable [DivInvMonoid G]"
+      ],
+      "scope_close": [
+        "end DivInvMonoid"
+      ]
+    },
+    {
+      "name": "Cardinal.mk_plift_false",
+      "binders": "",
+      "statement": "#(PLift False) = 0",
+      "file": "SetTheory/Cardinal/Defs.lean",
+      "namespaces": [
+        "Cardinal"
+      ],
+      "imports": [
+        "public import Mathlib.Data.ULift",
+        "public import Mathlib.Tactic.PPWithUniv",
+        "public import Mathlib.Util.Delaborators"
+      ],
+      "proof": "\n  mk_eq_zero _",
+      "scope_open": [
+        "open List Function Set",
+        "noncomputable section",
+        "universe u v w v' w'",
+        "variable {α β : Type u}",
+        "namespace Cardinal"
+      ],
+      "scope_close": [
+        "end Cardinal",
+        "end"
+      ]
+    },
+    {
+      "name": "LinearMap.add_apply",
+      "binders": "(f g : M →ₛₗ[σ₁₂] M₂) (x : M)",
+      "statement": "(f + g) x = f x + g x",
+      "file": "Algebra/Module/LinearMap/Defs.lean",
+      "namespaces": [
+        "LinearMap"
+      ],
+      "imports": [
+        "public import Mathlib.Algebra.Group.Hom.Instances",
+        "public import Mathlib.Algebra.Module.NatInt",
+        "public import Mathlib.Algebra.Module.RingHom",
+        "public import Mathlib.Algebra.Ring.CompTypeclasses",
+        "public import Mathlib.GroupTheory.GroupAction.Hom"
+      ],
+      "proof": "\n  rfl",
+      "scope_open": [
+        "open Function",
+        "universe u u' v w",
+        "variable {R R₁ R₂ R₃ S S₃ T M M₁ M₂ M₃ N₂ N₃ : Type*}",
+        "namespace LinearMap",
+        "section Arithmetic",
+        "variable [Semiring R₁] [Semiring R₂] [Semiring R₃]",
+        "variable [AddCommMonoid M] [AddCommMonoid M₂] [AddCommMonoid M₃]",
+        "variable [AddCommGroup N₂] [AddCommGroup N₃]",
+        "variable [Module R₁ M] [Module R₂ M₂] [Module R₃ M₃]",
+        "variable [Module R₂ N₂] [Module R₃ N₃]",
+        "variable {σ₁₂ : R₁ →+* R₂} {σ₂₃ : R₂ →+* R₃} {σ₁₃ : R₁ →+* R₃} [RingHomCompTriple σ₁₂ σ₂₃ σ₁₃]"
+      ],
+      "scope_close": [
+        "end Arithmetic",
+        "end LinearMap"
+      ]
+    }
+  ]
+}

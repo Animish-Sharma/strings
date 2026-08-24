@@ -5,7 +5,9 @@ they fail in different directions. A design can be biologically impeccable and
 statistically meaningless. An estimator can be provably correct about a quantity
 nobody should care about.
 
-The frame's answer is **two packs on one claim** (`ARCHITECTURE.md` §2.2), not a
+The frame's answer is **two packs on one claim** — each auditing within its own
+competence, neither speaking for the other's field, and a fatal objection from
+either blocking admission — not a
 fourth role.
 
 ## The division

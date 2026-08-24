@@ -55,7 +55,25 @@ EXCLUDED_DIRS = {"domains", ".git", "__pycache__", ".venv", "node_modules"}
 #
 # Exemptions should stay rare and the count is printed on every run so their
 # growth is visible in review rather than accumulating quietly.
-EXEMPT_FILES = {"scripts/check_frame_purity.py", "IMPROVEMENT_REPORT.md"}
+EXEMPT_FILES = {
+    "scripts/check_frame_purity.py",
+    "IMPROVEMENT_REPORT.md",
+    # A GENERATED snapshot of what each pack declares, written by
+    # `check_bridge.py --update` and never by hand. It contains pack paths and
+    # field terms because that is what it records — the frame is not learning a
+    # field here, it is writing down what it was told, and adding a pack updates
+    # this file through a command rather than through an edit to frame logic.
+    #
+    # The exemption is narrow on purpose: exempting files is how a purity check
+    # gets hollowed out, so the test for any future entry is whether the file is
+    # generated from the packs or authored about them. This one is generated.
+    "references/bridge_baseline.json",
+    # Holds deliberate violations as PLANT PAYLOADS — a field word, a pack path —
+    # because its whole job is to prove the checkers still catch them. Exempting
+    # it is the same call as exempting this file: a fixture that must contain
+    # what it tests for.
+    "scripts/check_checkers.py",
+}
 
 ALLOW_MARKER = "frame-purity: allow"
 
@@ -208,7 +226,82 @@ def scan(paths: list[Path]) -> tuple[list[Violation], int]:
                         )
                     )
 
+    violations.extend(check_structural(paths))
     return violations, allowed
+
+
+# ------------------------------------------------------------ structural leaks
+#
+# The vocabulary check reads for WORDS. That let a frame file enumerate the
+# script filenames of specific packs — `produce`, `bundle`, `counts` — and pass,
+# because those are not field terms. It was a real leak and the check could not
+# see it: the frame had learned which files a particular pack ships, which is
+# knowledge that lives below the contract line.
+#
+# So this asks a different question: does a frame file name a file that exists
+# ONLY inside a domain pack? A frame file may name its own scripts, the contract,
+# and the shapes every pack must have. It may not know what any pack chose to
+# call its own machinery, because then adding a pack means editing the frame,
+# and that is the definition of the contract having leaked.
+
+PACK_LOCAL = re.compile(r"(?<![\w/])(?:scripts|evals|doctrine|data|tiers|gates)/([\w/]+?)\.\w{1,6}")
+
+
+def pack_local_files() -> dict[str, set[str]]:
+    """Relative paths that exist inside a pack and nowhere in the frame."""
+    domains = SKILL_ROOT / "domains"
+    frame_owned: set[str] = set()
+    for path in SKILL_ROOT.rglob("*"):
+        if path.is_file() and "domains" not in path.relative_to(SKILL_ROOT).parts:
+            frame_owned.add(path.relative_to(SKILL_ROOT).as_posix())
+    out: dict[str, set[str]] = {}
+    if not domains.exists():
+        return out
+    for pack in sorted(domains.iterdir()):
+        if not (pack / "domain.json").exists():
+            continue
+        names = set()
+        for path in pack.rglob("*"):
+            if not path.is_file():
+                continue
+            rel = path.relative_to(pack).as_posix()
+            if rel not in frame_owned:
+                names.add(rel)
+        out[pack.name] = names
+    return out
+
+
+def check_structural(paths: list[Path]) -> list[Violation]:
+    packs = pack_local_files()
+    if not packs:
+        return []
+    # A path shipped by EVERY pack is a contract shape, not one pack's choice:
+    # `scripts/check.py` is the adapter entry point the contract names, and a
+    # frame file may say so. A path only some packs have is that pack's own.
+    universal = set.intersection(*packs.values()) if packs else set()
+    violations: list[Violation] = []
+    for path in paths:
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except (UnicodeDecodeError, OSError):
+            continue
+        for line_no, line in enumerate(lines, start=1):
+            if ALLOW_MARKER in line:
+                continue
+            for match in PACK_LOCAL.finditer(line):
+                ref = match.group(0)
+                if ref in universal:
+                    continue
+                owners = sorted(name for name, files in packs.items() if ref in files)
+                if not owners or len(owners) == len(packs):
+                    continue
+                violations.append(Violation(
+                    path, line_no, "structural",
+                    f"names {ref!r}, which exists only in {', '.join(owners)}. A frame file that "
+                    "knows what one pack called its own machinery has learned something from "
+                    "below the contract line — adding a pack should never mean editing the frame",
+                    line))
+    return violations
 
 
 # Runtime concerns belong to the orchestrator's execution envelope, never to a

@@ -1,22 +1,100 @@
 {
   "description": "The alternative explanations a perturbation result must survive. Each carries the cheap check that would separate it from the claimed effect, because an unfalsifiable confounder list is a literature review, not an audit.",
   "confounders": [
-    {"id": "batch", "question": "Is treatment confounded with batch, lane, or sequencing run?", "cheap_test": "cross-tabulate the perturbation against every technical level; a zero cell means the two cannot be separated", "severity": "fatal_if_complete"},
-    {"id": "depth", "question": "Do the compared groups differ in sequencing depth or detected features?", "cheap_test": "compare median UMI and gene counts per group before interpreting any difference", "severity": "major"},
-    {"id": "guide_capture", "question": "Is guide assignment itself associated with the outcome through capture efficiency?", "cheap_test": "check assignment rate and multiplet rate by group", "severity": "major"},
-    {"id": "moi_doublets", "question": "Could multiplets or high MOI create apparent double perturbations?", "cheap_test": "report doublet rate and per-cell guide counts", "severity": "major"},
-    {"id": "ambient_rna", "question": "Is the signal explainable by ambient RNA from a dominant population?", "cheap_test": "check whether the moving genes are the high-expressers of the majority population", "severity": "major"},
-    {"id": "cell_cycle", "question": "Is the response a cell-cycle shift rather than the claimed pathway?", "cheap_test": "score cell-cycle phase and re-test with phase as a covariate", "severity": "major"},
-    {"id": "stress_viability", "question": "Is this a generic stress, apoptosis, or viability signature?", "cheap_test": "score a generic stress signature; if it moves as much as the claimed pathway, the claim is not specific", "severity": "fatal_if_dominant"},
-    {"id": "composition", "question": "Did cell-state composition shift rather than per-state expression?", "cheap_test": "re-run within state, or decompose the change into composition and within-state parts", "severity": "major"},
-    {"id": "selection_proliferation", "question": "Did the perturbation change which cells survived to be sequenced?", "cheap_test": "compare cells recovered per condition against the input distribution", "severity": "major"},
-    {"id": "off_target", "question": "Is the effect off-target rather than through the intended gene?", "cheap_test": "require agreement across independent guides, and check on-target knockdown", "severity": "major"},
-    {"id": "pathway_circularity", "question": "Was the pathway defined using the same data now used to support it?", "cheap_test": "check the provenance of the gene set against the dataset", "severity": "fatal_if_circular"},
-    {"id": "context_reversal", "question": "Does the effect reverse across cell type, dose, time, or assay?", "cheap_test": "look for the same contrast in any second context before claiming generality", "severity": "scope_limiting"}
+    {
+      "id": "batch",
+      "question": "Is treatment confounded with batch, lane, or sequencing run?",
+      "cheap_test": "cross-tabulate the perturbation against every technical level; a zero cell means the two cannot be separated",
+      "severity": "fatal_if_complete",
+      "computable_by": "scripts/diagnostics.py"
+    },
+    {
+      "id": "depth",
+      "question": "Do the compared groups differ in sequencing depth or detected features?",
+      "cheap_test": "compare median UMI and gene counts per group before interpreting any difference",
+      "severity": "major",
+      "computable_by": "scripts/diagnostics.py"
+    },
+    {
+      "id": "guide_capture",
+      "question": "Is guide assignment itself associated with the outcome through capture efficiency?",
+      "cheap_test": "check assignment rate and multiplet rate by group",
+      "severity": "major"
+    },
+    {
+      "id": "moi_doublets",
+      "question": "Could multiplets or high MOI create apparent double perturbations?",
+      "cheap_test": "report doublet rate and per-cell guide counts",
+      "severity": "major",
+      "computable_by": "scripts/expression_diagnostics.py"
+    },
+    {
+      "id": "ambient_rna",
+      "question": "Is the signal explainable by ambient RNA from a dominant population?",
+      "cheap_test": "check whether the moving genes are the high-expressers of the majority population",
+      "severity": "major",
+      "computable_by": "scripts/expression_diagnostics.py"
+    },
+    {
+      "id": "cell_cycle",
+      "question": "Is the response a cell-cycle shift rather than the claimed pathway?",
+      "cheap_test": "score cell-cycle phase and re-test with phase as a covariate",
+      "severity": "major",
+      "computable_by": "scripts/expression_diagnostics.py"
+    },
+    {
+      "id": "stress_viability",
+      "question": "Is this a generic stress, apoptosis, or viability signature?",
+      "cheap_test": "score a generic stress signature; if it moves as much as the claimed pathway, the claim is not specific",
+      "severity": "fatal_if_dominant",
+      "computable_by": "scripts/expression_diagnostics.py"
+    },
+    {
+      "id": "composition",
+      "question": "Did cell-state composition shift rather than per-state expression?",
+      "cheap_test": "re-run within state, or decompose the change into composition and within-state parts",
+      "severity": "major",
+      "computable_by": "scripts/expression_diagnostics.py"
+    },
+    {
+      "id": "selection_proliferation",
+      "question": "Did the perturbation change which cells survived to be sequenced?",
+      "cheap_test": "compare cells recovered per condition against the input distribution",
+      "severity": "major"
+    },
+    {
+      "id": "off_target",
+      "question": "Is the effect off-target rather than through the intended gene?",
+      "cheap_test": "require agreement across independent guides, and check on-target knockdown",
+      "severity": "major"
+    },
+    {
+      "id": "pathway_circularity",
+      "question": "Was the pathway defined using the same data now used to support it?",
+      "cheap_test": "check the provenance of the gene set against the dataset",
+      "severity": "fatal_if_circular"
+    },
+    {
+      "id": "context_reversal",
+      "question": "Does the effect reverse across cell type, dose, time, or assay?",
+      "cheap_test": "look for the same contrast in any second context before claiming generality",
+      "severity": "scope_limiting",
+      "computable_by": "scripts/expression_diagnostics.py"
+    }
   ],
   "required_negative_controls": [
-    {"id": "non_targeting_guides", "why": "separates the perturbation from the delivery"},
-    {"id": "generic_stress_signature", "why": "separates a specific response from a general one"},
-    {"id": "permuted_labels", "why": "separates a real effect from the pipeline's own structure"}
-  ]
+    {
+      "id": "non_targeting_guides",
+      "why": "separates the perturbation from the delivery"
+    },
+    {
+      "id": "generic_stress_signature",
+      "why": "separates a specific response from a general one"
+    },
+    {
+      "id": "permuted_labels",
+      "why": "separates a real effect from the pipeline's own structure"
+    }
+  ],
+  "computability_note": "`computable_by` names the tool that decides this confounder from the data. Where it is present the sweep gate takes the tool's verdict and refuses a bundle that asserts a different one \u2014 the author does not get to grade their own alternative explanation. Where it is absent the confounder genuinely needs information outside the matrix (a guide library, an off-target prediction, how the gene set was defined), so an asserted result is the best available and the receipt records that it was asserted."
 }

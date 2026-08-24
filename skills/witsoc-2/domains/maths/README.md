@@ -51,6 +51,8 @@ python3 scripts/availability.py                      # what can actually run rig
 python3 scripts/check.py --self-test                 # negative controls must be rejected
 python3 scripts/check.py --artifact a.wit --claim c.json --tier structural --json
 python3 scripts/corpus.py Nat.succ_le_of_lt          # KNOWN / SEARCH_TARGET / ABSENT
+python3 scripts/tactic_search.py --self-test         # portfolio layout and attribution
+python3 evals/roles/run_roles.py                     # 11 role DECISIONS scored
 ```
 
 `--self-test` is what makes the manifest's `adversarial: true` a claim with

@@ -97,6 +97,13 @@ def self_test() -> int:
     return 0
 
 
+# The tier's authorship, from this fixture's own manifest. The frame requires a
+# receipt to say who stands behind the verification.
+TIER_AUTHORSHIP = {
+    "exact": "independent",
+    "sampled": "independent"
+}
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--artifact")
@@ -158,11 +165,24 @@ def main() -> int:
                else f"mismatch at line(s) {mismatched}")
         )
 
+    # A fixture knob for a verdict the frame handles and nothing exercised:
+    # `incomplete` — a required check that COULD NOT RUN. The frame's own
+    # vocabulary separates a GAP from a FAILED_ATTEMPT, and until this existed
+    # the campaign driver collapsed the two, recording "no judge was available"
+    # as "this route was shown not to work" and feeding it to the escalation
+    # ladder. The fixture pack's job is to exercise frame behaviour, and this is
+    # frame behaviour.
+    unrunnable = frozen.get("unrunnable_gate")
+    if unrunnable and verdict == "pass":
+        verdict = "incomplete"
+        detail = f"{unrunnable} could not run; nothing here was shown not to work"
+
     receipt = {
         "receipt_id": f"mock-{sha256(raw + args.tier)[:12]}",
         "target_sha256": claim.get("target_sha256", ""),
         "artifact_sha256": sha256(raw),
         "tier": args.tier,
+        "authorship": TIER_AUTHORSHIP.get(args.tier, "unstated"),
         "verdict": verdict,
         # The tier's ceiling, frame-required so the reducer can enforce it from
         # the evidence instead of from the admission's word for it.
@@ -179,6 +199,9 @@ def main() -> int:
                 else {"perturbation": "seeded subset; the exact tier is still owed before admission"}
             ),
         },
+        **({"gates": [{"gate": unrunnable, "verdict": "not_run",
+                       "detail": "no independent judge was available"}]}
+           if unrunnable and verdict == "incomplete" else {}),
         "completeness": {
             "all_obligations_covered": args.tier == "exact",
             "concluding_step_covered": args.tier == "exact",

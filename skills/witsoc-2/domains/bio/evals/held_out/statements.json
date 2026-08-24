@@ -1,0 +1,56 @@
+{
+  "description": "Claims written for the predecessor system by someone else, before this pack or its selection terms existed. Nobody phrased them to match terms that did not yet exist, which is the only condition under which a bag-of-words scorer can be said to generalize.",
+  "expect_domain": "bio",
+  "cases": [
+    {
+      "statement": "A Perturb-seq screen with thousands of single cells provides enough independent replicates for a population-level causal claim.",
+      "source": "replicate_denominator_fixture.jsonl",
+      "why": "written for the predecessor system, against a different design"
+    },
+    {
+      "statement": "Within one specified Perturb-seq screen, guide assignment can support a guide-conditioned perturbation contrast when controls and guide QC are adequate.",
+      "source": "replicate_denominator_fixture.jsonl",
+      "why": "written for the predecessor system, against a different design"
+    },
+    {
+      "statement": "A donor-replicated Perturb-seq design can support a population-bounded perturbation effect when donors are crossed with perturbation and analyzed as the denominator.",
+      "source": "replicate_denominator_fixture.jsonl",
+      "why": "written for the predecessor system, against a different design"
+    },
+    {
+      "statement": "Many 10x GEM groups or lanes in a Perturb-seq dataset are automatically independent biological replicates.",
+      "source": "replicate_denominator_fixture.jsonl",
+      "why": "written for the predecessor system, against a different design"
+    },
+    {
+      "statement": "FDR correction makes a cell-level pseudoreplicated Perturb-seq model valid for population-level causal inference.",
+      "source": "replicate_denominator_fixture.jsonl",
+      "why": "written for the predecessor system, against a different design"
+    },
+    {
+      "statement": "Multiple guides per target replace the need for biological replication in a population-level Perturb-seq claim.",
+      "source": "replicate_denominator_fixture.jsonl",
+      "why": "written for the predecessor system, against a different design"
+    },
+    {
+      "statement": "More cells in each upstream unit can improve precision for estimating that unit's mean response, without creating new upstream units.",
+      "source": "replicate_denominator_fixture.jsonl",
+      "why": "written for the predecessor system, against a different design"
+    },
+    {
+      "statement": "Replogle-style public single-cell metadata with many cells is sufficient by itself to use cells as independent biological replicates.",
+      "source": "replicate_denominator_fixture.jsonl",
+      "why": "written for the predecessor system, against a different design"
+    },
+    {
+      "statement": "Spatial or in vivo Perturb-seq cells are independent population replicates because they come from tissue.",
+      "source": "replicate_denominator_fixture.jsonl",
+      "why": "written for the predecessor system, against a different design"
+    },
+    {
+      "statement": "A Perturb-seq study with four donors and donor-level pseudobulks can erase all population-level uncertainty concerns.",
+      "source": "replicate_denominator_fixture.jsonl",
+      "why": "written for the predecessor system, against a different design"
+    }
+  ]
+}

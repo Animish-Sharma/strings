@@ -268,6 +268,10 @@
                 "description": "Maximum concurrent invocations of this tier. Memory- or licence-bound backends saturate; the frame queues rather than stacking past this.",
                 "type": "integer",
                 "minimum": 1
+              },
+              "script": {
+                "type": "string",
+                "description": "Path, relative to the pack root, of the script that implements this. Optional but strongly preferred: without it the binding between a declared name and the file that runs it lives only inside the pack's adapter, where nothing can check it and a rename breaks it silently. scripts/check_doctrine_commands.py uses it to tell a wired script from an orphaned one."
               }
             }
           }
@@ -446,6 +450,10 @@
             "satisfied_by_tier": {
               "description": "Name of an adversarial tier that discharges this gate on its own. Omit when the gate is a separate step.",
               "type": "string"
+            },
+            "script": {
+              "type": "string",
+              "description": "Path, relative to the pack root, of the script that implements this. Optional but strongly preferred: without it the binding between a declared name and the file that runs it lives only inside the pack's adapter, where nothing can check it and a rename breaks it silently. scripts/check_doctrine_commands.py uses it to tell a wired script from an orphaned one."
             }
           }
         },
@@ -471,6 +479,10 @@
               "blocking": {
                 "description": "Whether failing this gate blocks admission outright. Defaults to true.",
                 "type": "boolean"
+              },
+              "script": {
+                "type": "string",
+                "description": "Path, relative to the pack root, of the script that implements this. Optional but strongly preferred: without it the binding between a declared name and the file that runs it lives only inside the pack's adapter, where nothing can check it and a rename breaks it silently. scripts/check_doctrine_commands.py uses it to tell a wired script from an orphaned one."
               }
             }
           }
@@ -489,9 +501,14 @@
         "properties": {
           "refines": {
             "enum": [
+              "SKETCH",
+              "PARTIAL",
               "CHECKED_BOUNDED",
-              "VERIFIED"
-            ]
+              "CONDITIONAL",
+              "VERIFIED",
+              "REJECTED"
+            ],
+            "description": "The frame status this refinement narrows. Restricted to CHECKED_BOUNDED and VERIFIED until a checker finally reached the bio manifest: that pack has declared CONDITIONAL_WITHIN_SCREEN refining CONDITIONAL and REJECTED_DENOMINATOR refining REJECTED since it was written, and both are exactly what a refinement is for \u2014 a narrower reading of a status the vocabulary already has. Refuted BY DESIGN and refuted by data are different findings with different remedies, and the pack was right to separate them. Nothing validated it because the check stopped at the first instance that passed."
           },
           "description": {
             "type": "string"

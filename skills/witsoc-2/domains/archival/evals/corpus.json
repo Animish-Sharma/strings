@@ -1,0 +1,56 @@
+{
+  "schema": "witsoc2.gate_corpus.v1",
+  "note": "Every artifact this pack keeps for testing, paired with its claim and tagged with a KIND. `check_gate_inertness.py` runs each declared gate over all of it and reports any gate whose verdict never varies for a kind — the signature of a gate that does not read that kind at all. The corpus is deliberately mixed: things that must be admitted and things that must be refused.",
+  "artifacts": [
+    {
+      "artifact": "scripts/negative_control/good_dossier.json",
+      "claim": "scripts/negative_control/good_claim.json",
+      "kind": "json"
+    },
+    {
+      "artifact": "evals/path/cascade_dossier.json",
+      "claim": "evals/path/cascade_claim.json",
+      "kind": "json"
+    },
+    {
+      "artifact": "scripts/negative_control/cascade_dossier.json",
+      "claim": "scripts/negative_control/cascade_claim.json",
+      "kind": "json"
+    },
+    {
+      "artifact": "scripts/negative_control/backwards_chain_dossier.json",
+      "claim": "scripts/negative_control/backwards_chain_claim.json",
+      "kind": "json"
+    },
+    {
+      "artifact": "scripts/negative_control/all_interested_dossier.json",
+      "claim": "scripts/negative_control/all_interested_claim.json",
+      "kind": "json"
+    },
+    {
+      "artifact": "scripts/negative_control/translation_drift_dossier.json",
+      "claim": "scripts/negative_control/translation_drift_claim.json",
+      "kind": "json"
+    },
+    {
+      "artifact": "scripts/negative_control/scope_escalation_dossier.json",
+      "claim": "scripts/negative_control/scope_escalation_claim.json",
+      "kind": "json"
+    },
+    {
+      "artifact": "scripts/negative_control/unsupported_absence_dossier.json",
+      "claim": "scripts/negative_control/unsupported_absence_claim.json",
+      "kind": "json"
+    },
+    {
+      "artifact": "scripts/negative_control/no_discriminator_dossier.json",
+      "claim": "scripts/negative_control/no_discriminator_claim.json",
+      "kind": "json"
+    },
+    {
+      "artifact": "scripts/negative_control/shared_error_dossier.json",
+      "claim": "scripts/negative_control/good_claim.json",
+      "kind": "json"
+    }
+  ]
+}

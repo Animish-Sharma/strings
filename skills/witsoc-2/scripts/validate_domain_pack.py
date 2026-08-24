@@ -38,6 +38,7 @@ SCHEMA_DIR = SKILL_ROOT / "schemas"
 SCHEMA_BY_VERSION = {
     "1": "frame-domain-pack-v1.schema.json",
     "2": "frame-domain-pack-v2.schema.json",
+    "3": "frame-domain-pack-v3.schema.json",
 }
 
 STATUS_ORDER = ["CONJECTURE", "SKETCH", "PARTIAL", "CHECKED_BOUNDED", "CONDITIONAL", "VERIFIED"]
@@ -278,7 +279,8 @@ def semantic_checks(
         if value and not (pack_dir / value).exists():
             errors.append(f"{label} points at {value!r}, which does not exist in {pack_dir}")
 
-    for index, rule in enumerate(pack.get("doctrine", {}).get("rules", []) or []):
+    for index, entry in enumerate(pack.get("doctrine", {}).get("rules", []) or []):
+        rule = entry if isinstance(entry, str) else (entry or {}).get("path", "")
         if not (pack_dir / rule).exists():
             warnings.append(f"doctrine.rules[{index}] points at {rule!r}, which does not exist")
 
@@ -292,6 +294,31 @@ def semantic_checks(
             )
 
     return errors, warnings, notes
+
+
+def check_reference_data(pack: dict, root: Path) -> list[str]:
+    """A declared table that is not there is worse than an undeclared one.
+
+    An undeclared table is a gap in the contract. A declared table that is
+    missing is a manifest asserting something false, and the pack still
+    validates on every other item while the judgement that rests on the table
+    has nothing under it.
+    """
+    problems: list[str] = []
+    for entry in pack.get("reference_data") or []:
+        path = root / entry["path"]
+        if not path.exists():
+            problems.append(f"reference_data declares {entry['path']!r}, which is not there")
+            continue
+        for script in entry.get("used_by") or []:
+            if not (root / script).exists():
+                problems.append(f"reference_data {entry['path']!r} names reader {script!r}, "
+                                "which is not there")
+        cal = entry.get("calibrated_by")
+        if cal and not (root / cal).exists():
+            problems.append(f"reference_data {entry['path']!r} names calibration {cal!r}, "
+                            "which is not there")
+    return problems
 
 
 def main() -> int:
@@ -327,6 +354,7 @@ def main() -> int:
     if not errors:
         # Semantic checks assume the shape is already valid.
         errors, warnings, notes = semantic_checks(pack, manifest_path.parent)
+        errors = list(errors) + check_reference_data(pack, manifest_path.parent)
 
     name = pack.get("domain", manifest_path.parent.name)
     for note in notes:
@@ -345,7 +373,8 @@ def main() -> int:
         )
         return 1
 
-    items = "six contract items" if pack.get("contract_version") == "2" else "five contract items"
+    items = ("six contract items" if pack.get("contract_version") in {"2", "3"}
+             else "five contract items")
     if pack.get("contract_version") == "1":
         print(
             "  note: contract v1 carries no `selection` block, so this pack is resolvable only "

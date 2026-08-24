@@ -148,7 +148,24 @@ def rank(state: dict) -> list[dict]:
                 "outputs duplicate a lane already recorded"
             ),
         })
-    return sorted(ranked, key=lambda r: (-r["score"], r["name"]))
+    # statement-freeze is a PRECONDITION, not a competitor. The catalogue has
+    # always said "always first" and the scorer ranked it third, which is the
+    # kind of disagreement that survives because the two live in different
+    # functions and nothing compares them. A lane whose absence invalidates every
+    # other lane's output cannot be outranked by a lane whose output it
+    # invalidates: freezing after the counterexample search means the search ran
+    # against a statement that could still move.
+    tried = {name.lower() for name in state.get("lanes_already_run", [])}
+    ordered = sorted(ranked, key=lambda r: (-r["score"], r["name"]))
+    for entry in ordered:
+        if entry["name"] == "statement-freeze" and entry["name"].lower() not in tried:
+            entry["reasons"].append(
+                "forced first: nothing downstream is valid against an unfrozen statement, so "
+                "this is a precondition rather than a ranked option")
+            ordered.remove(entry)
+            ordered.insert(0, entry)
+            break
+    return ordered
 
 
 def allocate(ranked: list[dict], workers: int, artifact_requested: bool) -> dict:

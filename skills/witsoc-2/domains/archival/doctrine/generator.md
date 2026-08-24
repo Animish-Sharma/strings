@@ -53,3 +53,27 @@ with a new hash.
 See `doctrine/report_language.md`. Documented, attested, and occurred are three
 different statements, and the prose crosses between them for free unless someone
 is checking.
+
+## Build the dossier; do not hand-write it
+
+```bash
+python3 scripts/dossier.py --claim <claim.json> --sources <sources.json> --out dossier.json
+python3 scripts/dossier.py --self-test
+```
+
+It assembles and **computes**. `supporting_sources` is a consequence of the
+derivation graph, not a list you chose: every chain is followed home and what is
+left are the roots. A cycle is refused, and so is a `derives_from` pointing at
+nothing — a graph that cannot be walked cannot be collapsed, and the collapse is
+the only operation this pack performs that cannot be argued with.
+
+`evidence_tiers_available` comes from what the sources ARE. A later chronicle
+offers `tradition_attested` — that a tradition existed by its date — and never
+`independent_origins`, however confidently it reports the event.
+
+**Three fields come back empty and stay empty until you answer them**: the
+archive coverage, what the record would look like if the claim were false, and
+the interpretation. The gates refuse the dossier until they are answered, which
+is the intended behaviour. A producer that filled them with plausible sentences
+would be manufacturing exactly the evidence those gates exist to demand.
+

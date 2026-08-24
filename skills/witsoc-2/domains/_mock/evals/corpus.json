@@ -1,0 +1,5 @@
+{
+  "schema": "witsoc2.gate_corpus.v1",
+  "note": "The mock pack declares the same contract items as a real one, including this. It carries no artifacts: the mock exists to exercise the frame's handling of a pack, not to be checked itself. An empty corpus means the inertness sweep has nothing to vary over here and says so, which is the honest reading.",
+  "artifacts": []
+}

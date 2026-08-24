@@ -1,0 +1,45 @@
+{
+  "schema": "frame-claim-v1",
+  "claim_id": "MODUS-PONENS",
+  "original_text": "modus ponens",
+  "exact_statement": "for all propositions P and Q, if P implies Q and P holds, then Q holds",
+  "formal_target": "theorem wit_modus_ponens (P Q : Prop) (hPQ : P → Q) (hP : P) : Q",
+  "allowed_external_facts": [],
+  "frozen_conditions": {
+    "given": [
+      "P Q : Prop",
+      "hPQ : P → Q",
+      "hP : P"
+    ],
+    "claim": "Q",
+    "variables": {
+      "P": "Prop",
+      "Q": "Prop"
+    },
+    "quantifier_order": "∀ P Q : Prop, (P → Q) → P → Q",
+    "definitions": {
+      "→": "implication, the primitive function type of the logic"
+    },
+    "formal_target": "theorem wit_modus_ponens (P Q : Prop) (hPQ : P → Q) (hP : P) : Q",
+    "allowed_external_facts": [],
+    "bounded_search": {
+      "variables": [
+        {
+          "name": "p",
+          "lower": 0,
+          "upper": 1
+        },
+        {
+          "name": "q",
+          "lower": 0,
+          "upper": 1
+        }
+      ],
+      "predicate": "not ((1 - p + p*q >= 1) and p == 1) or q == 1"
+    }
+  },
+  "status": "OPEN",
+  "given_sha256": "1afbf46679b949c237fa4981ab7c0e68e0e434bf6c8b7ca90cfc74af633780a8",
+  "claim_sha256": "da53dc5001ef1e872bd575bd38d9fafe75b9a13e995acdefe8bbd13f40e12829",
+  "target_sha256": "2e45304ef5928711c423f2810982b5da6ec513d98fcb4269aca58896960fdfe1"
+}

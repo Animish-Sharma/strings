@@ -198,6 +198,9 @@ def main() -> int:
     ap.add_argument("--blueprint", required=True)
     ap.add_argument("--out")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--revise", action="store_true",
+                    help="render over an existing artifact, keeping the previous "
+                         "render beside it as .supersededN")
     args = ap.parse_args()
 
     try:
@@ -241,13 +244,30 @@ def main() -> int:
         return 1
 
     out = Path(args.out) if args.out else Path(f"{bp['metadata'].get('name','artifact')}.wit")
+    keep = None
     if out.exists():
-        print(f"GENERATE: REFUSED — {out} already exists; refusing to overwrite",
-              file=sys.stderr)
-        return 1
+        # Refusing to overwrite protects a rendered artifact from being replaced
+        # by accident. It also made the documented repair loop impossible: the
+        # loop says "revise the blueprint and re-run", and re-running in the
+        # same directory stopped here — so every revision needed a fresh
+        # workdir, and the working memory that decides whether a revision is a
+        # repeat lives in that workdir. `--revise` keeps the protection and
+        # gives the loop somewhere to go: the previous render is preserved
+        # alongside, so nothing is lost.
+        if not args.revise:
+            print(f"GENERATE: REFUSED — {out} already exists; refusing to overwrite. "
+                  "Pass --revise to render a revision beside it",
+                  file=sys.stderr)
+            return 1
+        index = 1
+        while out.with_suffix(out.suffix + f".superseded{index}").exists():
+            index += 1
+        keep = out.with_suffix(out.suffix + f".superseded{index}")
+        out.replace(keep)
     out.write_text(text, encoding="utf-8")
 
     result = {"verdict": "written", "path": str(out), "claim_sha256": rendered,
+              "superseded": str(keep) if keep else None,
               "steps": len(bp["lemma_plan"]),
               "status_asserted": bp["generator_directive"].get("status_to_assert",
                                                               "UNVERIFIED")}

@@ -294,6 +294,37 @@
           "type": "boolean"
         }
       }
+    },
+    "obligations": {
+      "type": "array",
+      "description": "Steps the field's doctrine makes mandatory, carried into the work item so the result has to ANSWER them.\n\nRole evals test the machinery a doctrine points at. They cannot test whether the role read the doctrine: a role that ignored it entirely still passed every check, because everything downstream examines the artifact and nothing examines the process that made it. An obligation is the smallest fix \u2014 the doctrine's own mandatory steps, named where the work is issued, and refused when the result does not say what happened.\n\nIt cannot verify that a step was done WELL, or done at all. It makes skipping one VISIBLE, which is the difference between a rule and a hope.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "demand"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "demand": {
+            "type": "string",
+            "minLength": 10
+          },
+          "doctrine": {
+            "type": "string"
+          },
+          "required_for": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "statuses that need it; absent means every status above CONJECTURE"
+          }
+        }
+      }
     }
   },
   "not": {

@@ -1,0 +1,107 @@
+{
+  "schema": "witsoc2.path_cases.v1",
+  "note": "Whole campaigns, declared by the pack and run by the frame. Paired: what must be admitted and what must not, differing only in what the seam is supposed to notice. `requires` names environment variables a case needs; the frame checks they resolve and never learns what they mean.",
+  "cases": [
+    {
+      "name": "admits a real proof",
+      "tier": "kernel",
+      "expect": "ADMITTED",
+      "claim": "evals/path/even_prod_claim.json",
+      "artifact": "evals/path/even_prod_proved.lean",
+      "requires": [
+        "WITSOC2_LEAN_PROJECT"
+      ],
+      "why": "a proof that establishes its target is admitted"
+    },
+    {
+      "name": "refuses a general citation",
+      "tier": "kernel",
+      "expect": "FAILED_ATTEMPT",
+      "claim": "evals/path/sqrt2_claim.json",
+      "artifact": "evals/path/sqrt2_cited.lean",
+      "requires": [
+        "WITSOC2_LEAN_PROJECT",
+        "WITSOC2_MATHS_CORPUS"
+      ],
+      "why": "the whole content is one undeclared library result; every other gate passes it"
+    },
+    {
+      "name": "refuses an alias",
+      "tier": "kernel",
+      "expect": "FAILED_ATTEMPT",
+      "claim": "evals/path/even_prod_claim.json",
+      "artifact": "evals/path/even_prod_alias.lean",
+      "requires": [
+        "WITSOC2_LEAN_PROJECT",
+        "WITSOC2_MATHS_CORPUS"
+      ],
+      "why": "a different name for exactly the target is the same citation"
+    },
+    {
+      "name": "refuses a sorry",
+      "tier": "kernel",
+      "expect": "FAILED_ATTEMPT",
+      "claim": "evals/path/even_prod_claim.json",
+      "artifact": "evals/path/even_prod_sorry.lean",
+      "requires": [
+        "WITSOC2_LEAN_PROJECT"
+      ],
+      "why": "an escape hatch makes anything type-check, so the backend's verdict says nothing"
+    },
+    {
+      "name": "refuses a drifted target",
+      "tier": "kernel",
+      "expect": "FAILED_ATTEMPT",
+      "claim": "evals/path/even_prod_claim.json",
+      "artifact": "evals/path/even_prod_drifted.lean",
+      "requires": [
+        "WITSOC2_LEAN_PROJECT"
+      ],
+      "why": "the artifact proves something else and proves it perfectly"
+    },
+    {
+      "name": "refuses a postulated bridge",
+      "tier": "kernel",
+      "expect": "FAILED_ATTEMPT",
+      "claim": "evals/path/even_prod_claim.json",
+      "artifact": "evals/path/even_prod_postulated.lean",
+      "requires": [
+        "WITSOC2_LEAN_PROJECT"
+      ],
+      "why": "a locally postulated axiom is assumed, not established, and a plain type-check cannot tell the difference"
+    },
+    {
+      "name": "admits at a weaker tier",
+      "tier": "structural",
+      "expect": "ADMITTED",
+      "claim": "evals/path/even_prod_claim.json",
+      "artifact": "evals/path/even_prod.wit",
+      "requires": [],
+      "why": "the WIT artifact at a tier that checks shape only — admitted, and at a lower ceiling. The structural tier reads the plan, not the Lean file"
+    },
+    {
+      "name": "refuses a disputed formalization",
+      "tier": "kernel",
+      "expect": "FAILED_ATTEMPT",
+      "claim": "evals/path/even_prod_dissent_claim.json",
+      "artifact": "evals/path/even_prod_proved.lean",
+      "requires": [
+        "WITSOC2_LEAN_PROJECT"
+      ],
+      "why": "the proof is sound and two of three judges say the formal statement does not say what the target says — the kernel cannot see that and it is still not the claimed result"
+    },
+    {
+      "name": "reaches VERIFIED with a cross-family review",
+      "tier": "kernel",
+      "review_tier": "bounded",
+      "expect": "ADMITTED",
+      "claim": "evals/path/even_prod_reviewable_claim.json",
+      "artifact": "evals/path/even_prod_proved.lean",
+      "requires": [
+        "WITSOC2_LEAN_PROJECT"
+      ],
+      "why": "the top status is only reachable when a second actor, running a tier whose failure domain differs, corroborates. Every run before this one topped out at CHECKED_BOUNDED because nothing could produce such a review",
+      "expect_status": "VERIFIED"
+    }
+  ]
+}

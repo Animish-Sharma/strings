@@ -403,6 +403,84 @@ def pseudobulk(
 
 # --------------------------------------------------------------------- receipts
 
+def paired_units(rows, unit_col: str, value_col: str, label_col: str,
+                 treatment: str, control: str) -> tuple[list[dict], list[str]]:
+    """One WITHIN-UNIT difference per unit, for a crossed design.
+
+    `pseudobulk` collapses to one value per unit and then asks which arm the unit
+    belongs to. For a unit that appears in BOTH arms there is no answer, so it
+    was labelled MIXED and excluded — and a donor-replicated population claim
+    requires donors crossed with the condition, which means every unit is mixed
+    and the whole design was excluded. The pack demanded a design it could not
+    analyse.
+
+    A crossed design is not a weaker between-unit design; it is a stronger
+    paired one. Each unit is its own control, the between-donor variation that
+    dominates this kind of data cancels, and the estimand is the mean
+    within-donor difference.
+    """
+    buckets: dict[str, dict[str, list[float]]] = {}
+    for row in rows:
+        unit = (row.get(unit_col) or "").strip()
+        label = (row.get(label_col) or "").strip()
+        raw = (row.get(value_col) or "").strip()
+        if not unit or not label or not raw:
+            continue
+        try:
+            value = float(raw)
+        except ValueError:
+            continue
+        buckets.setdefault(unit, {}).setdefault(label, []).append(value)
+
+    pairs, incomplete = [], []
+    for unit in sorted(buckets):
+        arms = buckets[unit]
+        if treatment in arms and control in arms:
+            t_mean, c_mean = mean(arms[treatment]), mean(arms[control])
+            pairs.append({"unit": unit, "treatment_mean": t_mean, "control_mean": c_mean,
+                          "difference": t_mean - c_mean,
+                          "n_treatment": len(arms[treatment]),
+                          "n_control": len(arms[control])})
+        else:
+            incomplete.append(unit)
+    return pairs, incomplete
+
+
+def sign_flip_p(differences: Sequence[float], iterations: int = 20000,
+                seed: int = 0) -> dict[str, Any]:
+    """The exact null for a paired design: under the null each unit's difference
+    is as likely to have come out either way.
+
+    Enumerated exactly when the unit count allows it, because at six units there
+    are sixty-four sign patterns and a sampled approximation of a distribution
+    you can write down is worse in every respect. The floor is reported: with n
+    units the smallest attainable two-sided p is 2/2^n, and a design that cannot
+    reach the alpha it is being judged against should say so before it is run.
+    """
+    n = len(differences)
+    if n == 0:
+        return {"p_value": None, "reason": "no paired units"}
+    observed = abs(mean(differences))
+    exact = n <= 20 and 2 ** n <= iterations
+    count = total = 0
+    if exact:
+        for pattern in range(2 ** n):
+            flipped = [d if (pattern >> i) & 1 else -d for i, d in enumerate(differences)]
+            total += 1
+            if abs(mean(flipped)) >= observed - 1e-12:
+                count += 1
+    else:
+        rng = random.Random(seed)
+        for _ in range(iterations):
+            flipped = [d if rng.random() < 0.5 else -d for d in differences]
+            total += 1
+            if abs(mean(flipped)) >= observed - 1e-12:
+                count += 1
+    return {"p_value": count / total, "iterations": total, "exact": exact,
+            "smallest_attainable_p": 2 / (2 ** n) if n <= 20 else 1 / iterations,
+            "units": n}
+
+
 def receipt(tier: str, claim: dict[str, Any], artifact: str | Path, verdict: str,
             max_status: str, **extra: Any) -> dict[str, Any]:
     """One shape for everything this pack emits.

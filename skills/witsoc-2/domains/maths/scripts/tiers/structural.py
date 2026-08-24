@@ -61,6 +61,32 @@ def is_ancestor(candidate: str, label: str) -> bool:
     return label.startswith(candidate + ".")
 
 
+def given_labels(text: str) -> set[str]:
+    """Labels declared in a GIVEN block.
+
+    This tier parses the text itself rather than going through the shared
+    parser, so the labels are read here too. Scanned rather than imported on
+    purpose: the two readers agreeing about what a GIVEN line looks like is
+    checkable, and a shared helper that silently changed shape would move both
+    at once.
+    """
+    labels: set[str] = set()
+    inside = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if re.match(r"^GIVEN:\s*$", stripped):
+            inside = True
+            continue
+        if re.match(r"^(CLAIM:|PROOF OF|THEOREM|MODULE|LEMMA)", stripped):
+            inside = False
+            continue
+        if inside:
+            m = re.match(r"^-\s*\[([A-Za-z]\w*)\]\s*:", stripped)
+            if m:
+                labels.add(m.group(1))
+    return labels
+
+
 def check(text: str) -> list[str]:
     problems: list[str] = []
     lines = text.splitlines()
@@ -200,7 +226,16 @@ def check(text: str) -> list[str]:
             )
 
     # --- reference resolution and scoping ---
-    known_names = set(decls) | aliases
+    # A labelled hypothesis is citable. The GIVEN block invites a label on every
+    # hypothesis and nothing could reference one, so `BY [hP]` — the most
+    # ordinary justification a proof has — was refused as a dangling reference.
+    # The gap survived because the reference artifact declares `[hx]` and then
+    # never cites it, which is not how anyone writes a proof.
+    #
+    # Hypotheses need no ordering check: they hold from the first line of the
+    # proof, so citing one can never be a forward reference.
+    hypotheses = given_labels(text)
+    known_names = set(decls) | aliases | hypotheses
     for src, ref, line_no in refs:
         if "." in ref and ref.split(".")[0] in aliases:
             continue

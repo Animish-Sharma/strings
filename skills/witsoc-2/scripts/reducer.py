@@ -175,6 +175,88 @@ FULL_CHECKS = ["target_binding", "receipt_freshness", "refute_attempt",
 #                     because someone other than the producer has to agree that
 #                     the named condition is the ONLY gap.
 #   VERIFIED          everything.
+# ---------------------------------------------------------------- attestation
+#
+# Role separation was, until this landed, a STRING. `decided_by_role`,
+# `emitted_by`, `reviewer_role` and `method_family` are fields in packets that
+# one agent may write all of, and the reducer compared the labels. So the
+# founding premise — an agent cannot be trusted to self-report correctness — was
+# enforced rigorously for evidence and not at all for IDENTITY, which is what
+# makes "a role may never accept its own work" mean anything.
+#
+# The frame cannot verify identity by itself: sessions, workers and processes
+# belong to the orchestrator (SKILL.md, Boundary). What it can do is refuse to
+# treat an unattested separation as evidence of one. So:
+#
+#   * every packet may carry an `actor` block — an opaque `actor_id` the
+#     orchestrator assigns, and `attested_by`, which is either `orchestrator` or
+#     `self`;
+#   * two packets sharing an `actor_id` are the SAME actor whatever their role
+#     labels say, and the pairs that must differ are refused outright;
+#   * `attested_by: "self"`, or no actor block at all, means nobody outside the
+#     run vouched for the separation. Independence is then NOT_RUN — not FAIL,
+#     because nothing was shown to be wrong, and not PASS, because nothing was
+#     shown at all.
+#
+# The consequence is deliberate and it is the honest one: without orchestrator
+# attestation a run cannot reach CONDITIONAL or VERIFIED, because those are the
+# statuses whose meaning depends on someone other than the producer agreeing.
+# That is the same shape as the campaign loop's own ceiling, arrived at from the
+# other direction.
+
+SELF_ATTESTED = "self"
+ORCHESTRATOR_ATTESTED = "orchestrator"
+
+
+def actor_of(packet: dict | None) -> tuple[str | None, str]:
+    """(actor_id, attested_by) for a packet. Absent means self-attested."""
+    if not packet:
+        return None, SELF_ATTESTED
+    actor = packet.get("actor") or {}
+    attested = (actor.get("attested_by") or SELF_ATTESTED).strip().lower()
+    if attested != ORCHESTRATOR_ATTESTED:
+        attested = SELF_ATTESTED
+    return (actor.get("actor_id") or None), attested
+
+
+def attestation_problems(admission: dict, result: dict | None,
+                         reviews: list[dict]) -> tuple[list[str], str]:
+    """Refuse shared actors; report how strong the separation evidence is.
+
+    Returns the problems and one of `orchestrator`, `self`.
+    """
+    problems: list[str] = []
+    admit_id, admit_attested = actor_of(admission)
+    result_id, result_attested = actor_of(result)
+
+    if admit_id and result_id and admit_id == result_id:
+        problems.append(
+            f"the admitting actor and the producing actor are the same ({admit_id!r}). "
+            "Role labels differ and the actor does not — a producer admitting its own "
+            "work is what the no-merge invariant forbids, and the label is not the fact")
+
+    weakest = ORCHESTRATOR_ATTESTED
+    for attested in (admit_attested, result_attested):
+        if attested == SELF_ATTESTED:
+            weakest = SELF_ATTESTED
+
+    for review in reviews:
+        review_id, review_attested = actor_of(review)
+        if review_attested == SELF_ATTESTED:
+            weakest = SELF_ATTESTED
+        if review_id and result_id and review_id == result_id:
+            problems.append(
+                f"review {review.get('review_id')!r} was produced by the same actor as the "
+                f"result ({review_id!r}). Self-review is not review, whatever the two "
+                "role labels say")
+        if review_id and admit_id and review_id == admit_id:
+            problems.append(
+                f"review {review.get('review_id')!r} shares its actor with the admission "
+                f"({admit_id!r}). The role that decides may not also be the role that "
+                "vouched")
+    return problems, weakest
+
+
 REQUIRED_BY_STATUS = {
     "SKETCH": ["target_binding"],
     "PARTIAL": ["target_binding", "receipt_freshness", "dependency_closure"],
@@ -184,6 +266,22 @@ REQUIRED_BY_STATUS = {
                     "dependency_closure", "independent_review"],
     "VERIFIED": FULL_CHECKS,
 }
+
+
+def closure_check(state: dict, admission: dict) -> str:
+    """PASS when every claim this admission moves has its dependencies discharged."""
+    claims = state.get("claims") or {}
+    moved = (admission.get("delta") or {}).get("update_claims", []) or []
+    if not moved:
+        return "NOT_RUN"
+    for upd in moved:
+        current = claims.get(upd.get("claim_id"))
+        if current is None:
+            return "FAIL"
+        ok, _why = closure_satisfied({**current, **upd}, claims)
+        if not ok:
+            return "FAIL"
+    return "PASS"
 
 
 def derive_checks(state: dict, admission: dict, extras: dict) -> tuple[dict, list[str]]:
@@ -219,6 +317,12 @@ def derive_checks(state: dict, admission: dict, extras: dict) -> tuple[dict, lis
         # Not an error by itself. A status that needs receipt-derived evidence
         # will fail on the NOT_RUN below; a status that does not need it (SKETCH)
         # is legitimately granted without one.
+        #
+        # DEPENDENCY CLOSURE is derived anyway. It is a walk over this state's
+        # graph and needs no receipt at all, and returning here without it meant
+        # a claim admitted on its dependencies was refused for failing a check
+        # nothing had attempted — the one check it could actually have passed.
+        checks["dependency_closure"] = closure_check(state, admission)
         return checks, problems
     if receipt is None:
         problems.append(
@@ -233,14 +337,28 @@ def derive_checks(state: dict, admission: dict, extras: dict) -> tuple[dict, lis
         return checks, problems
 
     # --- target_binding, now with the receipt in the chain too
-    if receipt.get("target_sha256") == state.get("target_sha256") == admission.get("target_sha256"):
+    #
+    # The chain binds to the CLAIM being moved, which in a graph is usually not
+    # the campaign root. Comparing everything against the root passed only for a
+    # single-claim campaign and made every sub-claim unadmittable — a
+    # decomposition could be recorded and nothing in it could ever close. The
+    # guarantee is unchanged: receipt, admission and the claim's own frozen hash
+    # must be the same value, and that value must belong to a claim in THIS
+    # state rather than to any statement someone chose to name.
+    claim_hashes = {c.get("target_sha256") for c in (state.get("claims") or {}).values()
+                    if c.get("target_sha256")}
+    claim_hashes.add(state.get("target_sha256"))
+    bound = admission.get("target_sha256")
+    if receipt.get("target_sha256") == bound and bound in claim_hashes:
         checks["target_binding"] = "PASS"
     else:
         checks["target_binding"] = "FAIL"
         problems.append(
-            f"target mismatch across the chain: state {str(state.get('target_sha256'))[:12]}..., "
-            f"admission {str(admission.get('target_sha256'))[:12]}..., "
-            f"receipt {str(receipt.get('target_sha256'))[:12]}...")
+            f"target mismatch across the chain: admission {str(bound)[:12]}..., "
+            f"receipt {str(receipt.get('target_sha256'))[:12]}...; "
+            + ("the receipt verifies a different statement than the admission names"
+               if receipt.get("target_sha256") != bound else
+               "no claim in this state was frozen at that statement"))
 
     # --- the receipt has to be a pass at all
     if receipt.get("verdict") != "pass":
@@ -264,6 +382,78 @@ def derive_checks(state: dict, admission: dict, extras: dict) -> tuple[dict, lis
     # --- refute_attempt: survived, not merely attempted
     outcome = (receipt.get("refute_attempt") or {}).get("outcome")
     checks["refute_attempt"] = {"survived": "PASS", "broken": "FAIL"}.get(outcome, "NOT_RUN")
+
+    # --- doctrine obligations, answered or not
+    #
+    # A role that ignored its doctrine entirely passed every check, because
+    # everything downstream examines the ARTIFACT and nothing examined the
+    # process that made it. An obligation issued with the work item and answered
+    # in the result does not prove a step was done well; it makes skipping one
+    # visible, which is the difference between a rule and a hope.
+    #
+    # `not_done` is a legitimate answer. Silence is not: a step nobody mentions
+    # and a step nobody took are the same thing in a result.
+    work_item = extras.get("work_item") or {}
+    demanded = work_item.get("obligations") or []
+    if demanded:
+        answers = {a["id"]: a for a in (result or {}).get("obligations_answered", []) or []}
+        unanswered, refused = [], []
+        for obligation in demanded:
+            oid = obligation["id"]
+            answer = answers.get(oid)
+            if answer is None:
+                unanswered.append(oid)
+            elif answer["outcome"] == "not_done":
+                needed = obligation.get("required_for")
+                if needed is None or admission.get("granted_status") in needed:
+                    refused.append(f"{oid} ({obligation['demand'][:60]})")
+        if unanswered:
+            checks["obligations"] = "NOT_RUN"
+            problems.append(
+                f"the work item issued obligation(s) {unanswered} and the result does not "
+                "mention them. A step nobody mentions and a step nobody took are the same "
+                "thing here, so this is not read as done")
+        elif refused:
+            checks["obligations"] = "FAIL"
+            problems.append(
+                f"obligation(s) reported NOT DONE and required for this status: "
+                f"{'; '.join(refused)}. The doctrine made them mandatory where the work was "
+                "issued, which is the only place a process step can be made refusable")
+        else:
+            checks["obligations"] = "PASS"
+
+    # --- who RAN the verification
+    #
+    # Attestation covered producer, reviewer and admitter and never asked this.
+    # A tier declaring `authorship: independent` is a backend that knows nothing
+    # about the run and cannot be talked into a pass, so the producer running it
+    # is fine and the field has been saying so, unread, since it was written.
+    # Any other tier is one the party being checked may have influenced, and
+    # there the verifier has to be somebody else.
+    authorship = (receipt.get("authorship") or "unstated").strip().lower()
+    if authorship != "independent":
+        verifier_id, verifier_attested = actor_of(receipt)
+        if receipt.get("verifier"):
+            verifier_id = receipt["verifier"].get("actor_id")
+            verifier_attested = (receipt["verifier"].get("attested_by") or SELF_ATTESTED).lower()
+        producer_id, _ = actor_of(result)
+        if not verifier_id or verifier_attested != ORCHESTRATOR_ATTESTED:
+            checks["verifier_independence"] = "NOT_RUN"
+            problems.append(
+                f"the tier's authorship is {authorship!r}, so the backend is not one that "
+                "refuses on its own account, and no attested verifier ran it. Who checked this "
+                "is then unknown, and an unknown checker is the party being checked until "
+                "somebody says otherwise")
+        elif producer_id and verifier_id == producer_id:
+            checks["verifier_independence"] = "FAIL"
+            problems.append(
+                f"the verifier and the producer are the same actor ({verifier_id!r}) on a tier "
+                f"whose authorship is {authorship!r}. A graded check run by the party being "
+                "checked is that party's opinion with a receipt attached")
+        else:
+            checks["verifier_independence"] = "PASS"
+    else:
+        checks["verifier_independence"] = "PASS"
 
     # --- no_open_gap: from the receipt's own completeness record
     completeness = receipt.get("completeness")
@@ -338,8 +528,18 @@ def derive_checks(state: dict, admission: dict, extras: dict) -> tuple[dict, lis
                     continue
             usable.append(review)
         checks["independent_review"] = "PASS" if usable else "FAIL"
+        # An unattested separation is not a demonstrated one. Downgrading to
+        # NOT_RUN rather than FAIL is the accurate reading: nothing here was
+        # shown to be wrong, and nothing was shown to be independent either.
+        _, strength = attestation_problems(admission, result, reviews)
+        if checks["independent_review"] == "PASS" and strength == SELF_ATTESTED:
+            checks["independent_review"] = "NOT_RUN"
+            checks["independence_attestation"] = SELF_ATTESTED
         if not admission.get("review_refs"):
             problems.append("reviews were supplied but the admission lists no review_refs")
+
+    shared, _strength = attestation_problems(admission, result, reviews)
+    problems.extend(shared)
 
     return checks, problems
 
@@ -406,7 +606,16 @@ def refuse(state: dict, admission: dict, extras: dict) -> list[str]:
     if problems:
         return problems
 
-    if admission.get("target_sha256") != state.get("target_sha256"):
+    # An admission identifies the CLAIM it moves, which in a graph is usually not
+    # the root. The state carries one target hash — the campaign's — and
+    # comparing against it alone meant a sub-claim could never be admitted: a
+    # decomposition could be recorded and then nothing in it could ever close.
+    # The binding still has to hold, so the hash must match a claim that is
+    # actually in this state, and the campaign root remains valid for itself.
+    claim_targets = {c.get("target_sha256") for c in (state.get("claims") or {}).values()
+                     if c.get("target_sha256")}
+    if (admission.get("target_sha256") != state.get("target_sha256")
+            and admission.get("target_sha256") not in claim_targets):
         problems.append(
             f"target mismatch: admission is about {admission.get('target_sha256','')[:16]}..., "
             f"this state is {state.get('target_sha256','')[:16]}...")
@@ -471,7 +680,42 @@ def refuse(state: dict, admission: dict, extras: dict) -> list[str]:
             derived, notes = derive_checks(state, admission, extras)
             problems += notes
 
+            # A claim whose content is exactly "all/one of these hold" has no
+            # artifact and needs none: its evidence is the receipts its
+            # dependencies were admitted on. Demanding a receipt of its own meant
+            # the parent that motivated a decomposition could never be closed,
+            # and the only way past it was to invent an artifact for a
+            # conjunction — which is a fiction the frame otherwise refuses.
+            #
+            # The hole this could open is admitting a parent on nothing, so the
+            # path is narrow: the claim must BE a dependency node, its closure
+            # must hold, it must have at least one admitted dependency, and the
+            # status it may be granted is capped at the WEAKEST of them. A
+            # conjunction is never stronger than its weakest part.
             required = REQUIRED_BY_STATUS.get(granted, FULL_CHECKS)
+            moved = [u for u in (admission.get("delta") or {}).get("update_claims", []) or []]
+            if moved and not any(u.get("evidence_sha256") for u in moved):
+                node = (state.get("claims") or {}).get(moved[0].get("claim_id")) or {}
+                deps = node.get("dependencies") or []
+                dep_statuses = [((state.get("claims") or {}).get(d) or {}).get("status", "OPEN")
+                                for d in deps]
+                admitted = [s for s in dep_statuses if s in ACCEPTED]
+                if (node.get("dependency_mode") in {"AND", "OR"} and admitted
+                        and derived.get("dependency_closure") == "PASS"):
+                    weakest = min(admitted, key=rank)
+                    if rank(granted) > rank(weakest):
+                        problems.append(
+                            f"cannot grant {granted} on closure alone: the weakest admitted "
+                            f"dependency is {weakest}. A conjunction is never stronger than its "
+                            "weakest part, and a disjunction is never stronger than the branch "
+                            "that carried it")
+                    else:
+                        # Discharged BY the dependencies, each of which was
+                        # admitted on a receipt that passed its own pack's gates.
+                        required = [c for c in required
+                                    if c not in {"receipt_freshness", "refute_attempt"}]
+                        derived["closure_evidence"] = (
+                            f"{len(admitted)} admitted dependenc(y/ies), weakest {weakest}")
             for name in required:
                 actual = derived.get(name, "NOT_RUN")
                 if actual != "PASS":
@@ -546,8 +790,17 @@ def refuse(state: dict, admission: dict, extras: dict) -> list[str]:
                 f"{current.get('status')!r} — the delta was computed against a different state")
         to_status = upd.get("to_status")
         if to_status in ACCEPTED:
-            if not upd.get("evidence_sha256"):
-                problems.append(f"{cid!r} -> {to_status} with no evidence")
+            # Empty evidence is legitimate for a claim that IS a dependency node:
+            # its evidence is the receipts its dependencies were admitted on. The
+            # closure check below is what makes that safe, and the acceptance
+            # path caps the status at the weakest admitted dependency.
+            node_evidence = (current.get("dependency_mode") in {"AND", "OR"}
+                             and (current.get("dependencies") or []))
+            if not upd.get("evidence_sha256") and not node_evidence:
+                problems.append(
+                    f"{cid!r} -> {to_status} with no evidence, and it is not a dependency node. "
+                    "A leaf claim's status rests on a receipt; there is nothing else it could "
+                    "rest on")
             ok, why = closure_satisfied({**current, **upd}, claims)
             if not ok:
                 problems.append(f"{cid!r} -> {to_status}: dependency closure fails. {why}")
@@ -566,7 +819,11 @@ def apply_delta(state: dict, admission: dict) -> dict:
         claim = {
             "claim_id": add["claim_id"], "status": "OPEN",
             "statement": add.get("statement", ""), "dependency_mode": "LEAF",
-            "dependencies": [], "evidence_refs": []}
+            "dependencies": [], "evidence_refs": [],
+            # Required by the delta schema, validated on the way in, and thrown
+            # away here until now — which is why an admission for a sub-claim
+            # could never bind to anything.
+            **({"target_sha256": add["target_sha256"]} if add.get("target_sha256") else {})}
         # A ceiling is set at creation and never raised: there is no delta
         # operation that lifts one. That is what makes a provisional pack's cap
         # enforceable rather than advisory.
@@ -579,6 +836,17 @@ def apply_delta(state: dict, admission: dict) -> dict:
         claim["admitted_by"] = admission["admission_id"]
         if upd.get("evidence_sha256"):
             claim["evidence_refs"] = list(upd["evidence_sha256"])
+    # Race cancellation: an annotation, never a status. See the delta schema.
+    for entry in delta.get("supersede", []) or []:
+        claim = new["claims"].get(entry["claim_id"])
+        winner = new["claims"].get(entry["superseded_by"])
+        if claim is None or winner is None:
+            continue
+        # A race is decided by a sibling PASSING; cancelling on anything less
+        # discards work for nothing.
+        if rank(winner.get("status", "OPEN")) >= rank("CHECKED_BOUNDED"):
+            claim["superseded_by"] = entry["superseded_by"]
+
     for dep in delta.get("set_dependencies", []) or []:
         claim = new["claims"].get(dep["claim_id"])
         if claim:
@@ -588,14 +856,25 @@ def apply_delta(state: dict, admission: dict) -> dict:
         new["active_obstruction"] = delta["active_obstruction"]
     new["open_gaps"] = admission.get("remaining_gap_ids", new.get("open_gaps", []))
 
+    # The rollup is about the ROOT, and it has to separate two situations that
+    # called for opposite next moves and were reported with the same word: a
+    # campaign that established its target as strongly as the pack allows, and
+    # one where a sub-claim closed and the target is still open. Both read
+    # PARTIAL, so a finished campaign was indistinguishable from one that had
+    # barely started.
     root = new.get("root_claim_id")
-    root_status = new["claims"].get(root, {}).get("status") if root else None
+    root_claim = new["claims"].get(root, {}) if root else {}
+    root_status = root_claim.get("status")
+    ceiling = root_claim.get("ceiling") or new.get("ceiling") or "VERIFIED"
     if root_status == "VERIFIED":
         new["outcome"] = "SOLVED"
     elif root_status == "REJECTED":
         new["outcome"] = "DISPROVED"
-    elif any(c["status"] in {"PARTIAL", "CONDITIONAL", "CHECKED_BOUNDED"}
-             for c in new["claims"].values()):
+    elif root_status in ACCEPTED:
+        # At the ceiling there is nothing further to reach here; below it there
+        # is, and the difference is what a reader needs.
+        new["outcome"] = "CLOSED" if rank(root_status) >= rank(ceiling) else "PARTIAL"
+    elif any(c["status"] in ACCEPTED for c in new["claims"].values()):
         new["outcome"] = "PARTIAL"
 
     new["revision"] = state["revision"] + 1
@@ -629,6 +908,9 @@ def main() -> int:
     a.add_argument("--admission", required=True); a.add_argument("--result")
     a.add_argument("--review", nargs="*", default=[]); a.add_argument("--receipt")
     a.add_argument("--artifact", help="the live artifact, re-hashed to check receipt freshness")
+    a.add_argument("--work-item", help="the work item this result answers; it carries the "
+                   "doctrine obligations the result has to address, and without it the reducer "
+                   "cannot tell an unanswered obligation from one never demanded")
     a.add_argument("--soc", help="the run's working memory. Supplying it lets the reducer refuse "
                    "an admission whose evidence is a laundered attention entry.")
     a.add_argument("--write", action="store_true"); a.add_argument("--json", action="store_true")
@@ -647,6 +929,7 @@ def main() -> int:
                      "claims": {claim["claim_id"]: {
                          "claim_id": claim["claim_id"], "statement": claim.get("exact_statement", ""),
                          "status": claim.get("status", "OPEN"),
+                         "target_sha256": claim["target_sha256"],
                          "dependency_mode": claim.get("dependency_mode", "LEAF"),
                          "dependencies": claim.get("dependencies", []), "evidence_refs": [],
                          **({"ceiling": args.ceiling} if args.ceiling else {})}},
@@ -715,7 +998,12 @@ def main() -> int:
                   "artifact_sha256": (
                       hashlib.sha256(Path(args.artifact).read_bytes()).hexdigest()
                       if args.artifact else None),
-                  "soc": read(args.soc) if args.soc else None}
+                  "soc": read(args.soc) if args.soc else None,
+                  # The work item is what ISSUED the obligations, so without it
+                  # the reducer cannot tell an unanswered one from one that was
+                  # never demanded. Supplying it is how a process step becomes
+                  # refusable at all.
+                  "work_item": read(args.work_item) if args.work_item else None}
         problems = refuse(state, admission, extras)
 
         if problems:

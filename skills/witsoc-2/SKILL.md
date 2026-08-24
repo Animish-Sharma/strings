@@ -55,7 +55,10 @@ the status vocabulary, and the admission rules. It does not own a field.
   nothing else. See `references/domain_pack_contract.md`.
 - **The orchestrator** owns providers, budgets, fanout, ordering, sessions,
   workers, retries, and cancellation. The frame recommends; it does not
-  schedule.
+  schedule. It asks the orchestrator for exactly one thing: **attested actor
+  identity** on each packet, since the frame cannot see who executed what.
+  Without it, role separation is a label a single agent may write on both sides,
+  and `CONDITIONAL` and `VERIFIED` are out of reach (`ARCHITECTURE.md` §5.1).
 
 The frame never reaches across the contract line. It resolves a pack through
 its manifest and calls the adapter. `scripts/check_frame_purity.py` enforces
@@ -96,8 +99,16 @@ dependency on another role's internals.
 
 ```bash
 SKILL=$(curl -fsS "$PLANE_SERVER_URL/skills-resolve/witsoc-2/scripts" | jq -r .absolutePath)
-bash "$SKILL/resolve.sh" --statement "<the problem, verbatim>"
+bash "$SKILL/resolve.sh" --statement "<the problem, verbatim>" --role explorer
 ```
+
+**Pass `--role`, and load only what it prints under "Load NOW".** A run acts as
+one role at a time, and the resolver used to print every role's doctrine plus
+every shared rule as things to read before any work began — 21,000 tokens on
+one pack, of which about 2,400 were used at the moment they arrived. The rest
+is not free: it is most of a run's context, spent on documents for situations
+that have not happened yet. Everything else is printed under "Load WHEN IT
+HAPPENS", with the trigger and the cost, and is read then.
 
 Do not skip this and do not do it by eye. A run that proceeds without a resolved
 pack still produces work, still sounds confident, and has nothing underneath it
@@ -198,22 +209,37 @@ message may be the last one.
 
 ## Load on demand
 
-| Need | Read |
-|---|---|
-| The frame/domain split, invariants, governance | `ARCHITECTURE.md` |
-| How a pack gets chosen; what to do when none fits | `ARCHITECTURE.md` §1.1, `scripts/resolve_domain.py` |
-| Writing or registering a domain pack | `references/domain_pack_contract.md` |
-| Status labels and legal transitions | `references/status_vocabulary.md` |
-| The adapter interface and the two-step gate | `references/verification_interface.md` |
-| Escalation, repair budgets, stop conditions | `references/failure_recovery.md` |
-| Operating under interruption; snapshot safety | `references/execution_discipline.md` |
-| Concurrency, cost tiers, caching, kill criteria | `references/execution_economics.md` |
-| Cross-run memory: tiers, contamination, revival | `references/memory.md` |
-| Working memory for one run; the repeat gate | `references/soc_memory.md` |
-| Packet shapes and routing between roles | `references/bridges.md`, `schemas/` |
-| Applying an admission; campaign state | `scripts/reducer.py`, `schemas/frame-state-v1.schema.json` |
-| Running the whole loop end to end | `scripts/campaign.py` |
-| Counting failures; firing escalation | `scripts/failure_ledger.py` |
+Read a row when you have the need in it — not in advance, not to be thorough.
+**The bottom group is for changing the frame and never belongs in a run**: it is
+larger than everything a role reads all campaign.
+
+| Need — during a run | Read | ~tok |
+|---|---|---|
+| Status labels and legal transitions | `references/status_vocabulary.md` | 1.4k |
+| The adapter interface and the two-step gate | `references/verification_interface.md` | 1.9k |
+| Escalation, repair budgets, stop conditions | `references/failure_recovery.md` | 1.3k |
+| Working memory for one run; the repeat gate | `references/soc_memory.md` | 1.2k |
+| Cross-run memory: tiers, contamination, revival | `references/memory.md` | 1.0k |
+| Packet shapes and routing between roles | `references/bridges.md` | 1.3k |
+| Operating under interruption; snapshot safety | `references/execution_discipline.md` | 0.7k |
+| Concurrency, cost tiers, caching, kill criteria | `references/execution_economics.md` | 2.4k |
+| Applying an admission; campaign state | `scripts/reducer.py --help` | small |
+| Running the whole loop end to end | `scripts/campaign.py --help` | small |
+| What may start now, and what a race means | `scripts/schedule.py --help` | small |
+| Concurrency slots and the budget ceiling | `scripts/governor.py --help` | small |
+| Counting failures; firing escalation | `scripts/failure_ledger.py --help` | small |
+
+| Need — changing the frame, never during a run | Read | ~tok |
+|---|---|---|
+| The frame/domain split, invariants, governance | `ARCHITECTURE.md` | 9.8k |
+| How a pack gets chosen; what to do when none fits | `ARCHITECTURE.md` §1.1 | — |
+| Writing or registering a domain pack | `references/domain_pack_contract.md` | 3.4k |
+
+A script's `--help` is its interface; the source is a last resort. `reducer.py`
+is 900 lines and the question is nearly always answered by the refusal it
+prints. **Do not read `schemas/` to learn a packet shape** — the pack manifest
+schema alone is 7k tokens, `bridges.md` describes every packet in 1.3k, and a
+packet is validated by running the check, not by reading the schema.
 
 Resolve the skill's scripts directory once, then everything below is a path
 away. The agent's working directory is a worktree, not this checkout, so a

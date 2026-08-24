@@ -47,6 +47,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -54,6 +55,17 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import biolib as bl  # noqa: E402
+
+# The tier's authorship, copied from this pack's own manifest so the receipt
+# states who stands behind the verification. `independent` means the backend
+# knows nothing about the run and cannot be talked into a pass; anything else
+# means the frame will require a verifier distinct from the producer. The
+# manifest declared this from the beginning and nothing read it.
+TIER_AUTHORSHIP = {
+    "structural": "independent",
+    "executable": "independent",
+    "replication": "independent"
+}
 
 TIERS = {
     "structural": {"max_status": "SKETCH", "adversarial": False},
@@ -99,12 +111,62 @@ def run(cmd: list[str], timeout: int = 1800) -> tuple[int, str]:
         return 2, str(exc)
 
 
+# A gate reports its verdict on stdout; Python writes warnings to stderr, and
+# both are captured together. Taking line one meant a DeprecationWarning could
+# appear in the receipt AS the gate's stated reason — a stack-trace fragment
+# where the finding belongs. Prefer the first line that reads like a verdict.
+VERDICT_LINE = re.compile(
+    r"^\s*(?:[A-Z][A-Z \-]{2,}:|pass\b|fail\b|error\b|scope\b|note\b|not_run\b)",
+    re.IGNORECASE)
+# Strongest first. A gate that prints a scope note and then fails must be
+# reported by the failure, not by the note that happened to come first.
+VERDICT_RANK = (("fail", "error", "refused"), ("not_run", "not_applicable"),
+                ("pass",), ("scope", "note"))
+
+
+def verdict_detail(output: str) -> str:
+    lines = [ln.strip() for ln in output.splitlines() if ln.strip()]
+    candidates = [ln for ln in lines if VERDICT_LINE.match(ln)]
+    for tier in VERDICT_RANK:
+        for line in candidates:
+            if line.lower().lstrip().startswith(tier) or any(
+                    t in line.split(":", 1)[0].lower() for t in tier):
+                return line
+    return candidates[0] if candidates else (lines[0] if lines else "")
+
+
+def diagnostics_paths(artifact: Path) -> list[str]:
+    """Diagnostics artifacts the bundle pins, resolved against the bundle.
+
+    They are named INSIDE the bundle rather than passed on the command line, so
+    the reference is covered by the bundle hash. A diagnostics file supplied at
+    the call site could be swapped between the run and the receipt; one the
+    bundle names cannot be, because changing it changes the bundle.
+    """
+    try:
+        data = json.loads(artifact.read_text(encoding="utf-8")).get("data") or {}
+    except (OSError, ValueError, json.JSONDecodeError):
+        return []
+    out = []
+    for rel in data.get("diagnostics") or []:
+        resolved = (artifact.parent / rel).resolve()
+        if resolved.exists():
+            out.append(str(resolved))
+    return out
+
+
 def run_gates(artifact: Path, claim_path: Path, tier: str) -> list[dict]:
     results = []
+    pinned_diagnostics = diagnostics_paths(artifact)
     for name in GATES_BY_TIER[tier]:
-        code, output = run([sys.executable, str(HERE / "gates" / GATE_SCRIPTS[name]),
-                            str(artifact), "--claim", str(claim_path)])
+        cmd = [sys.executable, str(HERE / "gates" / GATE_SCRIPTS[name]),
+               str(artifact), "--claim", str(claim_path)]
+        if name == "confounder-sweep" and pinned_diagnostics:
+            cmd += ["--diagnostics", *pinned_diagnostics]
+        code, output = run(cmd)
         entry = {}
+        if name == "confounder-sweep":
+            entry = {"diagnostics_pinned": len(pinned_diagnostics)}
         if name == "denominator":
             # This gate reports the ceiling the DESIGN supports, which the
             # receipt has to carry: a passing tier on an underpowered design
@@ -129,7 +191,7 @@ def run_gates(artifact: Path, claim_path: Path, tier: str) -> list[dict]:
             # two distinguishable so a skipped check cannot read as a cleared one.
             "verdict": ("pass" if code == 0 else "error" if code == 2
                         else "not_run" if code == 3 else "fail"),
-            "detail": output.splitlines()[0] if output else "",
+            "detail": verdict_detail(output),
         })
     return results
 
@@ -181,9 +243,15 @@ def build_receipt(tier: str, artifact: Path, claim: dict, tier_result: dict,
                                        design_ceiling) if s])
 
     adversarial = TIERS[tier]["adversarial"]
+        # `discharged_by` names a METHOD; `outcome` says whether it ran. Writing
+        # "not_discharged" as the method put a value outside the frame's enum
+        # into the receipt, so every campaign at this tier STOPPED on schema
+        # validation before the reducer read a verdict — the tier could not
+        # produce a valid receipt at all. The honest encoding of "owed, not yet
+        # done" is the method that will discharge it, with outcome not_run.
     refute = tier_result.get("refute_attempt") or {
         "gate_name": "permutation-null",
-        "discharged_by": "adversarial_tier" if adversarial else "not_discharged",
+        "discharged_by": "adversarial_tier",
         "outcome": "not_run",
     }
     if not adversarial:
@@ -201,6 +269,12 @@ def build_receipt(tier: str, artifact: Path, claim: dict, tier_result: dict,
         gates=gates,
         failed_gates=failed,
         gates_not_run=blocking_not_run,
+        # The manifest has declared this from the beginning and the RECEIPT
+        # never carried it, so the reducer read `unstated` and refused every
+        # admission this pack could ever propose. The pack was structurally
+        # incapable of getting anything admitted, and no component check could
+        # see it because the omission lives between the adapter and the frame.
+        authorship=TIER_AUTHORSHIP.get(tier, "unstated"),
         claim_class=claim.get("claim_class"),
         status_refinement=(tier_result.get("status_refinement")
                            or next((g.get("design_refinement") for g in gates
@@ -308,7 +382,8 @@ def main() -> int:
     available = json.loads(run(probe_cmd)[1])
     if not available.get("available"):
         print(json.dumps({
-            "schema": "bio-receipt-v1", "tier": args.tier, "verdict": "not_run",
+            "schema": "bio-receipt-v1", "tier": args.tier,
+        "authorship": TIER_AUTHORSHIP.get(args.tier, "unstated"), "verdict": "not_run",
             "max_status": "CONJECTURE",
             "detail": available.get("detail"),
             "note": "A tier that could not run has not passed. Say NOT_RUN and mean it",

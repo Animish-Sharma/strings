@@ -41,8 +41,12 @@ SKIP_DIRS = {".git", "__pycache__", ".venv", "node_modules"}
 
 # A path-looking token: has a slash and a recognizable extension, or is a bare
 # directory reference under a known root.
-# A slash is required. `produce.py` in a sentence is a NAME — the thing being
-# discussed — while `scripts/produce.py` is a PATH, a claim about where it is.
+# A slash is required. `widget.py` in a sentence is a NAME — the thing being
+# discussed — while `scripts/widget.py` is a PATH, a claim about where it is.
+# The illustration is a made-up filename on purpose: an earlier version reached
+# for a real pack's script here, and the structural purity rule was right to
+# refuse it. A frame file explaining itself with one pack's filename has still
+# learned that filename.
 # The first version of this check did not distinguish them and reported
 # seventeen false positives on its first run, every one of them prose. A checker
 # that fires on ordinary writing gets switched off, and then it catches nothing.
@@ -99,8 +103,12 @@ def main() -> int:
         doctrine = pack.get("doctrine", {}) or {}
         named = [(f"doctrine.roles.{role}", rel)
                  for role, rel in (doctrine.get("roles") or {}).items()]
-        named += [(f"doctrine.rules[{i}]", rel)
-                  for i, rel in enumerate(doctrine.get("rules") or [])]
+        # A rule entry is a path or an object carrying one. Five readers had to
+        # learn that, and this was the fifth — a shape change is only cheap when
+        # something enumerates the readers, and nothing does.
+        named += [(f"doctrine.rules[{i}]",
+                   entry if isinstance(entry, str) else (entry or {}).get("path", ""))
+                  for i, entry in enumerate(doctrine.get("rules") or [])]
         for label, key in (("claim_schema.path", "claim_schema"),
                            ("receipt_format.path", "receipt_format")):
             rel = (pack.get(key) or {}).get("path")

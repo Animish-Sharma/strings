@@ -75,6 +75,39 @@ def main() -> int:
         return 2
     _, rows = bl.read_csv(path)
 
+    # A CROSSED design — every unit in both arms — has no unit labelled with one
+    # arm, so the between-unit path finds zero of each and reports no power. That
+    # is wrong twice over: the design is the one the population claim class
+    # REQUIRES, and it is more powerful than the nested alternative, not less.
+    # The relevant floor is the smallest p a sign flip over n units can reach.
+    pairs, _incomplete = bl.paired_units(rows, args.unit, args.value, args.label,
+                                         args.treatment, args.control)
+    if len(pairs) >= 2:
+        differences = [q["difference"] for q in pairs]
+        spread = bl.stdev(differences)
+        floor = 2 / (2 ** len(pairs))
+        # The smallest within-unit difference a sign-flip test could call at this
+        # alpha: with the floor above alpha, no effect size is detectable at all.
+        detectable = (floor <= args.alpha)
+        mde = (2.0 * spread / (len(pairs) ** 0.5)) if spread else 0.0
+        print(json.dumps({
+            "computed": True, "design": "paired", "units": len(pairs),
+            "sd_of_differences": round(spread, 6),
+            "minimum_detectable_effect": round(mde, 6),
+            "smallest_attainable_p": floor, "alpha": args.alpha,
+            "detectable_at_alpha": detectable,
+            "reading": (f"{len(pairs)} paired unit(s). The smallest two-sided p a sign flip can "
+                        f"reach is {floor:.4f}"
+                        + (f", so an effect is detectable at alpha {args.alpha}."
+                           if detectable else
+                           f", which is above alpha {args.alpha}: NO effect size is detectable "
+                           "with this many units, and that is a fact about the design rather "
+                           "than about the biology.")
+                        + f" The minimum detectable difference is about {mde:.3f} in the "
+                          "endpoint's own units."),
+        }, indent=2))
+        return 0 if detectable else 3
+
     units = [u for u in bl.pseudobulk(rows, args.unit, args.value, args.label)
              if u["label"] in {args.treatment, args.control}]
     treated = [u for u in units if u["label"] == args.treatment]

@@ -72,5 +72,36 @@
     "independent_origins"
   ],
   "stated_bounds": "the surviving register and one contemporary letter",
-  "interpretation": "Two independent origins record the shipment: an administrative register and a merchant letter. Sources record the voyage; nothing here speaks to how typical it was."
+  "interpretation": "Two independent origins record the shipment: an administrative register and a merchant letter. Sources record the voyage; nothing here speaks to how typical it was.",
+  "collation": [
+    {
+      "locus": "hull-name",
+      "original": "Isis Geminiana",
+      "readings": {
+        "REG": "Isis Geminiana",
+        "LET": "Isis Geminiana",
+        "CHRON": "Isis Germiniana"
+      },
+      "note": "REG and LET agree in a CORRECT reading, which is evidence of nothing"
+    },
+    {
+      "locus": "consignment",
+      "original": "modios CC",
+      "readings": {
+        "REG": "modios CC",
+        "LET": "modios CCC",
+        "CHRON": "modios CC"
+      }
+    },
+    {
+      "locus": "month",
+      "original": "Aprilis",
+      "readings": {
+        "REG": "Apriles",
+        "LET": "Aprilis",
+        "CHRON": "Aprilis"
+      },
+      "note": "each errs on its own"
+    }
+  ]
 }

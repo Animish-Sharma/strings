@@ -46,3 +46,65 @@ archive, the one collation that would settle it. Named, not gestured at.
 - Treat a plausible reconstruction as a source. An editor's conjecture printed
   without brackets becomes a fact within one generation, and that is a process
   this role exists to run backwards, not to participate in.
+
+## Derive the independence; do not read it off the label
+
+```bash
+python3 scripts/stemma.py <dossier.json> --json
+python3 scripts/stemma.py --self-test
+```
+
+The collapse learns which sources share an origin from the `origin` FIELD the
+dossier's author wrote. Declare five distinct origins and it believes you — this
+pack's central computation resting on a self-report, in a frame whose founding
+premise is that self-reports do not count.
+
+The discipline has a method and it is computable. **Agreement in error indicates
+common descent; agreement in a correct reading indicates nothing.** Two witnesses
+that both read `Constantinum` where the archetype had `Constantium` are related;
+nobody makes the same slip twice. Two witnesses that both read it correctly have
+told you the word was legible.
+
+That asymmetry is what a similarity measure gets backwards. Correct readings are
+the majority of every text, so clustering on agreement clusters on nothing. Count
+errors only.
+
+Two shared errors is the working threshold — one coincident slip happens, and a
+common abbreviation or an easy minim confusion is exactly the kind that does. A
+locus with no original judged is EXCLUDED rather than counted, because a shared
+reading of unknown status would otherwise let a dossier manufacture kinship by
+supplying ambiguity.
+
+A dossier declaring two origins for witnesses that share two errors **fails**.
+The reverse — declared together, computed apart — is reported and does not fail:
+a dossier is entitled to be conservative about its own independence.
+
+## Price the silence
+
+```bash
+python3 scripts/silence.py <dossier.json> --claim <claim.json> --json
+python3 scripts/silence.py --self-test
+```
+
+An absence claim must say why a record would have survived. That demand is right
+and it accepts prose, so the answer is a sentence somebody wrote about their own
+claim — and it is always available, because every absence claim's author believes
+the record would have shown it.
+
+The question has a number in it:
+
+    P(no surviving record | it happened) = (1 - r)^n
+
+`r` the survival-and-cataloguing rate for that class of document, `n` the number
+of independent opportunities to have been recorded. Silence is evidence only when
+that number is small.
+
+State `r` as an INTERVAL. Nobody knows the survival rate of provincial registers
+to three figures, and the verdict is driven by the pessimistic end — the end most
+favourable to the thing having happened unrecorded. **A conclusion that holds
+only at the optimistic end of a guessed rate is a conclusion about the guess**,
+and the tool says so by name rather than passing quietly.
+
+With no rate stated it returns `not_computable` and does not invent one. The
+prose argument then stands alone, and it is the weakest support this pack takes.
+

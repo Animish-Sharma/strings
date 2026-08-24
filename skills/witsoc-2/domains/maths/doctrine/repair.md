@@ -56,3 +56,23 @@ it avoids the recorded failure**.
 Every `do_not_repeat` entry records a revival condition — most dead routes here
 are dead only conditional on a premise that is currently unavailable, and that
 changes.
+
+## Running the loop
+
+A revision is a new blueprint and the same workdir:
+
+```bash
+python3 scripts/produce.py --blueprint bp.json --tier kernel --workdir run/
+# fails -> read run/revision_request.json, which names the failing WIT step
+# edit bp.json
+python3 scripts/produce.py --blueprint bp.json --tier kernel --workdir run/
+```
+
+Re-running an UNCHANGED blueprint is refused: the repeat guard keys on a
+fingerprint of the plan — its steps, tactics, preamble and declared citations —
+so a revision is a different attempt and a retry is not. The previous render is
+kept beside the new one as `<name>.wit.supersededN`.
+
+Working memory follows the target rather than the directory. Set
+`WITSOC2_SOC_STORE` to keep it across workdirs; without it memory lives in the
+workdir and a run in a fresh directory starts from an empty ledger.

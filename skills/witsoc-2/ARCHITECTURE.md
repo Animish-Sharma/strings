@@ -10,7 +10,8 @@ layer, which is the failure this rebuild exists to avoid. Every file here earns
 its place or does not exist.
 
 **Relationship to `witsoc`.** This is the same architecture as the one
-documented in `../witsoc/ARCHITECTURE.md`, rebuilt with the frame and the
+documented in the predecessor skill's own ARCHITECTURE (witsoc, installed
+alongside this one where both are present), rebuilt with the frame and the
 domain packs actually separated. The two describe one design and must stay
 aligned: the same three protected roles under the same names
 (Explorer / Generator / Researcher), the same contract items, the same two
@@ -18,13 +19,41 @@ structural refinements, and the same governance rules. Contract item 6,
 `selection`, is the one place `witsoc-2` is ahead: `witsoc` has no separated
 packs to resolve between, so the question does not arise there yet. `witsoc` is the
 as-built system whose math pack is not yet extracted; `witsoc-2` is the frame
-with nothing to extract. Where they differ, `../witsoc/ARCHITECTURE.md` §5 records
+with nothing to extract. Where they differ, the predecessor's ARCHITECTURE §5 records
 why — it is an honest audit of what has not been separated yet, not a second
 design.
 
 > **Paths in this document are relative to the skill root.** An agent working
 > from a worktree resolves it first — `SKILL.md` has the one-liner — and the
 > four shell entry points under `scripts/` are the supported surface.
+
+## Path checks
+
+Component checks test one script. Every defect that survived four green suites
+and twenty of twenty planted regressions lived in a SEAM: a receipt field the
+adapter never wrote and the reducer read as absent, a placeholder the renderer
+counted as filled, a memory store the revision could not reach.
+
+`scripts/check_paths.py` walks whole campaigns — claim in, admission decision
+out — and asserts the outcome. The cases are DECLARED BY THE PACK, in
+`<pack>/evals/path/cases.json`, and walked by the frame: a case names the
+environment variables it needs and the frame checks they resolve without
+learning what they mean. That keeps the walk on the frame side of the contract
+line and the field knowledge on the pack side — the first version of this
+checker named one field's backend directly and `check_frame_purity.py` rejected
+it, which is the rule working on the person who wrote the rule.
+
+Loops that are procedures over a pack's own pipeline are not that shape, and
+they live in the pack: `<pack>/evals/path/run_*.py`, run by the pack's suite.
+
+Cases are written in pairs where possible: the artifact that must be admitted
+and the one that must not, differing only in what the seam is supposed to
+notice. A suite of refusals proves only that a gate can say no. Cases whose
+requirements are absent report NOT_RUN, and NOT_RUN is never counted as a pass.
+
+The bar is the same one `check_checkers.py` holds the checkers to: remove a fix
+and a path case must go red.
+
 
 ## 1. The layers
 
@@ -41,7 +70,7 @@ design.
                               |
                      Shared services
    verification interface · evidence store · retrieval · status
-   contract · failure-recovery ladder · resource governor · reuse cache
+   contract · failure ladder · resource governor · schedule planner · reuse cache
                               |
 ======================= CONTRACT LINE =========================
    verification adapter · claim schema · receipt format ·
@@ -57,8 +86,8 @@ domain-agnostic by construction, and does not know what any particular field's
 verification backend is. Everything below the line is a domain pack. Domain
 packs are swapped, not merged, into the frame.
 
-**The contract line is exactly six items.** A pack supplies these and nothing
-else; the frame supplies everything else and never reaches past them:
+**The contract line is exactly six items.** A pack supplies these; the frame
+supplies everything else and never reaches past them:
 
 1. **Verification adapter** — `(candidate artifact) -> (pass/fail, receipt)`.
 2. **Claim schema** — the frozen representation of what is claimed, extending
@@ -78,12 +107,31 @@ domain corpus, so a pack needs somewhere to declare one. The normative spec is
 `references/domain_pack_contract.md`; the machine-checkable form is
 `schemas/frame-domain-pack-v2.schema.json`.
 
-The contract is at version `2`. Version 1 had been extended in place — backend
+**And a pack carries more than six things.** Saying "these six and nothing else"
+was false of every pack ever written here: a claim-class taxonomy, a unit
+taxonomy, a confounder catalogue, a technique list — all real structure, all
+sitting outside the contract where no validator could see it. Undeclared
+structure is not less structure; it is structure nobody can check.
+
+So contract v3 adds `reference_data`: the tables a pack reasons from, each with
+its purpose, its readers, and optionally the calibration that measures whether
+it is still right. This does **not** make the frame read those tables — the
+frame still never reaches past the contract line. It makes their existence and
+their absence checkable, and a declared table that is missing now fails
+validation, where an undeclared one used to fail a run.
+
+v3 also adds `script` to each tier and gate: which file implements it. In v2
+that binding lived inside each pack's own adapter, where nothing could check it,
+so a rename broke the wiring silently and a gate that was never dispatched read
+in the receipt exactly like a gate that passed.
+
+The contract is at version `3`. Version 1 had been extended in place — backend
 audit fields, per-tier ceilings, the corpus slot, status refinements — which was
-defensible only while no pack outside this repository implemented it. Item 6 is
-the first change made as a deliberate bump (governance rule 6): v1 packs still
-validate and still work, they are simply invisible to automatic resolution,
-which `validate_domain_pack.py` states when it validates one.
+defensible only while no pack outside this repository implemented it. Item 6 was
+the first change made as a deliberate bump (governance rule 6), and v3 is the
+second: v1 and v2 packs still validate and still work — a v1 pack is simply
+invisible to automatic resolution, which `validate_domain_pack.py` states when
+it validates one.
 
 ## 1.1 Resolution: how a pack is chosen
 
@@ -134,6 +182,20 @@ warning in a report into something the state machine will not do.
 requires each to select its own pack, and every counter-example not to. That is
 what keeps a signal list from quietly broadening until it steals another pack's
 problems — the failure surfaces at edit time rather than in a run.
+
+**And that number measures self-consistency, which is why there is a second
+one.** The same hand writes a pack's signals and its examples, so a perfect
+score there shows a fit to those examples and nothing else. A pack may declare
+`held_out_cases`: statements phrased by people who did not know the terms —
+statements lifted from a field's own reference library, claims written for the
+predecessor system before this pack existed. The self-test reports both, separately, and
+labels which is which. A pack with no held-out set is not failing; it is
+unmeasured, and the output says so rather than implying otherwise.
+
+The gap between the two numbers is the finding. In-house resolution scores 30/30
+and held-out scores 78%; the bio pack's claim classifier scores 12/12 in-house
+and 71% on a held-out half. Neither held-out number is good enough to stop
+looking at, and both are the only figures of the four that mean anything.
 
 **When nothing matches.** NO_MATCH is not a refusal and not a dead end. The
 orchestrator improvises a pack from the closest registered one:
@@ -214,6 +276,16 @@ Rules when packs are paired:
 - Establishing something in one field does not establish it in another. Support
   from one pack caps at `CONDITIONAL` on the other's open questions.
 
+**And it runs.** `campaign.py run --also <pack>:<tier>:<artifact>` engages a
+second pack on the same frozen claim: its adapter runs, a `fail` from ANY
+engaged pack returns `BLOCKED_BY_PAIR` whatever the others said, and the ceiling
+becomes the weakest of the engaged tiers. Until that existed, resolution could
+report `AMBIGUOUS` and this section could state the rules, and the loop took a
+single `--domain` — so "a fatal objection from any engaged pack blocks
+admission" was a rule about a situation the system could not reach. Both
+directions are in the campaign self-test, because a rule that blocks every
+paired claim enforces nothing.
+
 ## 3. Bridges
 
 Roles never call each other directly. Every cross-role handoff is a typed packet
@@ -242,7 +314,7 @@ under a deliberately perturbed condition, or routed through a skeptic pass whose
 only job is to break it.
 
 Every domain pack must therefore declare a **named refute-attempt gate**. This
-is a required field in `schemas/frame-domain-pack-v1.schema.json`, so a pack
+is a required field in the pack manifest schema, so a pack
 cannot skip it by omission.
 
 **And the backend itself is audited.** Everything above assumes the adapter can
@@ -290,22 +362,41 @@ problem directly is exactly the decision a system in the middle of attacking it
 is worst placed to make. Each attempt feels like it is closing in, and the count
 is the only thing that is not affected by that feeling.
 
-## 5.1 Performance: the graph is the schedule
+## 5.1 Performance: the graph is the schedule PLAN
 
-The frame's speed comes from reading one structure twice. The claim graph's
-dependency relations decide closure *and* concurrency:
+**The frame plans; the orchestrator runs.** This section used to read as though
+the frame did the scheduling, which contradicts the boundary stated in
+`SKILL.md`: providers, budgets, fanout, ordering, sessions, workers, retries and
+cancellation are the orchestrator's. The split is real and it is worth being
+exact about, because both halves are load-bearing:
+
+| The frame | The orchestrator |
+|---|---|
+| reads the dependency graph and says which claims are ready, which are racing, which are blocked and on what | starts, orders, retries and cancels the work |
+| costs the wave against the governor and refuses one that exceeds the budget | owns the workers that would have spent it |
+| `scripts/schedule.py plan --state <s> [--governor <g>]` | consumes the plan and may ignore it |
+
+The plan itself is one structure read twice. The claim graph's dependency
+relations decide closure *and* concurrency:
 
 - an **OR** group is a **race** — siblings dispatch together, the first pass
-  cancels the rest;
+  makes the rest pointless;
 - an **AND** group is concurrent **fan-out** over every ready child, looped
   until nothing is ready;
-- a cancelled sibling is `SUPERSEDED`, never a failure. It lost a race; it was
-  not refuted.
+- a cancelled sibling keeps its status and gains `superseded_by`.
+
+That last point was wrong here for as long as this section existed. It said a
+cancelled sibling *is* `SUPERSEDED`, as though losing a race were a status —
+and the frame's own rule is that process states never appear as epistemic ones.
+Losing a race teaches nothing about a claim. So the status does not move, the
+cancellation is recorded as the scheduling fact it is, and the practical payoff
+is revival: an `OPEN` claim carrying an annotation is reschedulable the moment
+the winner fails, where a status would have needed a transition to come back.
 
 Running an OR group in sequence pays the full cost of every approach that was
 never going to win. That is the largest piece of performance the predecessor
 left unclaimed — it had the closure semantics and never turned them into a
-schedule.
+plan.
 
 The no-merge invariant (§2) is also a scheduling argument. The three roles have
 different cost shapes: Explorer is cheap and on everything's critical path,
@@ -339,6 +430,36 @@ from its own graph walk, review from the supplied reviews. The admission's
 **disagreement between what was asserted and what the evidence shows is refused
 rather than silently corrected**, because the disagreement is the finding.
 
+**Identity is attested, not declared.** This was the deepest hole in the design
+and the document did not admit it. `decided_by_role`, `emitted_by`,
+`reviewer_role` and `method_family` are *fields in packets*, and one agent may
+write all of them. The reducer compared the labels. So the founding premise —
+an agent cannot be trusted to self-report correctness — was enforced rigorously
+for **evidence** and not at all for **identity**, which is the thing that makes
+"a role may never accept its own work" mean anything at all.
+
+The frame cannot verify identity by itself, and that is a real dependency rather
+than an oversight: sessions, workers and processes belong to the orchestrator.
+Stating the dependency is the first half of the fix, because an unstated one is
+indistinguishable from a guarantee.
+
+The second half is refusing to treat an unattested separation as a demonstrated
+one. Every packet may carry an `actor` block — an opaque `actor_id` the
+orchestrator assigns, and `attested_by`, either `orchestrator` or `self`:
+
+- two packets sharing an `actor_id` are the **same actor** whatever their role
+  labels say, and the pairs that must differ are refused outright;
+- `attested_by: "self"`, or no actor block at all, means nobody outside the run
+  vouched. Independence is then `NOT_RUN` — not `FAIL`, because nothing was
+  shown to be wrong, and not `PASS`, because nothing was shown at all.
+
+The consequence is deliberate: **without orchestrator attestation a run cannot
+reach `CONDITIONAL` or `VERIFIED`**, because those are exactly the statuses whose
+meaning depends on someone other than the producer agreeing. That is the same
+ceiling `campaign.py` reaches from the other direction, arrived at from the
+identity side instead of the evidence side, and the two agreeing is a good sign
+about both.
+
 **Each status requires only what it means.** `REQUIRED_BY_STATUS` follows the
 vocabulary: `SKETCH` needs the target and nothing else, because a sketch is an
 unchecked argument and demanding a passing receipt for one would be a lie about
@@ -358,6 +479,9 @@ The reducer refuses:
 | a granted status above the receipt's `max_status` | a ceiling is a property of the backend that produced the evidence; no number of admissions raises it |
 | a live artifact hash differing from the receipt's | a passing run from an earlier edit is how a broken artifact launders itself |
 | `decided_by_role` that is not `explorer` | a production role admitting its own output is what the no-merge invariant forbids |
+| an admitting actor that IS the producing actor | the role labels differ and the actor does not; a label is not a fact |
+| a reviewing actor that IS the producing actor | self-review wearing a second role label |
+| an unattested chain, for any status needing independence | nobody outside the run vouched that these were different actors, and an unattested separation is not a demonstrated one |
 | a review whose `producer_ref` is not the supplied result | an unbound review discharges independence for work it never saw |
 | a reviewer sharing the producer's role **and** method family | two checks sharing a failure domain are one check; this fails closed when either side declines to say which family it used |
 | a stale `base_revision` | the state moved underneath a long-running attempt, so its conclusion may rest on a premise since demoted. This bites hardest on the role that runs longest. |
@@ -368,9 +492,10 @@ The reducer refuses:
 | a delta adding a claim at anything but `OPEN` | otherwise a pre-established conclusion enters as a side effect |
 | `independent_review: PASS` with no distinct reviewer | self-review is not review |
 
-`scripts/reducer_selftest.py` is what makes that checkable. Thirteen adversarial admissions — the
-first of them the forged-checks case that motivated all of this — must each be
-refused **for the stated reason**, and two honest chains must be accepted. The
+`scripts/reducer_selftest.py` is what makes that checkable. Eighteen adversarial
+admissions — the first of them the forged-checks case that motivated all of
+this — must each be refused **for the stated reason**, and two honest chains
+must be accepted. The
 accept cases matter as much as the refusals: a reducer that refuses everything
 enforces nothing, it just stops.
 
@@ -380,8 +505,16 @@ the same admission is refused, because its base no longer matches.
 
 Two further shared services support the schedule and are frame-owned:
 
-- a **resource governor** — the single place that answers "may another expensive
-  worker start"; saturation queues rather than errors;
+- a **resource governor** (`scripts/governor.py`) — the single place that
+  answers "may another expensive worker start", and the only thing in the frame
+  that can stop a run on cost. Saturation **queues**, because a refused
+  expensive worker and a delayed one have very different consequences for a
+  campaign. An exhausted budget **refuses**, because a ceiling that queues is
+  not a ceiling. Until this existed a run could be stopped by failures and by
+  nothing else — in a design whose Researcher is explicitly "allowed to run long
+  and expensive on a single blocker", which is exactly the role that needs a
+  number rather than a temperament. A run with no budget set is reported as
+  having no ceiling, never as having a large one;
 - a **reuse cache**, keyed on full context match, which orders work and never
   confers status. Its rules — the two trust tiers, the contamination rule, and
   revival conditions — are in `references/memory.md`. It is the only part of the
@@ -429,9 +562,30 @@ memory both record a failure without being redundant.
 `scripts/campaign.py` drives one campaign through every packet the frame defines:
 
 ```
-resolve pack -> freeze -> init state -> work item -> adapter -> receipt
--> result -> [review] -> admission -> reducer -> state -> report
+resolve pack -> freeze -> init state -> work item
+   -> ready? -> affordable? -> adapter -> receipt -> charge
+   -> result -> [review] -> admission -> reducer -> state -> report
 ```
+
+**Two of those questions used to be answerable and unasked.** The planner and
+the governor existed as libraries nothing in the runtime path called — present,
+tested, and doing nothing, which is the same failure as a component named in an
+architecture and absent from the tree, one layer in. Now:
+
+- **ready?** the planner reads the dependency graph. A claim whose dependencies
+  are undischarged produces evidence that cannot close anything, and the
+  reducer would refuse the admission at the end — after the tier had been paid
+  for. Asking first is the whole saving.
+- **affordable?** with `--governor`, the tier's cost is charged against a
+  declared ceiling and a run that exceeds it stops with `STOPPED_ON_BUDGET`.
+  Without one, nothing stops the run on cost, and the report says which of the
+  two happened rather than leaving a reader to assume a limit existed.
+- **who is acting?** `--producer-actor` and `--admitter-actor` carry the
+  orchestrator's attestation into the chain. Supplied and distinct, the reducer
+  can grant a status that depends on independence. Supplied and identical, it
+  refuses — the labels differ and the actor does not. Absent, the chain is
+  self-attested and tops out at `CHECKED_BOUNDED`, which is where this loop
+  already stopped for a separate reason.
 
 Before it existed, `frame-work-item-v1`, `frame-result-v1`, and
 `frame-review-v1` were schemas with no writer — specifications nothing had ever
@@ -442,11 +596,26 @@ reading would not have: the adapter's **calling convention had never been
 stated**, and the packs had quietly diverged to the point where the frame could
 not invoke one of them at all.
 
+**The outcome says which of two very different things happened.** `PARTIAL`
+used to mean both "the root is established as strongly as this pack can manage"
+and "a sub-claim closed and the target is still open" — situations calling for
+opposite next moves, reported with the same word, so a campaign that had done
+everything available to it was indistinguishable from one that had barely
+started. `CLOSED` is now the first of those: the root admitted AT the campaign
+ceiling, with its own status saying how strong that is. A closed campaign under
+a provisional pack is closed at `SKETCH`, and that is a real result.
+
 **It deliberately cannot reach `VERIFIED`.** One process cannot be both producer
 and independent reviewer, and the frame already refuses a self-certified fidelity
 record. So an automatic run tops out at `CHECKED_BOUNDED` and the report says
 why. That is not a limitation to route around — it is the architecture holding
 under the exact condition it was designed for.
+
+The self-test covers all of it: a blocked claim, an exhausted budget, a budget
+actually charged rather than merely consulted, one process wearing two role
+labels being refused, and two attested actors closing the loop. A check that
+refuses every attested chain enforces nothing, so the last of those matters as
+much as the fourth.
 
 Failure is a first-class path: a failing adapter is recorded in the ledger, the
 threshold is evaluated, and the report says whether the next move is another
@@ -474,7 +643,7 @@ assumptions until "domain-agnostic frame" is a fiction.
 4. **No fourth role without a structural reason** (§2).
 5. **Per-pack conformance, plus one frame suite.** The frame tests against
    `domains/_mock/` — a fixture, not a field — so it can prove it has no hidden
-   domain dependency. Each pack separately proves it implements all five
+   domain dependency. Each pack separately proves it implements all six
    contract items. A frame change ships only once the purity check and the
    conformance check are green **across every registered pack**, not just the
    one being worked on.
@@ -511,3 +680,33 @@ python3 scripts/check_frame_purity.py
 All three must pass before the pack is registered. The middle one is the easy
 step to skip and the expensive one to skip: a pack that validates perfectly and
 resolves for nothing has been added to the tree and not to the system.
+10. **Measure generalization separately from consistency.** Any scorer the frame
+   or a pack relies on — resolution, classification, ranking — is calibrated
+   against cases somebody wrote. Where possible it is ALSO run against material
+   written without knowledge of it, and the two numbers are reported apart.
+   Tuning against a held-out set turns it into an in-house set silently, so a
+   set used for fixing is split, the used half is marked burned, and the
+   replacement comes from outside again.
+11. **The contract line is regression-tested from both sides.** Static checks
+   read a manifest and the files it points at; they cannot tell whether the
+   frame can still CALL a pack, and they cannot tell whether today's boundary
+   is yesterday's. `scripts/check_bridge.py` invokes every pack the way
+   `campaign.py` does, compares the observable surface against a recorded
+   baseline, and checks the documented calling convention against the argv the
+   frame actually builds. A boundary tested from one side is not tested: the
+   calling convention went unstated through two contract versions until a pack
+   turned out to be unreachable, and every pack's own self-test was green
+   throughout, because each called itself the way it happened to expect.
+12. **A check proves it pays, too.** Rule 9 asks an optimization to justify its
+    cost and nothing asked the same of a check, so a suite grows one justified
+    check at a time and becomes unrunnable the same way. A new check states the
+    regression it catches and is demonstrated against a **planted** one — a
+    check nobody has watched fail is a check nobody knows works, and two of the
+    three bridge layers only became correct because a planted regression showed
+    the first version missing it. `check.sh` times every step, marks anything
+    slower than ten seconds, and prints the suite's total, because a cost nobody
+    measures cannot be argued about. The rule has already applied to itself: the
+    bridge check spent 43 of the suite's 55 seconds discovering an unavailable
+    backend twice, and asking the cheap question first brought it to 11 — while
+    a first attempt at that saving skipped three tiers of real coverage, which
+    is the worse bargain and the reason the rule says *prove*.

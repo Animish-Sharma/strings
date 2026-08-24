@@ -1,0 +1,32 @@
+{
+ "schema": "frame-claim-v1",
+ "claim_id": "Q1-EVEN-PROD-DISSENT",
+ "exact_statement": "for every natural number n, the product n times n plus one is divisible by two",
+ "formal_target": "theorem wit_even_prod (n : ℕ) : 2 ∣ n * (n + 1)",
+ "allowed_external_facts": [
+  "Nat.even_mul_succ_self"
+ ],
+ "target_sha256": "e09be7b0fd470bdb4af728e7055d7abaf8d67ac8b687bd8823afb66f6d5418fd",
+ "fidelity_judgements": [
+  "FAITHFUL",
+  "UNFAITHFUL",
+  "UNFAITHFUL"
+ ],
+ "fidelity_judges": [
+  "reviewer-a",
+  "reviewer-b",
+  "reviewer-c"
+ ],
+ "frozen_conditions": {
+  "formal_target": "theorem wit_even_prod (n : ℕ) : 2 ∣ n * (n + 1)",
+  "allowed_external_facts": [
+   "Nat.even_mul_succ_self"
+  ],
+  "forbidden_citations": [
+   "Nat.even_mul_succ_self"
+  ]
+ },
+ "fidelity_notes": [
+  "the target says nothing about the order of the factors, and the formal statement fixes it"
+ ]
+}

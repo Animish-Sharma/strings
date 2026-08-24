@@ -14,7 +14,8 @@ Usage:  interest_audit.py <dossier.json> --claim <claim.json>
 Exit:   0 pass, 1 fail, 2 error, 3 no supporting sources yet
 """
 from __future__ import annotations
-import argparse, json, sys
+import argparse
+import re, json, sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import archlib as al  # noqa: E402
@@ -51,7 +52,18 @@ def main() -> int:
         stake = (source.get("interest") or "").strip().lower()
         interests[sid] = stake
 
-    stated = [s for s in interests.values() if s and s not in {"none", "disinterested", "unknown"}]
+    # A source declaring no stake usually says WHY — "none, an unrelated group",
+    # "no stake in this voyage". Matching the field as a bare token made the
+    # natural way of writing it read as a stake, so the gate fired on a dossier
+    # that had answered it honestly. The leading clause is the answer; whatever
+    # follows is the explanation, and refusing an explained answer teaches the
+    # format by rejection.
+    def disinterested(stake: str) -> bool:
+        head = re.split(r"[—,;:(-]", stake, maxsplit=1)[0].strip()
+        return (head in {"none", "disinterested", "unknown", "no stake", "no interest"}
+                or head.startswith(("none", "no stake", "no interest", "disinterested")))
+
+    stated = [s for s in interests.values() if s and not disinterested(s)]
     if stated and len(stated) == len(interests) and interests:
         shared = len(set(stated)) == 1
         problems.append(

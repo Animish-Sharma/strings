@@ -40,7 +40,11 @@ def main() -> int:
     if shutil.which("lake") or shutil.which("lean"):
         decl = re.search(r"^\s*(?:theorem|lemma)\s+([\w.']+)", source, re.MULTILINE)
         if decl:
-            probe = Path(a.artifact).with_suffix(".axioms.lean")
+            # `lake env` runs from the PROJECT directory, so a probe named by a
+            # relative path is unreachable from there and the gate reported
+            # NOT_RUN — silently, and only for callers who typed a relative
+            # path, which is every caller at a shell prompt. Resolve first.
+            probe = Path(a.artifact).resolve().with_suffix(".axioms.lean")
             try:
                 probe.write_text(source + f"\n#print axioms {decl.group(1)}\n", encoding="utf-8")
                 cmd = ([shutil.which("lake"), "env", "lean", str(probe)]

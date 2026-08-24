@@ -116,15 +116,62 @@ def main() -> int:
 
     # 2. Aggregation.
     _, rows = bl.read_csv(csv_path)
+    treatment, control = data["treatment_label"], data["control_label"]
     units = bl.pseudobulk(rows, data["unit_column"], data["value_column"], data["label_column"])
     mixed = [u["unit"] for u in units if u["label"] == "MIXED"]
+
+    # A unit appearing in BOTH arms has no single arm to belong to, and the first
+    # version excluded it — which for a fully crossed design excludes everything.
+    # The donor-replicated population class REQUIRES donors crossed with the
+    # condition, so the pack was demanding a design it could not analyse.
+    #
+    # A crossed design is not a weaker between-unit design. It is a stronger
+    # paired one: each unit is its own control, the between-donor variation that
+    # dominates this data cancels, and the estimand is the mean within-unit
+    # difference tested by sign flip.
+    pairs, incomplete = bl.paired_units(rows, data["unit_column"], data["value_column"],
+                                        data["label_column"], treatment, control)
+    if mixed and len(pairs) >= 2:
+        differences = [p["difference"] for p in pairs]
+        null = bl.sign_flip_p(differences, iterations=args.iterations,
+                              seed=args.seed)
+        effect = bl.mean(differences)
+        result = {
+            "tier": "executable", "design": "paired",
+            "verdict": "pass" if (null["p_value"] is not None
+                                  and null["p_value"] <= 0.05) else "fail",
+            "max_status": "CHECKED_BOUNDED",
+            "units": {"paired": len(pairs), "incomplete": incomplete},
+            "effect": round(effect, 6),
+            "refute_attempt": {"gate_name": "permutation-null",
+                               "discharged_by": "adversarial_tier",
+                               "outcome": ("survived" if (null["p_value"] or 1) <= 0.05
+                                           else "broken"),
+                               "perturbation": "signs flipped within unit; the exact null for a "
+                                               "paired design"},
+            "null": null,
+            "notes": notes + [
+                f"{len(pairs)} unit(s) appear in both arms, so this is analysed as a PAIRED "
+                "design: one within-unit difference each, tested by sign flip. Excluding them "
+                "as MIXED would have discarded the whole design the claim class requires.",
+                f"the smallest attainable two-sided p at {len(pairs)} units is "
+                f"{null['smallest_attainable_p']:.4f} — a design limit, stated before the "
+                "number is read"],
+        }
+        if incomplete:
+            result["notes"].append(
+                f"{len(incomplete)} unit(s) appear in only one arm and contribute nothing to a "
+                "paired contrast: " + ", ".join(incomplete[:5]))
+        print(json.dumps(result, indent=2))
+        return 0 if result["verdict"] == "pass" else 1
+
     if mixed:
         notes.append(
-            f"{len(mixed)} unit(s) contain more than one condition. Their unit mean averages "
+            f"{len(mixed)} unit(s) contain more than one condition and fewer than two of them "
+            "carry both arms, so no paired contrast exists either. Their unit mean averages "
             "across the contrast, so they are excluded from the between-unit test")
     usable = [u for u in units if u["label"] != "MIXED"]
 
-    treatment, control = data["treatment_label"], data["control_label"]
     values = [u["mean"] for u in usable]
     labels = [u["label"] for u in usable]
     strata = None

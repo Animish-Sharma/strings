@@ -28,6 +28,7 @@ import argparse, json, sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import archlib as al  # noqa: E402
+import stemma  # noqa: E402
 
 
 def main() -> int:
@@ -52,6 +53,31 @@ def main() -> int:
     summary = al.independence(supporting, sources)
     required = int(claim.get("claimed_independent_support") or 1)
     problems, notes = [], []
+
+    # The collapse above learns which sources share an origin from the `origin`
+    # FIELD the dossier's author wrote. That is this pack's central computation
+    # resting on a self-report, and the discipline has a method for deriving it:
+    # agreement in ERROR indicates common descent, agreement in a correct reading
+    # indicates nothing. Where the dossier records a collation, the readings
+    # decide — and a dossier claiming two origins for witnesses that share two
+    # errors is claiming corroboration the text says is one voice copied twice.
+    kinship = stemma.analyse(dossier)
+    notes.append(f"stemma: {kinship['reading']}")
+    if kinship["verdict"] == "contradiction":
+        for entry in kinship["contradictions"]:
+            problems.append("SHARED ERROR: " + entry["reading"])
+    elif kinship["verdict"] == "consistent":
+        derived = kinship["computed_independent_support"]
+        if derived < required:
+            problems.append(
+                f"the collation supports {derived} independent famil(y/ies) against {required} "
+                "claimed. Declared origins are what the dossier says; shared errors are what "
+                "the witnesses say")
+    else:
+        notes.append(
+            "independence was NOT derived — the dossier records no usable collation, so the "
+            "declared origins stand unchecked. That is a gap in the evidence and not a finding "
+            "of independence, and this receipt is weaker than one with a collation behind it")
 
     if summary["cycles"]:
         problems.append(f"citation cycles present: {summary['cycles']}")

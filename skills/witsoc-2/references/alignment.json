@@ -1,0 +1,36 @@
+{
+  "description": "Differences between this frame's ARCHITECTURE.md and the predecessor's, each one chosen rather than drifted into. scripts/check_alignment.py compares the two documents and fails on any difference NOT listed here. That is the whole mechanism: a divergence somebody decided on is a design decision, and a divergence nobody noticed is drift, and prose alone cannot tell you which one you are looking at.",
+  "other": "../witsoc/ARCHITECTURE.md",
+  "declared_divergences": [
+    {
+      "invariant": "contract_items",
+      "reason": "This frame has six contract items; the predecessor has five. Item 6, `selection`, tells the frame WHEN a pack applies — a question that does not arise in the predecessor, which has no separated packs to resolve between. It was added here as a deliberate version bump (governance rule 6), and v1 packs still validate and still work; they are simply invisible to automatic resolution.",
+      "resolves_when": "the predecessor extracts its maths pack and therefore needs to choose between packs"
+    },
+    {
+      "invariant": "governance_rule_2",
+      "reason": "The same rule under two names: the predecessor calls it import-direction enforcement and this frame calls it reference-direction enforcement. The wording changed because the rule is enforced here against every reference in every scanned file, not only against imports — `scripts/check_frame_purity.py` reads markdown and JSON as well as Python. The rule's content is identical: frame files must never reach below the contract line.",
+      "resolves_when": "never — this is a naming difference and both documents are correct about their own scope"
+    },
+    {
+      "invariant": "governance_rule_9",
+      "reason": "This frame adds a ninth rule — an optimization proves it pays, with an ablation, and heuristic ordering may reorder only. The predecessor has no equivalent because it had no measured optimization to govern. The rule earned its place here by firing: it rejected a fast verification path that measured roughly eighty times quicker and was running against an empty environment, which is a failure mode no timing comparison would ever surface.",
+      "resolves_when": "the predecessor adopts the rule, which it should"
+    },
+    {
+      "invariant": "governance_rule_10",
+      "reason": "This frame adds a tenth rule — measure generalization separately from consistency. It exists because two scorers here were calibrated only against cases their own authors wrote, scored perfectly, and turned out to generalize far worse: one dropped from 30/30 to 78% and another from 12/12 to 71% the first time either met text written by someone who did not know its terms. The predecessor has no equivalent rule and has the same exposure.",
+      "resolves_when": "the predecessor adopts the rule, which it should"
+    },
+    {
+      "invariant": "governance_rule_11",
+      "reason": "This frame adds an eleventh rule — the contract line is regression-tested from both sides. It exists because the predecessor has not separated its packs yet and therefore has no line to test, while this frame has one and had been checking it only statically: nothing invoked a pack the way the frame does, and nothing knew what the boundary looked like yesterday. Two of the three checks it now runs caught a real regression the first time they were pointed at a planted one.",
+      "resolves_when": "the predecessor extracts its packs and acquires a contract line of its own"
+    },
+    {
+      "invariant": "governance_rule_12",
+      "reason": "This frame adds a twelfth rule — a check proves it pays. Rule 9 governs the cost of an optimization and nothing governed the cost of a check, so a suite grows one justified check at a time and becomes unrunnable the same way. The predecessor has a smaller suite and has not met the problem yet.",
+      "resolves_when": "the predecessor's suite grows enough to need it"
+    }
+  ]
+}

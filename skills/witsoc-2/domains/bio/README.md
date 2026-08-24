@@ -123,9 +123,13 @@ Commands below are relative to this pack directory.
 ```bash
 python3 scripts/availability.py --all --bundle <bundle.json>   # data, not toolchains
 python3 scripts/check.py --artifact <bundle.json> --claim <claim.json> --tier executable
-python3 scripts/check.py --self-test        # 9 known-bad bundles rejected, 1 good accepted
+python3 scripts/check.py --self-test        # 10 known-bad bundles rejected, 1 good accepted
 python3 evals/run_evals.py --verbose        # 6 outcome cases
 python3 scripts/corpus.py --ledger <bundle.json>
+python3 scripts/classify_claim.py --statement "..." --metadata <metadata.csv> --explain
+python3 scripts/classify_claim.py --calibrate               # 12/12 on the labelled set
+python3 scripts/expression_diagnostics.py --self-test       # 11 cases, two-sided on 5 detectors
+python3 evals/roles/run_roles.py                            # 17 role DECISIONS scored
 ```
 
 Standard library only. Nothing here needs a scientific-Python stack, because a

@@ -128,8 +128,16 @@ def main() -> int:
                 entry = json.loads(line)
                 their_flags[entry["task_id"]] = entry.get("required_flags", [])
     else:
-        print(f"NOTE: {source} is not present; falling back to the status word alone, which is "
-              "a weaker comparison", file=sys.stderr)
+        # Falling back to "the status word alone" and then FAILING on the
+        # comparison reported a disagreement with an outside author that was
+        # never measured — the flags they required simply were not there. This
+        # evaluation exists to compare against someone else's labels; without
+        # them it has nothing to say, and saying nothing is the honest result.
+        print(f"NOT_RUN: {source} is not present, so this pack's agreement with an "
+              "independent author is unmeasured here. That is a gap and not a pass, and "
+              "it is not a disagreement either — their required flags were never read.",
+              file=sys.stderr)
+        return 3
     classes = {c["id"]: c for c in bl.load_table("claim_classes.json")["classes"]}
     results, failures = [], []
 

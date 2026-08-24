@@ -8,9 +8,13 @@ elaborate and an unaudited axiom makes anything derivable.
 
 Feedback order, cheapest first — a full `lake build` never belongs in a repair
 loop:
-  1. per-command LSP/REPL check (when a server is configured)
-  2. `lake env lean <file>`   <- default here
-  3. `lake build`             <- final confirmation only
+  1. `lake env lean <file>`   <- the default, and the floor
+  2. `lake build`             <- final confirmation only
+
+There is no per-command fast path and that is deliberate, not missing: the REPL
+that was available returned success-shaped JSON against an empty environment.
+See doctrine/kernel_economics.md for the measurement and the gate any future
+fast path has to pass before it may be enabled here.
 
 Usage:  kernel.py <artifact.lean> [--full-build] [--json]
 Exit:   0 pass, 1 fail, 3 toolchain unavailable, 2 IO error.
@@ -23,6 +27,13 @@ from pathlib import Path
 # with the "file.lean:LINE:COL:" prefix stripped first — otherwise a file named
 # coercion.lean makes every error in it look like a coercion issue, which is
 # exactly the false pass this table had before it was tested against real output.
+# Elaborating against a full library is legitimately slow, so the default is
+# generous. It is also an override, because the same generosity turns a
+# misconfiguration into a thirty-minute block: an operator who knows their
+# targets are small should be able to say so, and one debugging a hang should
+# be able to bound it without editing the pack.
+KERNEL_TIMEOUT = int(os.environ.get("WITSOC2_KERNEL_TIMEOUT", "1800"))
+
 CLASSES = [
     (r"unknown identifier|unknown constant", "unknown_identifier"),
     # Observed wording in Lean 4.31/4.33: "unknown module prefix 'X'", and —
@@ -92,7 +103,11 @@ def main() -> int:
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args()
 
-    path = Path(a.artifact)
+    # `lake env` runs from the PROJECT directory, so a relative artifact path
+    # is not found there and the tier reported `fail` — a verification failure
+    # for a file the toolchain never opened. Same defect as the axiom audit's
+    # probe path, in the one component whose verdict everything else rests on.
+    path = Path(a.artifact).resolve()
     try:
         source = path.read_text(encoding="utf-8")
     except OSError as exc:
@@ -121,7 +136,7 @@ def main() -> int:
     cmd = ([lake, "build"] if (a.full_build and lake)
            else ([lake, "env", "lean", str(path)] if lake else [lean, str(path)]))
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=1800,
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=KERNEL_TIMEOUT,
                               cwd=workdir)
     except subprocess.TimeoutExpired:
         print("KERNEL: FAIL — timed out"); return 1

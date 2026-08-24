@@ -19,7 +19,49 @@
       "conditions_that_must_be_stated": [
         "the exchangeability of cells within this screen, defended rather than assumed",
         "that no population-level reading is intended or supported"
-      ]
+      ],
+      "selection": {
+        "signals": [
+          "across cells",
+          "biological replicate",
+          "cell",
+          "cell context",
+          "cell state",
+          "cell-level",
+          "cell-to-cell",
+          "cells",
+          "cells expressing",
+          "correlated across cells",
+          "gem group",
+          "independent replicate",
+          "lane",
+          "many cells",
+          "per cell",
+          "per-cell",
+          "pooled screen",
+          "single cell",
+          "single-cell association",
+          "upstream unit"
+        ],
+        "strong_signals": [
+          "at the cell level",
+          "cell-level",
+          "cell-level association",
+          "cell-level effect",
+          "cells as independent",
+          "cells as replicates",
+          "pseudoreplicated",
+          "pseudoreplication"
+        ],
+        "excludes": [
+          "across donors",
+          "in vivo",
+          "per animal",
+          "patient-derived",
+          "held-out"
+        ],
+        "min_score": 3
+      }
     },
     {
       "id": "guide_conditioned_within_screen",
@@ -41,7 +83,33 @@
       "conditions_that_must_be_stated": [
         "that the scope is the screen this was measured in, not the population"
       ],
-      "min_units_per_arm": 3
+      "min_units_per_arm": 3,
+      "selection": {
+        "signals": [
+          "guide",
+          "sgrna",
+          "grna",
+          "non-targeting",
+          "screen",
+          "perturb-seq",
+          "crispri",
+          "crispra",
+          "guide assignment",
+          "matched control"
+        ],
+        "strong_signals": [
+          "within the screen",
+          "guide-conditioned",
+          "per guide",
+          "within this screen"
+        ],
+        "excludes": [
+          "across donors",
+          "in vivo",
+          "held-out perturbation"
+        ],
+        "min_score": 4
+      }
     },
     {
       "id": "target_conditioned",
@@ -61,7 +129,30 @@
       "conditions_that_must_be_stated": [
         "that the scope is the screen this was measured in, not the population"
       ],
-      "min_units_per_arm": 3
+      "min_units_per_arm": 3,
+      "selection": {
+        "signals": [
+          "target",
+          "gene target",
+          "knockdown of",
+          "knockout of",
+          "per target",
+          "targeting",
+          "efficacy"
+        ],
+        "strong_signals": [
+          "multiple independent guides",
+          "multiple guides per target",
+          "target-level",
+          "across guides targeting"
+        ],
+        "excludes": [
+          "across donors",
+          "held-out perturbation",
+          "in vivo"
+        ],
+        "min_score": 4
+      }
     },
     {
       "id": "donor_replicated_population",
@@ -82,7 +173,36 @@
       "conditions_that_must_be_stated": [
         "that the claim rests on the independence of its upstream units, which the data cannot verify and the design has to argue",
         "that the analysis was carried out at the estimand-matching denominator, naming it"
-      ]
+      ],
+      "selection": {
+        "signals": [
+          "biological replicate",
+          "cohort",
+          "crossed with",
+          "donor",
+          "donor-level",
+          "donor-level pseudobulk",
+          "human primary",
+          "individual",
+          "primary",
+          "pseudobulk",
+          "subject"
+        ],
+        "strong_signals": [
+          "across donors",
+          "donor-level pseudobulk",
+          "donor-replicated",
+          "in donors",
+          "independent donors",
+          "primary donor"
+        ],
+        "excludes": [
+          "within the screen",
+          "cell-level",
+          "held-out perturbation"
+        ],
+        "min_score": 4
+      }
     },
     {
       "id": "in_vivo_animal",
@@ -102,7 +222,32 @@
       "conditions_that_must_be_stated": [
         "that the claim rests on the independence of its upstream units, which the data cannot verify and the design has to argue",
         "that the analysis was carried out at the estimand-matching denominator, naming it"
-      ]
+      ],
+      "selection": {
+        "signals": [
+          "mouse",
+          "mice",
+          "animal",
+          "rat",
+          "zebrafish",
+          "tissue from",
+          "littermate",
+          "cage",
+          "injected"
+        ],
+        "strong_signals": [
+          "in vivo",
+          "per animal",
+          "across mice",
+          "animal model",
+          "mouse model"
+        ],
+        "excludes": [
+          "cell line",
+          "within the screen"
+        ],
+        "min_score": 4
+      }
     },
     {
       "id": "organoid_patient_model",
@@ -122,7 +267,29 @@
       "conditions_that_must_be_stated": [
         "that the claim rests on the independence of its upstream units, which the data cannot verify and the design has to argue",
         "that the analysis was carried out at the estimand-matching denominator, naming it"
-      ]
+      ],
+      "selection": {
+        "signals": [
+          "organoid",
+          "ipsc",
+          "biopsy",
+          "model system",
+          "patient line",
+          "explant",
+          "primary culture"
+        ],
+        "strong_signals": [
+          "patient-derived",
+          "pdx",
+          "patient-derived organoid",
+          "across patient lines"
+        ],
+        "excludes": [
+          "within the screen",
+          "in vivo"
+        ],
+        "min_score": 4
+      }
     },
     {
       "id": "spatial_tissue",
@@ -143,7 +310,33 @@
         "that spots and cells are not being counted as independent tissue units",
         "that the claim rests on the independence of its upstream units, which the data cannot verify and the design has to argue",
         "that the analysis was carried out at the estimand-matching denominator, naming it"
-      ]
+      ],
+      "selection": {
+        "signals": [
+          "spatial",
+          "section",
+          "slide",
+          "region",
+          "niche",
+          "neighbourhood",
+          "neighborhood",
+          "visium",
+          "merfish",
+          "xenium",
+          "coordinates"
+        ],
+        "strong_signals": [
+          "spatial transcriptomics",
+          "tissue section",
+          "per slide",
+          "spatially resolved"
+        ],
+        "excludes": [
+          "held-out perturbation",
+          "within the screen"
+        ],
+        "min_score": 4
+      }
     },
     {
       "id": "network_causal_method",
@@ -162,7 +355,32 @@
       "conditions_that_must_be_stated": [
         "the identifying assumptions, named individually",
         "the sensitivity of the conclusion to each assumption being wrong"
-      ]
+      ],
+      "selection": {
+        "signals": [
+          "causal",
+          "causally",
+          "controls",
+          "downstream of",
+          "drives",
+          "grn",
+          "inferred",
+          "mediates",
+          "network",
+          "regulatory",
+          "upstream of"
+        ],
+        "strong_signals": [
+          "causal inference",
+          "gene regulatory network",
+          "mediation",
+          "mediation analysis"
+        ],
+        "excludes": [
+          "held-out perturbation"
+        ],
+        "min_score": 4
+      }
     },
     {
       "id": "model_predictive_superiority",
@@ -179,7 +397,33 @@
         "prespecified_thresholds"
       ],
       "common_failure": "beating a weak baseline, or winning one metric by sacrificing another",
-      "min_units_per_arm": 0
+      "min_units_per_arm": 0,
+      "selection": {
+        "signals": [
+          "model",
+          "predict",
+          "prediction",
+          "baseline",
+          "generalize",
+          "generalise",
+          "benchmark",
+          "unseen",
+          "test set",
+          "r2",
+          "accuracy"
+        ],
+        "strong_signals": [
+          "held-out",
+          "outperforms",
+          "better than baseline",
+          "predictive performance",
+          "virtual cell",
+          "held-out perturbation",
+          "unseen cell line"
+        ],
+        "excludes": [],
+        "min_score": 4
+      }
     },
     {
       "id": "literature_only",
@@ -195,7 +439,32 @@
       "common_failure": "a well-sourced summary presented as an audit",
       "conditions_that_must_be_stated": [
         "that nothing was computed and no data were examined"
-      ]
+      ],
+      "selection": {
+        "signals": [
+          "reported",
+          "published",
+          "literature",
+          "review",
+          "according to",
+          "the paper",
+          "the authors",
+          "claims that"
+        ],
+        "strong_signals": [
+          "based on the literature",
+          "no new data",
+          "as reported in",
+          "published claim",
+          "without reanalysis"
+        ],
+        "excludes": [
+          "we recomputed",
+          "reanalysis of",
+          "from the count matrix"
+        ],
+        "min_score": 3
+      }
     }
   ],
   "hard_rejections": [
@@ -238,5 +507,6 @@
   ],
   "ceiling_note": "A note about the word CONDITIONAL, because two vocabularies collide here and the collision is easy to get backwards. In the positive-case matrix this pack was distilled from, 'conditional' meant a narrow result resting on an assumption nobody can discharge, and it was WEAKER than a bounded result. In the frame's lattice CONDITIONAL is STRONGER than CHECKED_BOUNDED, because it is a claim about the general statement modulo an assumption, while CHECKED_BOUNDED is a claim about a stated finite domain and silent outside it. The frame's reading is the correct one for these classes: a cell-level association is bounded, not conditionally-general. So every class here caps at CHECKED_BOUNDED, and what used to be expressed as a lower ceiling is expressed instead as an EXTRA obligation \u2014 `conditions_that_must_be_stated` \u2014 which is strictly harder to satisfy than a ceiling, because a ceiling can be met by doing nothing.",
   "crossing_note": "Crossing is required of a BIOLOGICAL unit and is meaningless for an ASSIGNMENT unit. A donor could have contributed cells under both conditions, so a donor that saw only one condition is confounded with it. A guide could not: a guide is targeting or non-targeting by construction, and demanding that it be crossed would reject every screen ever run. So the confounding check applies to population estimands, and within-screen estimands are held to a different bar \u2014 several independent units per arm, matched controls, and demonstrated perturbation efficacy.",
-  "conditions_note": "Population classes carry required report conditions, added after an external evaluation against a regression family written for the predecessor system. Its expectations attached `upstream_units_required` and `pseudobulk_or_cluster_robust_required` as flags a report must SHOW, where this table had them only as design evidence a bundle must DECLARE. Both are checks and they are not the same check: a reader of the finished report sees the second and not the first, and the independence of the upstream units is the assumption that reader most needs and the data can least support."
+  "conditions_note": "Population classes carry required report conditions, added after an external evaluation against a regression family written for the predecessor system. Its expectations attached `upstream_units_required` and `pseudobulk_or_cluster_robust_required` as flags a report must SHOW, where this table had them only as design evidence a bundle must DECLARE. Both are checks and they are not the same check: a reader of the finished report sees the second and not the first, and the independence of the upstream units is the assumption that reader most needs and the data can least support.",
+  "selection_note": "Each class carries the terms that route a statement to it, scored the way the frame resolves packs: 1 x signals + 3 x strong_signals - 3 x excludes, against the class's own min_score, with a margin over the runner-up. The terms live here rather than in the classifier, so the field knowledge stays in the pack's data and the scorer stays generic. scripts/classify_claim.py reads this and nothing else."
 }

@@ -96,10 +96,19 @@ def validate(node: Any, schema: dict[str, Any], path: str, errors: list[str]) ->
                 description = properties.get(field, {}).get("description", "")
                 hint = f" — {description}" if description else ""
                 errors.append(f"{path}: missing required field {field!r}{hint}")
-        if schema.get("additionalProperties") is False:
+        extra = schema.get("additionalProperties")
+        if extra is False:
             for key in node:
                 if key not in properties:
                     errors.append(f"{path}: unknown field {key!r} is not part of the contract")
         for key, value in node.items():
             if key in properties:
                 validate(value, properties[key], f"{path}.{key}", errors)
+            elif isinstance(extra, dict):
+                # `additionalProperties` as a SCHEMA describes every value in a
+                # map, and only the boolean form was handled — so a keyed map
+                # validated as if it were empty. `frame-state-v1` keeps every
+                # claim under exactly such a map, which means the graph the
+                # reducer is the sole writer of has never been schema-checked at
+                # all: an illegal status in a claim validated clean.
+                validate(value, extra, f"{path}.{key}", errors)

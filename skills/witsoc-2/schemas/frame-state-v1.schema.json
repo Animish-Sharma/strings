@@ -4,71 +4,176 @@
   "title": "Campaign state",
   "description": "The thing an admission moves. Until this existed, `base_revision` pointed at nothing, deltas had nothing to apply to, and 'only an admission may move a status' was a sentence rather than a mechanism. Every revision is content-addressed and names its predecessor, so the history is replayable and a fork is detectable.",
   "type": "object",
-  "required": ["schema", "target_sha256", "revision", "claims", "outcome"],
+  "required": [
+    "schema",
+    "target_sha256",
+    "revision",
+    "claims",
+    "outcome"
+  ],
   "properties": {
-    "schema": { "const": "frame-state-v1" },
+    "schema": {
+      "const": "frame-state-v1"
+    },
     "target_sha256": {
       "description": "The frozen root target. Every packet applied to this state must agree with it; a mismatch is rejected rather than reconciled.",
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
     },
     "revision": {
-      "description": "Monotonic. A packet cut against an older revision is stale and refused — that is the lost-update guard, and it matters most for the long-running deep-attack role.",
+      "description": "Monotonic. A packet cut against an older revision is stale and refused \u2014 that is the lost-update guard, and it matters most for the long-running deep-attack role.",
       "type": "integer",
       "minimum": 0
     },
     "previous_state_sha256": {
       "description": "Hash of the state this one was derived from. Null at revision 0.",
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "pattern": "^[0-9a-f]{64}$"
     },
-    "root_claim_id": { "type": "string" },
+    "root_claim_id": {
+      "type": "string"
+    },
     "claims": {
       "description": "Every claim under this target, keyed by id.",
       "type": "object",
       "additionalProperties": {
         "type": "object",
-        "required": ["claim_id", "status"],
+        "required": [
+          "claim_id",
+          "status"
+        ],
         "properties": {
-          "claim_id": { "type": "string" },
-          "statement": { "type": "string" },
-          "status": {
-            "enum": ["OPEN", "CONJECTURE", "CHECKED_BOUNDED", "SKETCH", "PARTIAL",
-                     "CONDITIONAL", "VERIFIED", "GAP", "FAILED_ATTEMPT", "REJECTED"]
+          "claim_id": {
+            "type": "string"
           },
-          "dependency_mode": { "enum": ["LEAF", "AND", "OR"] },
-          "dependencies": { "type": "array", "items": { "type": "string" } },
-          "evidence_refs": { "type": "array", "items": { "type": "string" } },
+          "statement": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "OPEN",
+              "CONJECTURE",
+              "CHECKED_BOUNDED",
+              "SKETCH",
+              "PARTIAL",
+              "CONDITIONAL",
+              "VERIFIED",
+              "GAP",
+              "FAILED_ATTEMPT",
+              "REJECTED"
+            ]
+          },
+          "dependency_mode": {
+            "enum": [
+              "LEAF",
+              "AND",
+              "OR"
+            ]
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "admitted_by": {
-            "description": "The admission that last moved this claim. A status with no admission behind it cannot occur — the reducer is the only writer.",
+            "description": "The admission that last moved this claim. A status with no admission behind it cannot occur \u2014 the reducer is the only writer.",
             "type": "string"
           },
           "ceiling": {
             "description": "The strongest status this claim may ever reach, from the tier that produced its evidence. Bounded evidence sets a ceiling that later admissions cannot lift.",
             "type": "string"
+          },
+          "superseded_by": {
+            "type": "string",
+            "description": "The sibling that won the race this claim was in. A SCHEDULING fact, not a status: losing a race is not evidence about the claim, and the frame's rule is that process states never appear as epistemic ones. The status stays where it was, so clearing this field returns the claim to the wave with no transition needed \u2014 which is exactly what has to happen when the winner later fails."
+          },
+          "cost_tier": {
+            "type": "string",
+            "description": "Cost tier for scheduling, from the pack's tier cost_hint."
+          },
+          "cost_estimate": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Estimated spend, costed against the governor's budget."
+          },
+          "target_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "description": "The frozen statement this claim is about. The delta that adds a claim has always required it and the reducer discarded it, so a state held a graph of claims none of which could be bound to a frozen statement \u2014 and an admission for a sub-claim could therefore never match anything."
           }
         }
       }
     },
-    "active_obstruction": { "type": ["string", "null"] },
-    "open_gaps": { "type": "array", "items": { "type": "string" } },
+    "active_obstruction": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "open_gaps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "outcome": {
-      "description": "The honest state of the root. SOLVED requires the root claim VERIFIED through an admission that passed every check.",
-      "enum": ["OPEN", "PARTIAL", "SOLVED", "DISPROVED", "STOPPED"]
+      "description": "The honest state of the ROOT, which is not the same as whether anything closed.\n\n`PARTIAL` used to mean both 'the root is established as strongly as this pack can manage' and 'a sub-claim closed and the target is still open' \u2014 two situations that call for opposite next moves, reported with the same word. A campaign that had done everything available to it was indistinguishable from one that had barely started.\n\n  OPEN      nothing about the root is established\n  PARTIAL   the root is admitted BELOW the campaign ceiling, or sub-claims are admitted and the root is not. More is reachable here.\n  CLOSED    the root is admitted AT the campaign ceiling. Nothing stronger is reachable with this pack, and the root's own status says how strong that is \u2014 a CLOSED campaign under a provisional pack is closed at SKETCH.\n  SOLVED    the root is VERIFIED, through an admission that passed every check\n  DISPROVED the root is REJECTED\n  STOPPED   the run ended without settling it",
+      "enum": [
+        "OPEN",
+        "PARTIAL",
+        "CLOSED",
+        "SOLVED",
+        "DISPROVED",
+        "STOPPED"
+      ]
     },
     "history": {
       "description": "One entry per applied admission. Append-only; this is what makes a run replayable rather than merely logged.",
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["revision", "admission_id", "decision"],
+        "required": [
+          "revision",
+          "admission_id",
+          "decision"
+        ],
         "properties": {
-          "revision": { "type": "integer" },
-          "admission_id": { "type": "string" },
-          "decision": { "enum": ["ACCEPT", "REJECT", "DEFER"] },
-          "granted_status": { "type": "string" },
-          "claim_ids": { "type": "array", "items": { "type": "string" } },
-          "admission_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+          "revision": {
+            "type": "integer"
+          },
+          "admission_id": {
+            "type": "string"
+          },
+          "decision": {
+            "enum": [
+              "ACCEPT",
+              "REJECT",
+              "DEFER"
+            ]
+          },
+          "granted_status": {
+            "type": "string"
+          },
+          "claim_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "admission_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
         }
       }
     }

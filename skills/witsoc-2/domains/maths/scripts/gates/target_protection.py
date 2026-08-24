@@ -103,6 +103,27 @@ def extract_block(text: str, keyword: str) -> str | None:
 # but establishes nothing.
 TRIVIAL = (r"\bTrue\b", r"\bNonempty\b", r"\btrivial\b", r"\b0\s*=\s*0\b")
 
+LEAN_DECL = re.compile(
+    r"(?:^|\n)\s*(?:@\[[^\]]*\]\s*)?(?:private\s+|protected\s+|noncomputable\s+)*"
+    r"(?:theorem|lemma)\s+([\w.'!?]+)\s*(.*?)\s*:=", re.DOTALL)
+
+
+def lean_signatures(text: str) -> dict[str, str]:
+    """Declaration name -> everything between the name and `:=`.
+
+    The frozen `formal_target` is written in exactly that shape
+    (`theorem foo (n : Nat) : P n`), so the two are directly comparable.
+    """
+    return {m.group(1): normalize(m.group(2)) for m in LEAN_DECL.finditer(text)}
+
+
+def formal_name_and_signature(formal: str) -> tuple[str | None, str | None]:
+    m = re.match(r"\s*(?:@\[[^\]]*\]\s*)?(?:private\s+|protected\s+|noncomputable\s+)*"
+                 r"(?:theorem|lemma)\s+([\w.'!?]+)\s*(.*)", formal, re.DOTALL)
+    if not m:
+        return None, None
+    return m.group(1), normalize(m.group(2).split(":=")[0])
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("artifact"); ap.add_argument("--claim", required=True)
@@ -160,6 +181,36 @@ def main() -> int:
             problems += drift_findings(normalize(target), artifact_text)
         elif target and artifact_claim is None and not str(a.artifact).endswith(".lean"):
             problems.append("artifact has no CLAIM block to compare against the frozen statement")
+
+    # A Lean artifact has no CLAIM block, and until this existed the gate
+    # compared NOTHING on one and returned pass — inert on precisely the
+    # artifact kind this pack's strongest tier consumes. An artifact that
+    # replaced the frozen target with `True` passed the drift gate; the only
+    # thing that refused it was an unrelated gate failing to run.
+    lean_compared = False
+    if str(a.artifact).endswith(".lean"):
+        frozen_formal = (frozen.get("formal_target") or claim.get("formal_target") or "")
+        want_name, want_sig = formal_name_and_signature(frozen_formal)
+        if want_name and want_sig:
+            lean_compared = True
+            compared.append("Lean signature against the frozen formal target")
+            found = lean_signatures(text)
+            if want_name not in found:
+                problems.append(
+                    f"the artifact declares no '{want_name}'. The frozen target names it, "
+                    f"and what the artifact does declare is {sorted(found) or 'nothing'}")
+            elif found[want_name] != want_sig:
+                problems.append(
+                    f"the signature of '{want_name}' drifted.\n"
+                    f"      frozen:   {want_sig[:160]}\n"
+                    f"      artifact: {found[want_name][:160]}")
+            for pattern in TRIVIAL:
+                if want_name in found and re.search(pattern, found[want_name]) \
+                        and not re.search(pattern, want_sig):
+                    problems.append(
+                        f"the artifact's statement of '{want_name}' contains {pattern!r} "
+                        "and the frozen target does not — a target weakened to something "
+                        "trivially true checks without establishing anything")
 
     claim_text = extract_block(text, "CLAIM") or ""
     for pattern in TRIVIAL:

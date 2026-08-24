@@ -1,0 +1,16 @@
+[
+ {
+  "target": "Nat.two_dvd_mul_add_one",
+  "tactic": "campaign Q1 (induction)",
+  "label": "proof",
+  "source": "import Mathlib\n\ntheorem wit_even_prod (n : ℕ) : 2 ∣ n * (n + 1) := by\n  -- WIT [1] HAVE: if two divides k times k plus one then two divides k plus one times k plus two\n  --   uses: -   justification: expanding the product and peeling off a multiple of two.\n  have step1 : ∀ k : ℕ, 2 ∣ k * (k + 1) → 2 ∣ (k + 1) * (k + 1 + 1) := by\n    intro k ih\n    obtain ⟨m, hm⟩ := ih\n    exact ⟨m + k + 1, by rw [show (k+1) * (k+1+1) = k * (k+1) + 2*(k+1) by ring, hm]; ring⟩\n\n  -- WIT [2] SHOW: for every natural number n, the product n times n plus one is divisible by two\n  --   uses: [1]   justification: [1], induction on n, base by evaluation and step by the lemma above.\n  have step2 : 2 ∣ n * (n + 1) := by\n    induction n with\n    | zero => simp\n    | succ k ih => exact step1 k ih\n\n  exact step2\n",
+  "decl": "wit_even_prod"
+ },
+ {
+  "target": "irrational_sqrt_two",
+  "tactic": "campaign Q3 (norm_num)",
+  "label": "citation",
+  "source": "import Mathlib\n\ntheorem wit_sqrt2_irrational : Irrational (Real.sqrt 2) := by\n  -- WIT [1] SHOW: the square root of two is irrational\n  --   uses: -   justification: a numeric decision procedure for irrationality of a square root.\n  have step1 : Irrational (Real.sqrt 2) := by\n    norm_num\n\n  exact step1\n",
+  "decl": "wit_sqrt2_irrational"
+ }
+]

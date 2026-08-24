@@ -157,6 +157,34 @@
         "CONDITIONAL",
         "VERIFIED"
       ]
+    },
+    "authorship": {
+      "enum": [
+        "independent",
+        "producer",
+        "unstated"
+      ],
+      "description": "Who stands behind this verification. `independent` means the backend knows nothing about this run and cannot be talked into a pass \u2014 an upstream kernel, an exhaustive search over a frozen range. Anything else means the party being checked may have influenced the check, and the frame then requires a VERIFIER actor distinct from the producer.\n\nCopied from the tier's declaration in the pack manifest, which the bridge baseline pins, so a pack quietly downgrading a tier's authorship shows up as contract-line drift."
+    },
+    "verifier": {
+      "type": "object",
+      "description": "The actor that RAN this verification, when the tier is not independently authored. Attestation covered producer, reviewer and admitter and never asked who ran the check \u2014 so a producer could run a graded checker over its own work and hand back a receipt nobody else saw.",
+      "properties": {
+        "actor_id": {
+          "type": "string"
+        },
+        "attested_by": {
+          "enum": [
+            "orchestrator",
+            "self"
+          ]
+        }
+      },
+      "required": [
+        "actor_id",
+        "attested_by"
+      ],
+      "additionalProperties": false
     }
   },
   "not": {

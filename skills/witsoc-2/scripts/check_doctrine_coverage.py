@@ -36,6 +36,29 @@ SKILL_ROOT = Path(__file__).resolve().parent.parent
 STUB_BYTES = 400
 
 
+
+def untriggered_rules(pack, manifest) -> list[str]:
+    """Rules with no declared load trigger.
+
+    Not an error — a bare path means `always`, which is what every pack did
+    before triggers existed and costs exactly what it always cost. It is worth
+    naming because `always` is a claim: that a role cannot take its first step
+    without this document. Measured on one pack, thirteen rules were all loaded
+    up front and about four thousand of twenty-one thousand tokens were used at
+    the moment they arrived. The rest is not free; it is most of a run's
+    context, spent on situations that have not happened.
+    """
+    out = []
+    for entry in (manifest.get("doctrine") or {}).get("rules") or []:
+        if isinstance(entry, str) or "load_when" not in (entry or {}):
+            out.append(rule_path(entry))
+    return out
+
+
+def rule_path(entry) -> str:
+    """A doctrine rule is a path or an object carrying one."""
+    return entry if isinstance(entry, str) else (entry or {}).get("path", "")
+
 def check(pack_dir: Path) -> dict:
     manifest = json.loads((pack_dir / "domain.json").read_text(encoding="utf-8"))
     name = manifest.get("domain", pack_dir.name)
@@ -45,7 +68,7 @@ def check(pack_dir: Path) -> dict:
     for role, rel in (doctrine.get("roles") or {}).items():
         path = pack_dir / rel
         texts[f"role:{role}"] = path.read_text(encoding="utf-8") if path.is_file() else ""
-    for rel in doctrine.get("rules") or []:
+    for rel in (rule_path(r) for r in doctrine.get("rules") or []):
         path = pack_dir / rel
         texts[f"rule:{rel}"] = path.read_text(encoding="utf-8") if path.is_file() else ""
     corpus = "\n".join(texts.values()).lower()
@@ -81,7 +104,12 @@ def main() -> int:
     manifests = sorted((SKILL_ROOT / "domains").glob("*/domain.json"))
     if args.pack:
         manifests = [m for m in manifests if m.parent.name == args.pack]
-    results = [check(m.parent) for m in manifests]
+    results = []
+    for manifest in manifests:
+        entry = check(manifest.parent)
+        entry["untriggered"] = untriggered_rules(
+            manifest.parent, json.loads(manifest.read_text(encoding="utf-8")))
+        results.append(entry)
     gaps = [r for r in results if r["unmentioned"] or r["stub_roles"]]
 
     if args.json:
@@ -98,6 +126,11 @@ def main() -> int:
             for role in r["stub_roles"]:
                 print(f"          {role} is under {STUB_BYTES} bytes; a role file that says "
                       "nothing is the same as no role file")
+            if r.get("untriggered"):
+                print(f"          {len(r['untriggered'])} rule(s) load ALWAYS: "
+                      f"{', '.join(r['untriggered'])}")
+                print("          `always` claims a role cannot take its first step without the "
+                      "document, and every one of them is paid for on every run")
         if gaps and not args.strict:
             print("\n  Advisory. Doctrine is prose, and failing a build on prose invites "
                   "keyword-stuffing; --strict makes it blocking for a pack that wants the "

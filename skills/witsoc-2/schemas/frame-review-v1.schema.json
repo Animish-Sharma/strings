@@ -205,6 +205,33 @@
         "generator",
         "researcher"
       ]
+    },
+    "actor": {
+      "type": "object",
+      "description": "Who executed this packet, as the orchestrator sees it. The frame cannot verify identity \u2014 sessions, workers and processes belong to the orchestrator \u2014 so it records what was attested and refuses to treat an unattested separation as a demonstrated one. Two packets sharing an actor_id are the same actor whatever their role labels say.",
+      "properties": {
+        "actor_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque, orchestrator-assigned. Stable within a run."
+        },
+        "attested_by": {
+          "enum": [
+            "orchestrator",
+            "self"
+          ],
+          "description": "`orchestrator` means something outside the run vouched that this actor is distinct. `self`, or an absent actor block, means nobody did \u2014 independence is then NOT_RUN, which puts CONDITIONAL and VERIFIED out of reach."
+        },
+        "attestation_ref": {
+          "type": "string",
+          "description": "Optional orchestrator-side handle for the attestation."
+        }
+      },
+      "required": [
+        "actor_id",
+        "attested_by"
+      ],
+      "additionalProperties": false
     }
   }
 }

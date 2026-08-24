@@ -180,6 +180,23 @@ def build(doc, statement: str | None, want_calc: bool,
         closing = (formalization or {}).get("__closing__") or {}
         body.append(f"  {closing.get('tactic') or 'exact ' + obligations[-1]['lean_name']}")
 
+    # The SIGNATURE is an obligation too, and it was the one nothing counted.
+    # `blueprint_init` writes a FILL-ME there when no formal target is supplied,
+    # and a blueprint carrying it produced a Lean file whose theorem line was
+    # that sentence — while this function reported "every step carries a
+    # supplied proposition and tactic, 0 open". It reached the kernel and failed
+    # as a parse error, which is luck, not a guard.
+    if "FILL-ME" in statement:
+        gaps = list(gaps) + [{
+            "id": "TARGET",
+            "informal": "the target signature",
+            "expecting": "a formal statement. A blueprint whose signature is still a "
+                         "FILL-ME has no target to protect and nothing to check against — "
+                         "supply --formal, or a claim carrying formal_target"}]
+        # `open_gaps` was published earlier in the function; rebinding the local
+        # alone left the caller reading the pre-signature list.
+        result["open_gaps"] = gaps
+
     result["skeleton"] = f"{statement} := by\n" + "\n".join(body)
     result["filled_steps"] = filled
     result["open_steps"] = holes

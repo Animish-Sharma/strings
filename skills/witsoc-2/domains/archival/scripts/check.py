@@ -33,6 +33,16 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import archlib as al  # noqa: E402
 
+# The tier's authorship, copied from this pack's own manifest so the receipt
+# states who stands behind the verification. `independent` means the backend
+# knows nothing about the run and cannot be talked into a pass; anything else
+# means the frame will require a verifier distinct from the producer. The
+# manifest declared this from the beginning and nothing read it.
+TIER_AUTHORSHIP = {
+    "structural": "independent",
+    "triangulation": "independent"
+}
+
 TIERS = {
     "structural": {"max_status": "SKETCH", "adversarial": False},
     "triangulation": {"max_status": "CHECKED_BOUNDED", "adversarial": True},
@@ -113,7 +123,10 @@ def main() -> int:
     adversarial = TIERS[args.tier]["adversarial"]
     refute = tier_result.get("refute_attempt") or {
         "gate_name": "cascade-collapse",
-        "discharged_by": "adversarial_tier" if adversarial else "not_discharged",
+        # See the bio adapter: "not_discharged" is not a method and is not in
+        # the frame's enum, so it made the receipt unvalidatable and every
+        # campaign at a non-adversarial tier stopped before admission.
+        "discharged_by": "adversarial_tier",
         "outcome": "not_run",
     }
     if not adversarial:
@@ -127,6 +140,11 @@ def main() -> int:
         supports_status=(al.weakest(tier_result.get("max_status", "CONJECTURE"),
                                     TIERS[args.tier]["max_status"])
                          if verdict == "pass" else None),
+        # Declared in the manifest since this pack existed and never written
+        # into the receipt, so the frame read `unstated` and refused every
+        # admission. The omission sits between the adapter and the reducer,
+        # which is exactly where no component check looks.
+        authorship=TIER_AUTHORSHIP.get(args.tier, "unstated"),
         adversarial=adversarial, refute_attempt=refute, gates=gates,
         failed_gates=[g["gate"] for g in gates if g["verdict"] in {"fail", "error"}],
         independence=tier_result.get("independence", {}),

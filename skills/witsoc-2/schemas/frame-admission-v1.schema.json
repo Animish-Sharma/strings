@@ -9,7 +9,6 @@
     "target_sha256",
     "base_revision",
     "base_state_sha256",
-    "result_ref",
     "decision",
     "checks",
     "delta",
@@ -111,7 +110,8 @@
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
         }
-      }
+      },
+      "description": "Required whenever a STATUS MOVES, and only then. An admission that changes the SHAPE of the problem \u2014 Explorer adding sub-claims, setting a dependency mode \u2014 rests on no evidence and referencing a result it does not have would be a fiction. Demanding it unconditionally meant a decomposition could only enter the state as a side effect of somebody producing an artifact, which is Explorer's own output made unrecordable. Nothing is weakened: the delta schema already forces every added claim to OPEN with no evidence, so a structural admission cannot smuggle a conclusion."
     },
     "receipt_ref": {
       "description": "The verification receipt this admission rests on, bound by seal rather than named. Required for any accepted status: without it `checks` is a set of assertions by whoever wrote the admission, and the enforcement chain ends in a self-report at exactly the point it matters. With it, the reducer DERIVES each check from the receipt and refuses any disagreement with what was asserted.",
@@ -370,11 +370,12 @@
               },
               "evidence_sha256": {
                 "type": "array",
-                "minItems": 1,
+                "minItems": 0,
                 "items": {
                   "type": "string",
                   "pattern": "^[0-9a-f]{64}$"
-                }
+                },
+                "description": "May be EMPTY for a claim whose content is exactly the conjunction or disjunction of its dependencies. Such a claim has no artifact of its own and needs none: its evidence is the receipts its dependencies were admitted on, each of which passed its own pack's gates. Requiring at least one item meant a decomposition could be built, worked and closed at every leaf, and the parent that motivated it could never be admitted \u2014 every decomposition dead-ended at the node it existed for. The reducer still refuses an empty list unless the claim really is a dependency node whose closure holds, and it caps the granted status at the weakest admitted dependency."
               }
             }
           }
@@ -429,6 +430,29 @@
             "string",
             "null"
           ]
+        },
+        "supersede": {
+          "type": "array",
+          "description": "Claims cancelled because a sibling won the race they were in. \u00a75.1 has described this since it was written and there was no operation to record it, so a race could be PLANNED and its outcome could not be written down \u2014 the loser stayed runnable and every later plan offered it again.\n\nIt moves no status, on purpose. Losing a race teaches nothing about a claim, and the frame's rule is that process states never appear as epistemic ones. The annotation is what makes revival free: clear it and the claim is back in the wave with no transition needed, which is what has to happen when the winner later fails.",
+          "items": {
+            "type": "object",
+            "required": [
+              "claim_id",
+              "superseded_by"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "claim_id": {
+                "type": "string"
+              },
+              "superseded_by": {
+                "type": "string"
+              },
+              "why": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
     },
@@ -450,6 +474,55 @@
       "description": "SHA-256 over the canonical JSON of this packet with payload_sha256 removed: sorted keys, compact separators, ASCII escapes.",
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
+    },
+    "actor": {
+      "type": "object",
+      "description": "Who executed this packet, as the orchestrator sees it. The frame cannot verify identity \u2014 sessions, workers and processes belong to the orchestrator \u2014 so it records what was attested and refuses to treat an unattested separation as a demonstrated one. Two packets sharing an actor_id are the same actor whatever their role labels say.",
+      "properties": {
+        "actor_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque, orchestrator-assigned. Stable within a run."
+        },
+        "attested_by": {
+          "enum": [
+            "orchestrator",
+            "self"
+          ],
+          "description": "`orchestrator` means something outside the run vouched that this actor is distinct. `self`, or an absent actor block, means nobody did \u2014 independence is then NOT_RUN, which puts CONDITIONAL and VERIFIED out of reach."
+        },
+        "attestation_ref": {
+          "type": "string",
+          "description": "Optional orchestrator-side handle for the attestation."
+        }
+      },
+      "required": [
+        "actor_id",
+        "attested_by"
+      ],
+      "additionalProperties": false
     }
-  }
+  },
+  "allOf": [
+    {
+      "description": "A status that needs evidence needs a result to point at.",
+      "if": {
+        "properties": {
+          "granted_status": {
+            "not": {
+              "const": "OPEN"
+            }
+          }
+        },
+        "required": [
+          "granted_status"
+        ]
+      },
+      "then": {
+        "required": [
+          "result_ref"
+        ]
+      }
+    }
+  ]
 }

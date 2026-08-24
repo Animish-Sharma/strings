@@ -50,6 +50,29 @@ stdout is a `frame-receipt-v1` and nothing else. Exit 0 pass, 1 fail, 2 error,
 3 tier could not run. Every adapter accepts `--json` even if it always emits
 JSON.
 
+**It is now a regression test, not a paragraph.** `scripts/check_bridge.py`
+invokes every registered pack exactly as `campaign.py` does, with an artifact
+that is nonsense in every field — because what is being tested is not whether a
+pack can verify something, which is its own self-test's job, but whether the
+frame's CALL is understood at all. A pack may refuse the artifact however it
+likes. It may not fail to be called.
+
+The distinction that makes this work: an adapter that cannot PARSE the frame's
+argv exits 2, and so does an adapter that hit an honest error during
+verification. Conflating them is exactly how a renamed flag hides — the first
+version of the check accepted exit 2 unconditionally and did not notice a pack
+whose `--artifact` had become `--candidate`. So the two are separated by what
+the rejection *says*, not by its code.
+
+The check also records the observable boundary — tiers, ceilings, gate names,
+receipt fields, refinements — in `references/bridge_baseline.json`, and any
+change to it is reported. `--update` rewrites the baseline, so a change to the
+contract line is one deliberate command that shows up in the diff rather than an
+invisible consequence of an edit somewhere else. And it compares the convention
+written above against the argv `campaign.py` actually builds, because packs are
+written from the document while the frame runs the code, and the gap between
+them is invisible from either side.
+
 This went unstated through two contract versions and three packs, and the packs
 diverged: one of them rejected `--json` and so could not be called by the frame
 at all. Nothing found it, because nothing had ever run the loop end to end —
@@ -106,6 +129,29 @@ See `verification_interface.md` for what makes a refute-attempt real.
 Typical additions: a placeholder or hole scan with the field's own token set, a
 tampering diff against a protected baseline, a threshold check, a
 multiple-comparison correction, an independence check.
+
+### Say which file implements each one
+
+Every tier and every gate takes an optional `script`, relative to the pack root.
+Optional in the schema and effectively required in practice: without it the
+binding between a declared gate name and the file that runs it lives inside the
+pack's own adapter, where nothing can check it. A rename then breaks the wiring
+silently, and a gate that exists but is never dispatched reads in the receipt
+exactly like a gate that passed.
+
+It also lets `scripts/check_doctrine_commands.py` tell a wired script from an
+orphaned one — a script no manifest dispatches and no doctrine names is a
+capability nobody can reach, and packs accumulate those faster than they
+accumulate anything else.
+
+**A gate declares what it derives.** A gate that reads a field the producer
+wrote is auditing a self-report, and the receipt should not make that look like
+a measurement. Where a check CAN be computed from the evidence, compute it and
+refuse a disagreement; where it genuinely cannot, accept the assertion and
+report the count of each separately. The bio pack's confounder sweep does this:
+eight of twelve alternative explanations name a computing tool, a bundle
+contradicting its own pinned diagnostics fails, and the receipt says how many
+verdicts were computed and how many were asserted.
 
 ## 6. Selection
 

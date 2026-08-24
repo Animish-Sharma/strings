@@ -73,6 +73,11 @@ WEIGHT = {"signals": 1.0, "strong_signals": 3.0, "excludes": -3.0}
 ROLES = ("explorer", "generator", "researcher")
 
 
+
+def rule_path(entry) -> str:
+    """A doctrine rule is a path or an object carrying one."""
+    return entry if isinstance(entry, str) else (entry or {}).get("path", "")
+
 def normalize(text: str) -> str:
     return re.sub(r"\s+", " ", text.lower())
 
@@ -114,6 +119,38 @@ def term_pattern(term: str) -> re.Pattern[str]:
     body = r"\s+".join(parts)
     return re.compile(rf"(?<![\w-]){body}(?![\w-])")
 
+
+
+def stage_rules(rules: list, pack_dir: Path, rel: str) -> dict:
+    """Group a pack's rules by the moment they are needed.
+
+    A rule with no declared trigger is `always`, which keeps an older pack
+    working and costing exactly what it always cost. `always` is a real answer —
+    it claims a role cannot take its first step without the document — and it
+    should be rare, which is why the resolver prints the count.
+    """
+    staged: dict[str, list[dict]] = {}
+    for entry in rules:
+        path = rule_path(entry)
+        if not path or not (pack_dir / path).exists():
+            continue
+        when = entry.get("load_when", "always") if isinstance(entry, dict) else "always"
+        roles = entry.get("roles") if isinstance(entry, dict) else None
+        why = entry.get("why", "") if isinstance(entry, dict) else ""
+        size = (pack_dir / path).stat().st_size
+        staged.setdefault(when, []).append(
+            {"path": f"{rel}/{path}", "roles": roles or list(ROLES), "why": why,
+             "approx_tokens": size // 4})
+    return staged
+
+
+def token_cost(paths: list[str], root: Path) -> int:
+    total = 0
+    for path in paths:
+        candidate = root / path
+        if candidate.is_file():
+            total += candidate.stat().st_size
+    return total // 4
 
 def load_packs() -> tuple[list[dict[str, Any]], list[str]]:
     """Every pack directory with a readable manifest, plus load failures."""
@@ -188,8 +225,15 @@ def load_plan(pack: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
         "pack_dir": rel,
         "role_doctrine": plan_roles,
         "shared_doctrine": [
-            f"{rel}/{r}" for r in doctrine.get("rules", []) or [] if (pack_dir / r).exists()
+            f"{rel}/{rule_path(r)}" for r in doctrine.get("rules", []) or []
+            if (pack_dir / rule_path(r)).exists()
         ],
+        # The same rules, staged. A role told to load everything before any work
+        # begins pays for thirteen documents to take one step: measured on this
+        # pack, 21k tokens of doctrine of which about 4k is used at the moment
+        # it arrives. The rest is not free — it is most of the run's context,
+        # spent on documents for situations that have not happened.
+        "staged_doctrine": stage_rules(doctrine.get("rules", []) or [], pack_dir, rel),
         "adapter": resolve(adapter.get("entry_point"), "verification_adapter.entry_point"),
         "corpus": resolve(corpus, "verification_adapter.corpus.entry_point", required=False),
         "claim_schema": resolve(
@@ -288,7 +332,8 @@ def attach_plan(result: dict[str, Any], packs: list[dict[str, Any]]) -> dict[str
     return result
 
 
-def render(result: dict[str, Any], verbose: bool) -> None:
+def render(result: dict[str, Any], verbose: bool,
+           role_filter: list[str] | None = None) -> None:
     decision = result["decision"]
     print(f"DECISION: {decision}")
 
@@ -347,13 +392,51 @@ def render(result: dict[str, Any], verbose: bool) -> None:
         if plan.get("provisional"):
             p = plan["provisional"]
             print(f"  PROVISIONAL — authored by {p['authored_by']}. {p['reason']}")
-        print("  Load, before any work begins:")
+        staged = plan.get("staged_doctrine") or {}
+        wanted = role_filter or list(ROLES)
+
+        print("  Load NOW:")
         for role in ROLES:
+            if role not in wanted:
+                continue
             label = plan["role_names"].get(role)
             shown = f"{role.capitalize()}" + (f" (called {label} here)" if label else "")
-            print(f"    {shown:<34} {plan['role_doctrine'][role]}")
-        for extra in plan["shared_doctrine"]:
-            print(f"    {'shared doctrine':<34} {extra}")
+            # The GENERIC role contract, which every pack doctrine opens by
+            # saying still applies — and which this never named. A load plan
+            # that omits a document the role is required to read is not a plan,
+            # and its cost was missing from the total for the same reason.
+            generic = f"{role}/SKILL.md"
+            if (SKILL_ROOT / generic).exists():
+                print(f"    {shown + ' (role contract)':<34} {generic}")
+            print(f"    {shown + ' (this field)':<34} {plan['role_doctrine'][role]}")
+        now = [r for r in staged.get("always", []) if set(r["roles"]) & set(wanted)]
+        for entry in now:
+            print(f"    {'shared doctrine':<34} {entry['path']}")
+
+        role_docs = [plan["role_doctrine"][r] for r in wanted]
+        role_docs += [f"{r}/SKILL.md" for r in wanted
+                      if (SKILL_ROOT / f"{r}/SKILL.md").exists()]
+        upfront = token_cost(role_docs + [e["path"] for e in now], SKILL_ROOT)
+        later = {when: [e for e in entries if set(e["roles"]) & set(wanted)]
+                 for when, entries in staged.items() if when != "always"}
+        later = {w: e for w, e in later.items() if e}
+        if later:
+            print("  Load WHEN IT HAPPENS — not before:")
+            for when in sorted(later):
+                entries = later[when]
+                cost = sum(e["approx_tokens"] for e in entries)
+                names = ", ".join(Path(e["path"]).name for e in entries)
+                print(f"    {when:<16} ~{cost:>5} tok  {names}")
+        deferred = sum(e["approx_tokens"] for entries in later.values() for e in entries)
+        # SKILL.md is paid by every run before this tool is even called, so a
+        # total that omits it understates the only number anyone budgets against.
+        route = token_cost(["SKILL.md"], SKILL_ROOT)
+        print(f"  First-turn cost  ~{upfront + route} tok, of which ~{route} is SKILL.md "
+              "(paid before this ran)")
+        print(f"  Doctrine cost    ~{upfront} tok now"
+              + (f", ~{deferred} tok deferred" if deferred else "")
+              + (f"  (role: {', '.join(wanted)})" if role_filter else
+                 "  — pass --role to load one role's share"))
         print(f"  Adapter          {plan['adapter']}")
         if plan["corpus"]:
             print(f"  Corpus           {plan['corpus']}")
@@ -412,8 +495,65 @@ def self_test(packs: list[dict[str, Any]]) -> int:
         for failure in failures:
             print(f"  {failure}")
         return 1
-    print(f"SELF-TEST: PASS — {checked} case(s) across {len(packs)} pack(s)")
+    correct, total, lines = held_out_report(packs)
+    if lines:
+        print("\nHeld-out — statements written without knowledge of the terms:\n")
+        for line in lines:
+            print(line)
+        if total:
+            print(f"\n  {correct}/{total} = {correct / total:.0%} across every declared "
+                  "held-out set. This is the number that measures generalization; the one "
+                  "below measures\n  a fit to the cases the signal lists were written from.")
+    print(f"\nSELF-TEST: PASS — {checked} case(s) across {len(packs)} pack(s)")
     return 0
+
+
+def held_out_report(packs: list[dict]) -> tuple[int, int, list[str]]:
+    """Replay statements a pack did NOT write its selection terms from.
+
+    `--self-test` replays each pack's own declared examples, and a perfect score
+    there shows a fit to those examples and nothing else — the same hand wrote
+    the signals and the cases. That number has been reported honestly for as
+    long as it existed and it still cannot measure generalization, because
+    nothing it reads came from outside.
+
+    A pack declaring `held_out_cases` points at statements phrased by people who
+    did not know the terms. A pack without one is not failing; it is unmeasured,
+    and this says which.
+    """
+    lines: list[str] = []
+    total = correct = 0
+    for pack in packs:
+        rel = pack.get("held_out_cases")
+        root = pack["_dir"]
+        if not rel:
+            lines.append(f"  ....  {pack['domain']:<10} no held-out set declared — the "
+                         "self-test number for this pack measures self-consistency only")
+            continue
+        path = root / rel
+        if not path.exists():
+            lines.append(f"  MISS  {pack['domain']:<10} declares {rel} and it is not there")
+            continue
+        blob = json.loads(path.read_text(encoding="utf-8"))
+        want = blob.get("expect_domain", pack["domain"])
+        hits = 0
+        for case in blob.get("cases", []):
+            # normalize() first, exactly as the CLI and the self-test do. The
+            # first version called decide() on raw text and every case came back
+            # NO_MATCH — a held-out set that measures the harness rather than the
+            # terms is worse than none, because its number looks like a finding.
+            outcome = decide(packs, normalize(case["statement"]))
+            got = (outcome.get("domain") if outcome.get("decision") == "SELECTED"
+                   else outcome.get("decision"))
+            hits += got == want
+        count = len(blob.get("cases", []))
+        total += count
+        correct += hits
+        share = hits / count if count else 0.0
+        mark = "ok  " if share >= 0.7 else "WARN"
+        lines.append(f"  {mark}  {pack['domain']:<10} {hits}/{count} = {share:.0%} on statements "
+                     "written without knowledge of its terms")
+    return correct, total, lines
 
 
 def main() -> int:
@@ -425,6 +565,9 @@ def main() -> int:
     group.add_argument("--list", action="store_true", help="show registered packs")
     group.add_argument("--self-test", action="store_true", help="check every pack's own examples")
     parser.add_argument("--json", action="store_true", help="machine-readable result")
+    parser.add_argument("--role", nargs="*", choices=list(ROLES),
+                        help="print only this role's doctrine. A run acts as one role at a "
+                             "time, and printing all three costs the other two for nothing.")
     parser.add_argument("--explain", action="store_true", help="always show per-pack scores")
     args = parser.parse_args()
 
@@ -481,7 +624,7 @@ def main() -> int:
     if args.json:
         print(json.dumps(result, indent=2))
     else:
-        render(result, args.explain)
+        render(result, args.explain, args.role)
 
     return {"SELECTED": 0, "AMBIGUOUS": 3, "NO_MATCH": 4, "UNRESOLVABLE": 5}[result["decision"]]
 

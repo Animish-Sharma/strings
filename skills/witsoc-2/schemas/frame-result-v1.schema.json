@@ -444,6 +444,60 @@
       "description": "The approach family this result came from. Compared against a reviewer's method_family when the reviewer shares the producer's role: same role and same family is one check performed twice.",
       "type": "string",
       "minLength": 1
+    },
+    "actor": {
+      "type": "object",
+      "description": "Who executed this packet, as the orchestrator sees it. The frame cannot verify identity \u2014 sessions, workers and processes belong to the orchestrator \u2014 so it records what was attested and refuses to treat an unattested separation as a demonstrated one. Two packets sharing an actor_id are the same actor whatever their role labels say.",
+      "properties": {
+        "actor_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque, orchestrator-assigned. Stable within a run."
+        },
+        "attested_by": {
+          "enum": [
+            "orchestrator",
+            "self"
+          ],
+          "description": "`orchestrator` means something outside the run vouched that this actor is distinct. `self`, or an absent actor block, means nobody did \u2014 independence is then NOT_RUN, which puts CONDITIONAL and VERIFIED out of reach."
+        },
+        "attestation_ref": {
+          "type": "string",
+          "description": "Optional orchestrator-side handle for the attestation."
+        }
+      },
+      "required": [
+        "actor_id",
+        "attested_by"
+      ],
+      "additionalProperties": false
+    },
+    "obligations_answered": {
+      "type": "array",
+      "description": "One entry per obligation the work item carried. `not_done` is a legitimate answer and an honest one \u2014 what is refused is silence, because a step nobody mentions and a step nobody took are indistinguishable in a result.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "outcome"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "outcome": {
+            "enum": [
+              "done",
+              "not_applicable",
+              "not_done"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      }
     }
   },
   "not": {

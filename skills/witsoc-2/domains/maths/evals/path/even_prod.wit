@@ -1,0 +1,19 @@
+-- Status: UNVERIFIED
+-- Original: for every natural number n, the product n times n plus one is divisible by two
+-- Frozen-target-sha256: e09be7b0fd470bdb4af728e7055d7abaf8d67ac8b687bd8823afb66f6d5418fd
+
+MODULE [wit_even_prod]
+
+THEOREM [wit_even_prod]:
+  CLAIM:
+    for every natural number n, the product n times n plus one is divisible by two
+
+PROOF OF [wit_even_prod]:
+
+  [1] HAVE if two divides k times k plus one then two divides k plus one times k plus two
+      BY expanding the product and peeling off a multiple of two.
+
+  [2] SHOW for every natural number n, the product n times n plus one is divisible by two
+      BY [1], induction on n, base by evaluation and step by the lemma above.
+
+  QED BY [2].

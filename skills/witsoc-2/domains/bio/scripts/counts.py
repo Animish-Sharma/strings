@@ -153,6 +153,66 @@ def background_for(signature: set[int], expression_rank: list[int],
     return chosen
 
 
+def prepare(cells: dict[int, dict[int, float]], features: list[str], mito_prefix: str,
+            min_counts: int, min_genes: int, max_mito: float) -> dict:
+    """QC, normalize, and rank genes by mean expression — the shared preamble.
+
+    Every consumer of this matrix goes through here, so the QC thresholds and the
+    normalization are applied once. A diagnostic that re-derived them would be
+    auditing a different dataset than the one the endpoint came from, which is
+    exactly the kind of quiet divergence this pack exists to catch.
+    """
+    metrics = qc(cells, features, mito_prefix)
+    kept, dropped = [], {"low_counts": 0, "few_genes": 0, "high_mito": 0}
+    for cell, m in metrics.items():
+        if m["total_counts"] < min_counts:
+            dropped["low_counts"] += 1
+        elif m["genes_detected"] < min_genes:
+            dropped["few_genes"] += 1
+        elif m["mito_fraction"] > max_mito:
+            dropped["high_mito"] += 1
+        else:
+            kept.append(cell)
+    normalized = {cell: normalize(cells[cell], metrics[cell]["total_counts"]) for cell in kept}
+    totals: dict[int, float] = {}
+    for column in normalized.values():
+        for gene, value in column.items():
+            totals[gene] = totals.get(gene, 0.0) + value
+    ranked = sorted(totals, key=lambda g: totals[g])
+    return {"metrics": metrics, "kept": kept, "dropped": dropped,
+            "normalized": normalized, "ranked": ranked}
+
+
+def score_set(normalized: dict[int, dict[int, float]], kept: list[int], indices: set[int],
+              ranked: list[int], multiple: int = BACKGROUND_MULTIPLE) -> tuple[dict, set]:
+    """Expression-matched score for one gene set, per cell.
+
+    THE one definition. `counts.py` computes the endpoint with it and
+    `expression_diagnostics.py` scores the generic signatures with it, so a
+    comparison between the claimed signature and a stress signature is a
+    comparison between two numbers built the same way. Two definitions of a
+    score is two endpoints, and the second one is always the flattering one.
+    """
+    background = background_for(indices, ranked, multiple)
+    scores = {}
+    for cell in kept:
+        column = normalized[cell]
+        sig = bl.mean([column.get(g, 0.0) for g in indices])
+        bg = bl.mean([column.get(g, 0.0) for g in background]) if background else 0.0
+        scores[cell] = sig - bg
+    return scores, background
+
+
+def resolve_genes(features: list[str], wanted: set[str]) -> tuple[set[int], list[str]]:
+    """Gene names to matrix row indices, case-insensitively. Returns what was
+    found and what was not; an unreported miss turns a real signature into a
+    small score rather than into an error."""
+    index_of = {name.upper(): index for index, name in enumerate(features, start=1)}
+    found = {index_of[g] for g in wanted if g in index_of}
+    missing = sorted(wanted - set(index_of))
+    return found, missing
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--mtx"); ap.add_argument("--features"); ap.add_argument("--barcodes")
@@ -190,9 +250,7 @@ def main() -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 
-    index_of = {name.upper(): index for index, name in enumerate(features, start=1)}
-    signature = {index_of[g] for g in wanted if g in index_of}
-    missing = sorted(wanted - set(index_of))
+    signature, missing = resolve_genes(features, wanted)
     if not signature:
         print(json.dumps({"error": "no signature gene is present in this matrix",
                           "missing": missing[:20],
@@ -201,17 +259,9 @@ def main() -> int:
                          indent=2), file=sys.stderr)
         return 1
 
-    metrics = qc(cells, features, args.mito_prefix)
-    kept, dropped = [], {"low_counts": 0, "few_genes": 0, "high_mito": 0}
-    for cell, m in metrics.items():
-        if m["total_counts"] < args.min_counts:
-            dropped["low_counts"] += 1
-        elif m["genes_detected"] < args.min_genes:
-            dropped["few_genes"] += 1
-        elif m["mito_fraction"] > args.max_mito:
-            dropped["high_mito"] += 1
-        else:
-            kept.append(cell)
+    prepared = prepare(cells, features, args.mito_prefix,
+                       args.min_counts, args.min_genes, args.max_mito)
+    metrics, kept, dropped = prepared["metrics"], prepared["kept"], prepared["dropped"]
 
     if not kept:
         print(json.dumps({"error": "quality control removed every cell", "dropped": dropped,
@@ -220,22 +270,8 @@ def main() -> int:
                          indent=2), file=sys.stderr)
         return 1
 
-    normalized = {cell: normalize(cells[cell], metrics[cell]["total_counts"]) for cell in kept}
-
-    # Rank genes by mean normalized expression once, for the background.
-    totals: dict[int, float] = {}
-    for column in normalized.values():
-        for gene, value in column.items():
-            totals[gene] = totals.get(gene, 0.0) + value
-    ranked = sorted(totals, key=lambda g: totals[g])
-    background = background_for(signature, ranked, BACKGROUND_MULTIPLE)
-
-    scores = {}
-    for cell in kept:
-        column = normalized[cell]
-        sig = bl.mean([column.get(g, 0.0) for g in signature])
-        bg = bl.mean([column.get(g, 0.0) for g in background]) if background else 0.0
-        scores[cell] = sig - bg
+    normalized, ranked = prepared["normalized"], prepared["ranked"]
+    scores, background = score_set(normalized, kept, signature, ranked)
 
     design_rows = {}
     design_fields: list[str] = []

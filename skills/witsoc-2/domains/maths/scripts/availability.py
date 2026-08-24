@@ -32,7 +32,10 @@ def find_lean() -> str | None:
     return shutil.which("lean") or shutil.which("lake")
 
 
-def probe_kernel() -> dict:
+VERSION_TIMEOUT = int(os.environ.get("WITSOC2_VERSION_TIMEOUT", "5"))
+
+
+def probe_kernel(requires_library: bool = True) -> dict:
     lake = find_lean()
     project = os.environ.get("WITSOC2_LEAN_PROJECT")
     if not lake:
@@ -41,10 +44,22 @@ def probe_kernel() -> dict:
                           "the kernel tier cannot run, so this run's ceiling is "
                           "CHECKED_BOUNDED",
                 "ceiling_without_it": "CHECKED_BOUNDED"}
+    # A version query does no work. Anything but an immediate answer means the
+    # thing being probed is what is hanging — a launcher resolving a toolchain
+    # over the network, most often — and waiting a minute to learn that is the
+    # exact cost a probe exists to avoid. Sixty seconds was the old bound, and
+    # the honest answer it eventually printed was worth about a second.
     try:
         out = subprocess.run([lake, "--version"], capture_output=True, text=True,
-                             timeout=60, cwd=project or None)
+                             timeout=VERSION_TIMEOUT, cwd=project or None)
         version = (out.stdout or out.stderr).strip().splitlines()[0] if out.returncode == 0 else None
+    except subprocess.TimeoutExpired:
+        return {"available": False,
+                "detail": f"{lake} did not report a version within {VERSION_TIMEOUT}s. A "
+                          "version query does no work, so something it depends on is hanging — "
+                          "commonly a launcher resolving a toolchain over the network. Point "
+                          "WITSOC2_LEAN at a toolchain binary directly to skip it.",
+                "ceiling_without_it": "CHECKED_BOUNDED"}
     except (OSError, subprocess.SubprocessError, IndexError):
         version = None
     if not version:
@@ -52,28 +67,61 @@ def probe_kernel() -> dict:
                 "ceiling_without_it": "CHECKED_BOUNDED"}
     result = {"available": True, "detail": version, "toolchain": version, "lean": lake}
     if project:
-        mathlib = Path(project) / ".lake" / "build" / "lib" / "lean" / "Mathlib"
+        lib = Path(project) / ".lake" / "build" / "lib" / "lean"
+        mathlib = lib / "Mathlib"
         # Directory presence is not availability. A partially built checkout has
         # the directory and is missing most of what anyone will import, and a
         # tier that reports available on that basis sends a run to spend its
         # expensive budget discovering a build problem. Count the compiled
         # modules and say the number.
         built = list(mathlib.rglob("*.olean")) if mathlib.exists() else []
+        any_built = list(lib.rglob("*.olean")) if lib.exists() else []
         result["mathlib_built"] = bool(built)
         result["mathlib_modules"] = len(built)
+        result["compiled_modules"] = len(any_built)
         result["project"] = project
         toolchain_file = Path(project) / "lean-toolchain"
         if toolchain_file.is_file():
             result["project_toolchain"] = toolchain_file.read_text(encoding="utf-8").strip()
-        if not built:
+
+        # "The kernel is usable" and "Mathlib is built" are DIFFERENT questions,
+        # and this probe used to answer only the second. A target whose
+        # allowed_external_facts is empty needs the kernel and does not need the
+        # library — and refusing it understates what the run could establish,
+        # which is the same class of error as overstating, pointing the other
+        # way. The Mathlib count stays, as a ceiling on what may be IMPORTED.
+        needs_mathlib = requires_library
+        if not any_built:
             result["available"] = False
-            result["detail"] += ("  (project set and no compiled modules under it — the library "
-                                 "is not usable, whatever the directory listing suggests)")
+            result["detail"] += ("  (project set and nothing compiled under it — no library is "
+                                 "usable, whatever the directory listing suggests)")
+            result["ceiling_without_it"] = "CHECKED_BOUNDED"
+        elif needs_mathlib and not built:
+            result["available"] = False
+            result["detail"] += (f"  ({len(any_built)} module(s) compiled and no Mathlib among "
+                                 "them; this claim cites external results, so the library is "
+                                 "required)")
             result["ceiling_without_it"] = "CHECKED_BOUNDED"
         else:
-            result["detail"] += f"  ({len(built)} compiled module(s) at {project})"
+            result["detail"] += (f"  ({len(any_built)} compiled module(s) at {project}"
+                                 + (f", {len(built)} of them Mathlib" if built else
+                                    "; no Mathlib, and this claim cites nothing that needs it")
+                                 + ")")
     else:
-        result["detail"] += "  (no WITSOC2_LEAN_PROJECT; Mathlib imports unavailable)"
+        # No project means no usable environment, not merely no library. The
+        # tier runs `lake env lean`, and `lake env` takes its search path from
+        # the directory it is invoked in — outside a project there is nothing to
+        # take, and lake sits trying to resolve one. Reporting `available` here
+        # sent a run into a thirty-minute block that ended in a toolchain error,
+        # which is the most expensive possible way to learn a configuration fact
+        # a probe can state in milliseconds.
+        result["available"] = False
+        result["ceiling_without_it"] = "CHECKED_BOUNDED"
+        result["detail"] += ("  (no WITSOC2_LEAN_PROJECT — `lake env` has no environment to "
+                             "take a search path from, so the tier cannot run at all. Build one: "
+                             "`eval \"$(python3 scripts/scaffold_lean.py --print-export)\"`. It "
+                             "gives an environment, not a library, which is enough for a target "
+                             "citing nothing.)")
     return result
 
 PROBES = {"structural": probe_structural, "kernel": probe_kernel, "bounded": probe_bounded}
@@ -81,10 +129,27 @@ PROBES = {"structural": probe_structural, "kernel": probe_kernel, "bounded": pro
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--tier", choices=sorted(PROBES))
+    ap.add_argument("--claim", help="the frozen claim. Its allowed_external_facts decide "
+                    "whether the kernel tier needs a library at all — a target that cites "
+                    "nothing needs the kernel and not Mathlib, and refusing it understates "
+                    "what the run could establish")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args()
     tiers = [a.tier] if a.tier else sorted(PROBES)
-    results = {t: PROBES[t]() for t in tiers}
+
+    requires_library = True
+    if a.claim:
+        try:
+            claim = json.loads(Path(a.claim).read_text(encoding="utf-8"))
+            requires_library = bool(claim.get("allowed_external_facts"))
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"ERROR: claim unreadable — {exc}", file=sys.stderr)
+            return 2
+
+    results = {}
+    for name in tiers:
+        probe = PROBES[name]
+        results[name] = (probe(requires_library) if name == "kernel" else probe())
     if a.json:
         print(json.dumps(results, indent=2))
     else:
