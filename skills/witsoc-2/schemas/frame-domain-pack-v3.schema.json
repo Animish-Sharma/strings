@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "frame-domain-pack-v3",
   "title": "Domain pack manifest, contract version 3",
-  "description": "Contract v3. Two additions over v2, both making declared what every real pack already carried undeclared.\n\n`script` on each tier and gate: the binding between a declared name and the file that implements it. In v2 that binding lived inside each pack's own adapter, where nothing could check it \u2014 a rename broke the wiring silently, and a gate that exists but is never dispatched reads in the receipt exactly like a gate that passed.\n\n`reference_data`: the tables a pack reasons from. The v2 contract said a pack supplies six items 'and nothing else', and that was false of every pack ever written here \u2014 a claim-class taxonomy, a unit taxonomy, a confounder catalogue, a technique list all sat in data/ outside the contract, invisible to validation. Undeclared structure is not less structure; it is structure nobody can check. Declaring it does not make the frame read those tables \u2014 the frame still never reaches past the contract line \u2014 it makes their existence, purpose, and presence checkable.",
+  "description": "Contract v3. Two additions over v2, both making declared what every real pack already carried undeclared.\n\n`script` on each tier and gate: the binding between a declared name and the file that implements it. In v2 that binding lived inside each pack's own adapter, where nothing could check it — a rename broke the wiring silently, and a gate that exists but is never dispatched reads in the receipt exactly like a gate that passed.\n\n`reference_data`: the tables a pack reasons from. The v2 contract said a pack supplies six items 'and nothing else', and that was false of every pack ever written here — a claim-class taxonomy, a unit taxonomy, a confounder catalogue, a technique list all sat in data/ outside the contract, invisible to validation. Undeclared structure is not less structure; it is structure nobody can check. Declaring it does not make the frame read those tables — the frame still never reaches past the contract line — it makes their existence, purpose, and presence checkable.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -49,7 +49,7 @@
       }
     },
     "selection": {
-      "description": "CONTRACT ITEM 6 \u2014 applicability. The only thing scripts/resolve_domain.py reads when deciding whether an incoming problem belongs to this pack. Declaring it is the pack's responsibility precisely because the frame must not carry field vocabulary of its own (governance rule 2): every term that identifies a field lives inside that field's pack.",
+      "description": "CONTRACT ITEM 6 — applicability. The only thing scripts/resolve_domain.py reads when deciding whether an incoming problem belongs to this pack. Declaring it is the pack's responsibility precisely because the frame must not carry field vocabulary of its own (governance rule 2): every term that identifies a field lives inside that field's pack.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -66,7 +66,7 @@
           }
         },
         "strong_signals": {
-          "description": "Terms that are close to conclusive on their own \u2014 a notation, tool, or object name essentially unused outside this field. Weight 3. Keep this list short and genuinely distinctive; padding it turns resolution into a coin flip that reports certainty.",
+          "description": "Terms that are close to conclusive on their own — a notation, tool, or object name essentially unused outside this field. Weight 3. Keep this list short and genuinely distinctive; padding it turns resolution into a coin flip that reports certainty.",
           "type": "array",
           "items": {
             "type": "string",
@@ -74,7 +74,7 @@
           }
         },
         "excludes": {
-          "description": "Terms that fire this pack's signals but indicate a different field \u2014 the borrowed-word problem. Weight -3 each. These are what stop a pack from claiming every problem that happens to use one of its common words.",
+          "description": "Terms that fire this pack's signals but indicate a different field — the borrowed-word problem. Weight -3 each. These are what stop a pack from claiming every problem that happens to use one of its common words.",
           "type": "array",
           "items": {
             "type": "string",
@@ -107,7 +107,7 @@
           }
         },
         "explicit_only": {
-          "description": "True for a pack that must never be auto-selected \u2014 a fixture, or a pack under construction. It stays reachable by name and invisible to scoring.",
+          "description": "True for a pack that must never be auto-selected — a fixture, or a pack under construction. It stays reachable by name and invisible to scoring.",
           "type": "boolean"
         },
         "min_score": {
@@ -141,7 +141,7 @@
           "minLength": 16
         },
         "authored_by": {
-          "description": "'orchestrator' means the same system that will produce candidates also wrote the thing that checks them. That is not a detail \u2014 it is the reason the ceiling exists.",
+          "description": "'orchestrator' means the same system that will produce candidates also wrote the thing that checks them. That is not a detail — it is the reason the ceiling exists.",
           "enum": [
             "orchestrator",
             "human"
@@ -152,7 +152,7 @@
           "type": "string"
         },
         "ceiling": {
-          "description": "The strongest status any claim may reach under this pack, whatever its tiers say. An orchestrator-authored pack may not set VERIFIED unless it has a tier that is adversarial, independently authored, and backed by a negative control that actually exists \u2014 i.e. unless it is wrapping a checker the run did not write.",
+          "description": "The strongest status any claim may reach under this pack, whatever its tiers say. An orchestrator-authored pack may not set VERIFIED unless it has a tier that is adversarial, independently authored, and backed by a negative control that actually exists — i.e. unless it is wrapping a checker the run did not write.",
           "enum": [
             "CONJECTURE",
             "SKETCH",
@@ -163,7 +163,7 @@
           ]
         },
         "promotion_requirements": {
-          "description": "What this pack must acquire to stop being provisional \u2014 named, so promotion is a checklist rather than a mood. Typically: an independently authored backend, a negative control it demonstrably rejects, and role doctrine written from real runs.",
+          "description": "What this pack must acquire to stop being provisional — named, so promotion is a checklist rather than a mood. Typically: an independently authored backend, a negative control it demonstrably rejects, and role doctrine written from real runs.",
           "type": "array",
           "minItems": 1,
           "items": {
@@ -183,7 +183,7 @@
       ],
       "properties": {
         "entry_point": {
-          "description": "Command or module path the frame invokes. Receives an artifact reference, returns a frame-receipt-v1. CALLING CONVENTION, which is part of the contract and not a detail: the entry point is invoked as `<entry_point> --artifact <path> --claim <path> --tier <name> --json` and must write a frame-receipt-v1 to stdout, exiting 0 on pass, 1 on fail, 2 on error, 3 when the tier could not run. Every adapter must ACCEPT --json even if it always emits JSON. This was left unstated for two versions and three packs, and the packs quietly diverged \u2014 the frame could not call one of them at all, which nothing discovered until a run tried to.",
+          "description": "Command or module path the frame invokes. Receives an artifact reference, returns a frame-receipt-v1. CALLING CONVENTION, which is part of the contract and not a detail: the entry point is invoked as `<entry_point> --artifact <path> --claim <path> --tier <name> --json` and must write a frame-receipt-v1 to stdout, exiting 0 on pass, 1 on fail, 2 on error, 3 when the tier could not run. Every adapter must ACCEPT --json even if it always emits JSON. This was left unstated for two versions and three packs, and the packs quietly diverged — the frame could not call one of them at all, which nothing discovered until a run tried to.",
           "type": "string",
           "minLength": 1
         },
@@ -222,7 +222,7 @@
                 ]
               },
               "max_status": {
-                "description": "The strongest status a pass on this tier can EVER support. Separate from `adversarial`, which the frame previously conflated with it: an exhaustive search over a stated finite domain is genuinely adversarial \u2014 it cannot be argued into a false pass \u2014 and still establishes nothing outside its bounds. Discharging the refute-attempt gate does not lift this ceiling.",
+                "description": "The strongest status a pass on this tier can EVER support. Separate from `adversarial`, which the frame previously conflated with it: an exhaustive search over a stated finite domain is genuinely adversarial — it cannot be argued into a false pass — and still establishes nothing outside its bounds. Discharging the refute-attempt gate does not lift this ceiling.",
                 "enum": [
                   "CONJECTURE",
                   "CHECKED_BOUNDED",
@@ -257,7 +257,7 @@
                 "type": "string"
               },
               "prefix_reuse": {
-                "description": "Whether this backend can load expensive shared setup once and fork each branch from that snapshot. Where available this is the largest single speedup in a verification pipeline \u2014 an order of magnitude, not a percentage.",
+                "description": "Whether this backend can load expensive shared setup once and fork each branch from that snapshot. Where available this is the largest single speedup in a verification pipeline — an order of magnitude, not a percentage.",
                 "type": "object",
                 "properties": {
                   "supported": {
@@ -276,12 +276,16 @@
               "script": {
                 "type": "string",
                 "description": "Path, relative to the pack root, of the script that implements this. Optional but strongly preferred: without it the binding between a declared name and the file that runs it lives only inside the pack's adapter, where nothing can check it and a rename breaks it silently. scripts/check_doctrine_commands.py uses it to tell a wired script from an orphaned one."
+              },
+              "method_family": {
+                "type": "string",
+                "description": "What FAILURE DOMAIN this tier covers. A review is worth something when it comes from a different one; two runs of the same family fail together and are one check wearing two names. The reducer refuses a reviewer who shares the producer's role without a different family, and the review harness refuses to produce one."
               }
             }
           }
         },
         "corpus": {
-          "description": "CONTRACT ITEM 1b. The domain's knowledge/retrieval substrate. Explorer is required to 'retrieve against the domain corpus', so a pack needs somewhere to declare one \u2014 without this slot the frame mandates an operation whose substrate it gives no way to supply.",
+          "description": "CONTRACT ITEM 1b. The domain's knowledge/retrieval substrate. Explorer is required to 'retrieve against the domain corpus', so a pack needs somewhere to declare one — without this slot the frame mandates an operation whose substrate it gives no way to supply.",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -391,7 +395,7 @@
           }
         },
         "rules": {
-          "description": "The pack's own rule documents. Each is either a bare path \u2014 meaning 'load it always' \u2014 or an object naming WHEN it is needed. The trigger is what makes a pack's doctrine affordable: a role told to load everything before any work begins pays for thirteen documents to use one, and the ones it does not use are not free, they are the majority of the run's context. A pack whose rules are all bare paths still works and still costs what it always cost.",
+          "description": "The pack's own rule documents. Each is either a bare path — meaning 'load it always' — or an object naming WHEN it is needed. The trigger is what makes a pack's doctrine affordable: a role told to load everything before any work begins pays for thirteen documents to use one, and the ones it does not use are not free, they are the majority of the run's context. A pack whose rules are all bare paths still works and still costs what it always cost.",
           "type": "array",
           "items": {
             "oneOf": [
@@ -411,7 +415,7 @@
                     "type": "string"
                   },
                   "load_when": {
-                    "description": "The moment this rule is needed. `always` is a real answer and should be a rare one \u2014 it is the claim that a role cannot take its first step without this document.",
+                    "description": "The moment this rule is needed. `always` is a real answer and should be a rare one — it is the claim that a role cannot take its first step without this document.",
                     "enum": [
                       "always",
                       "freeze",
@@ -448,7 +452,7 @@
           }
         },
         "roles": {
-          "description": "Per-role doctrine. When a claim in this field is routed, each general role loads its entry here and operates under it \u2014 that is the whole mechanism by which a field's instructions reach the roles. Required, because a pack whose roles have no instructions cannot actually be worked.",
+          "description": "Per-role doctrine. When a claim in this field is routed, each general role loads its entry here and operates under it — that is the whole mechanism by which a field's instructions reach the roles. Required, because a pack whose roles have no instructions cannot actually be worked.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -537,6 +541,23 @@
               "script": {
                 "type": "string",
                 "description": "Path, relative to the pack root, of the script that implements this. Optional but strongly preferred: without it the binding between a declared name and the file that runs it lives only inside the pack's adapter, where nothing can check it and a rename breaks it silently. scripts/check_doctrine_commands.py uses it to tell a wired script from an orphaned one."
+              },
+              "applies_to": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Artifact kinds this gate reads, by extension. A gate run on a kind it does not read returns pass having compared nothing, which is indistinguishable in a receipt from a check. Omit when the gate reads everything the pack accepts."
+              },
+              "review_check": {
+                "type": "string",
+                "enum": [
+                  "target_fidelity",
+                  "dependencies",
+                  "preconditions",
+                  "circularity"
+                ],
+                "description": "Which of the frame's four review checks this gate feeds. The frame names the four and knows nothing about a pack's gates; this is how a pack says which of its own machinery answers which question."
               }
             }
           }
@@ -562,7 +583,7 @@
               "VERIFIED",
               "REJECTED"
             ],
-            "description": "The frame status this refinement narrows. Restricted to CHECKED_BOUNDED and VERIFIED until a checker finally reached the bio manifest: that pack has declared CONDITIONAL_WITHIN_SCREEN refining CONDITIONAL and REJECTED_DENOMINATOR refining REJECTED since it was written, and both are exactly what a refinement is for \u2014 a narrower reading of a status the vocabulary already has. Refuted BY DESIGN and refuted by data are different findings with different remedies, and the pack was right to separate them. Nothing validated it because the check stopped at the first instance that passed."
+            "description": "The frame status this refinement narrows. Restricted to CHECKED_BOUNDED and VERIFIED until a checker finally reached the bio manifest: that pack has declared CONDITIONAL_WITHIN_SCREEN refining CONDITIONAL and REJECTED_DENOMINATOR refining REJECTED since it was written, and both are exactly what a refinement is for — a narrower reading of a status the vocabulary already has. Refuted BY DESIGN and refuted by data are different findings with different remedies, and the pack was right to separate them. Nothing validated it because the check stopped at the first instance that passed."
           },
           "description": {
             "type": "string"
@@ -616,7 +637,7 @@
     },
     "held_out_cases": {
       "type": "string",
-      "description": "Path, relative to the pack root, of statements this pack should resolve to that were NOT written as its selection terms \u2014 text from outside, phrased by someone who did not know what the terms were. The `--self-test` replay of a pack's own declared examples measures self-consistency and cannot measure anything else: the same hand wrote the signals and the examples. A pack with no held-out set is not failing; it is unmeasured, and the difference is worth reporting."
+      "description": "Path, relative to the pack root, of statements this pack should resolve to that were NOT written as its selection terms — text from outside, phrased by someone who did not know what the terms were. The `--self-test` replay of a pack's own declared examples measures self-consistency and cannot measure anything else: the same hand wrote the signals and the examples. A pack with no held-out set is not failing; it is unmeasured, and the difference is worth reporting."
     }
   }
 }

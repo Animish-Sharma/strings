@@ -14,10 +14,14 @@ set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$HERE"
 
+# A pack's backend is the pack's business, and this file names none of them.
+# Whatever a pack needs it declares in its own path cases, and its checks report
+# NOT_RUN without it. --with-backend simply exports whatever the packs asked for
+# that the environment already carries.
 if [[ "${1:-}" == "--with-backend" ]]; then
-  : "${WITSOC2_LEAN_PROJECT:?set WITSOC2_LEAN_PROJECT to a Lean project}"
-  export WITSOC2_LEAN_PROJECT
-  [[ -n "${WITSOC2_MATHS_CORPUS:-}" ]] && export WITSOC2_MATHS_CORPUS
+  for name in $(python3 scripts/declared_requirements.py); do
+    [[ -n "${!name:-}" ]] && export "${name?}"
+  done
 fi
 
 failed=0
