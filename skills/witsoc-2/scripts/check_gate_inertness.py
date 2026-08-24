@@ -110,8 +110,17 @@ def main() -> int:
                 rows.append(row)
                 if total >= a.min and len(counts) == 1:
                     only = next(iter(counts))
-                    # not_applicable is a gate correctly saying "not my job".
+                    # Two constant answers are not evidence of inertness.
+                    # `not_applicable` is a gate correctly saying "not my job".
+                    # `not_run` is a gate saying it could not run here at all —
+                    # typically because what it depends on is not installed.
+                    # Calling either one inert would make this check fail on
+                    # every machine without a backend, and a check that cries
+                    # wolf about absent tooling is one people switch off.
                     if only in {"not_applicable"}:
+                        continue
+                    if only == "not_run":
+                        row["unavailable"] = True
                         continue
                     row["inert"] = True
                     findings.append(
@@ -119,8 +128,10 @@ def main() -> int:
                         f"{kind} artifact(s) — including the ones this pack keeps "
                         "precisely because they should not all be treated alike")
 
+    unavailable = [r for r in rows if r.get("unavailable")]
     for row in rows:
-        mark = "INERT" if row.get("inert") else "ok   "
+        mark = ("INERT" if row.get("inert")
+                else "----" if row.get("unavailable") else "ok   ")
         print(f"  {mark} {row['pack']:<9} {row['gate']:<26} {row['kind']:<7} "
               f"n={row['n']:<3} {row['verdicts']}")
     print()
@@ -133,7 +144,9 @@ def main() -> int:
               "one of them is a corpus problem.")
     else:
         print(f"GATE INERTNESS: PASS — {len(rows)} gate/kind pair(s), "
-              f"{ran} gate run(s), every gate varied its answer")
+              f"{ran} gate run(s), every gate that could run varied its answer"
+              + (f"; {len(unavailable)} pair(s) NOT_RUN here and therefore unmeasured"
+                 if unavailable else ""))
     if a.json:
         print(json.dumps({"schema": "witsoc2.inertness.v1", "rows": rows,
                           "findings": findings}, indent=2))
