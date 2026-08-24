@@ -62,6 +62,16 @@ run_step() {
       SLOW_STEPS="${SLOW_STEPS}${label} (${elapsed_ms}ms) "
     fi
     printf "  %s  %-22s %s\n" "$mark" "$label" "$(tail -1 /tmp/witsoc2-check.$$)"
+    # A check can PASS and still have left work undone: `paths` reports how many
+    # cases it could not run, `gate inertness` how many pairs it could not
+    # measure. Their own lines said so and the SUMMARY said "all green" —
+    # folding NOT_RUN into a pass one level up from where it was reported
+    # honestly, which is the same failure this suite refuses everywhere else.
+    # One awk pass, no pipeline: a stage that exits non-zero when it matches
+    # nothing is exactly how this count would go quiet again.
+    skipped=$(awk -F= '/^NOT_RUN_COUNT=/ { n += $2 } END { print n + 0 }' \
+              /tmp/witsoc2-check.$$)
+    NOT_RUN=$(( NOT_RUN + skipped ))
   else
     local code=$?
     elapsed_ms=$(( ($(date +%s%N) - start) / 1000000 ))
@@ -223,7 +233,7 @@ fi
 
 if [[ $FAILED -eq 0 ]]; then
   if (( NOT_RUN > 0 )); then
-    log "green, with $NOT_RUN check(s) NOT_RUN — a gap, not a pass"
+    log "green, with $NOT_RUN check(s)/case(s) NOT_RUN — a gap, not a pass"
   else
     log "all green"
   fi

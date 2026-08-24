@@ -147,6 +147,8 @@ def main() -> int:
               f"{ran} gate run(s), every gate that could run varied its answer"
               + (f"; {len(unavailable)} pair(s) NOT_RUN here and therefore unmeasured"
                  if unavailable else ""))
+    if unavailable:
+        print(f"NOT_RUN_COUNT={len(unavailable)}")
     if a.json:
         print(json.dumps({"schema": "witsoc2.inertness.v1", "rows": rows,
                           "findings": findings}, indent=2))

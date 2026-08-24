@@ -171,6 +171,11 @@ def main() -> int:
     else:
         print(f"PATHS: PASS — {ran} of {len(rows)} declared case(s) ran; "
               f"{len(rows) - ran} NOT_RUN, counted as neither")
+    # A machine-readable count for the suite's tally. The suite used to parse
+    # this out of the prose above and matched the wrong number, undercounting
+    # in the direction that makes a run look more complete than it was.
+    if len(rows) - ran:
+        print(f"NOT_RUN_COUNT={len(rows) - ran}")
     if a.json:
         print(json.dumps({"schema": "witsoc2.paths.v1", "rows": rows,
                           "ran": ran, "failures": failures}, indent=2))
