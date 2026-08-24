@@ -123,6 +123,23 @@ def start(state: dict, tier: str, worker: str, cost: int,
     return decision
 
 
+def record_outcome(state: dict, worker: str, outcome: str) -> dict:
+    """Attach what a closed charge actually bought.
+
+    A charge is closed when the work stops, which is BEFORE anyone knows whether
+    a status was granted — so every entry carried `outcome: None` and the
+    per-admitted-claim report said "nothing was admitted" on runs that admitted
+    something. Spend that cannot be tied to what it bought is a ledger of
+    prices with no goods.
+    """
+    for entry in reversed(state.get("ledger", [])):
+        if entry.get("event") == "done" and entry.get("worker") == worker:
+            entry["outcome"] = outcome
+            return {"verdict": ALLOW, "worker": worker, "outcome": outcome}
+    return {"verdict": REFUSE,
+            "reading": f"no closed charge for worker {worker!r} to attach an outcome to"}
+
+
 def done(state: dict, worker: str, actual: int | None,
          outcome: str | None = None) -> dict:
     entry = state["running"].pop(worker, None)
@@ -188,6 +205,20 @@ def self_test() -> int:
     cases, failures = [], 0
 
     state = new_state(1000, {"expensive": 2, "cheap": 4})
+        # A charge is closed before anyone knows whether a status was granted, so
+    # the outcome has to be attached afterwards. Until it was, every entry read
+    # `outcome: None` and the per-admitted-claim report said nothing had been
+    # admitted on runs that admitted something.
+    st = new_state(100, dict(DEFAULT_SLOTS))
+    start(st, "moderate", "w1", 20, claim_id="C-1")
+    done(st, "w1", 20)
+    before = cost_report(st)
+    record_outcome(st, "w1", "ADMITTED")
+    after = cost_report(st)
+    cases.append(("an outcome attached after the charge reaches the cost report",
+                  before.get("admitted_claims", 0) == 0 and after.get("admitted_claims") == 1,
+                  f"{before.get('admitted_claims')} -> {after.get('admitted_claims')}"))
+
     cases.append(("an unknown tier is refused, not allowed by default",
                   ask(state, "mystery", 0)["verdict"] == REFUSE,
                   ask(state, "mystery", 0)["reading"]))
@@ -298,7 +329,19 @@ def main() -> int:
         if args.cmd == "init":
             slots = dict(DEFAULT_SLOTS)
             for pair in filter(None, args.slots.split(",")):
-                key, _, value = pair.partition("=")
+                key, sep, value = pair.partition("=")
+                # `--slots 2` is the obvious thing to type and produced
+                # `invalid literal for int() with base 10: ''` — a stack trace
+                # where a usage message belongs. A tool that answers a plausible
+                # mistake with a Python error teaches people it is fragile.
+                if not sep or not value.strip().lstrip("-").isdigit():
+                    print(f"ERROR: --slots takes name=count pairs, e.g. "
+                          f"'expensive=2,moderate=8'. Got {pair!r}.", file=sys.stderr)
+                    return 2
+                if key.strip() not in DEFAULT_SLOTS:
+                    print(f"ERROR: unknown slot class {key.strip()!r}; this governor knows "
+                          f"{sorted(DEFAULT_SLOTS)}", file=sys.stderr)
+                    return 2
                 slots[key.strip()] = int(value)
             save(args.out, new_state(args.budget, slots))
             print(f"governor initialised at {args.out}: budget "

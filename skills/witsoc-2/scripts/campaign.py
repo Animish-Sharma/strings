@@ -162,6 +162,11 @@ class Campaign:
         self.dir.mkdir(parents=True, exist_ok=True)
         self.quiet = quiet
         self.steps: list[dict] = []
+        # Set when a governor is in play, so the outcome can be attached to the
+        # charge once the admission decision exists.
+        self._gov_state: dict | None = None
+        self._gov_path: Path | None = None
+        self._gov_worker: str = ""
 
     def say(self, text: str) -> None:
         if not self.quiet:
@@ -405,6 +410,8 @@ class Campaign:
             if decision["verdict"] != governor.ALLOW:
                 self.step("budget", False, f"{decision['verdict']}: {decision['reading']}")
                 return self.report("STOPPED_ON_BUDGET")
+            self._gov_state, self._gov_path = gov_state, governor_path
+            self._gov_worker = f"campaign-{claim_id or 'claim'}"
             governor.start(gov_state, hint, f"campaign-{claim_id or 'claim'}", charge,
                            claim_id)
             governor.save(governor_path, gov_state)
@@ -501,9 +508,9 @@ class Campaign:
                   f"verdict {verdict}, tier ceiling {receipt['max_status']}")
 
         if gov_state is not None:
-            # The outcome is attached when the run ends, below; a charge closed
-            # without one counts as spend that bought nothing, which is the
-            # honest default for a run that did not reach a status.
+            # The outcome is attached once the admission decision exists — see
+            # `record_outcome` at the end of the run. Until that call existed the
+            # comment was the only thing attaching it.
             closed = governor.done(gov_state, f"campaign-{claim_id or 'claim'}", charge)
             governor.save(governor_path, gov_state)
             self.step("charge", True,
@@ -776,6 +783,12 @@ class Campaign:
                            revision=outcome.get("revision"))
 
     def report(self, outcome: str, **extra) -> dict:
+        # Tie the spend to what it bought. The charge was closed before the
+        # admission decision existed, so this is the only point at which the
+        # ledger can be told whether anything was granted.
+        if self._gov_state is not None and self._gov_path is not None:
+            governor.record_outcome(self._gov_state, self._gov_worker, outcome)
+            governor.save(self._gov_path, self._gov_state)
         return {"outcome": outcome, "steps": self.steps, "workdir": str(self.dir), **extra}
 
 
