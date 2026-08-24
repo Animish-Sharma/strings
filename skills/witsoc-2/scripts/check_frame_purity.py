@@ -42,7 +42,11 @@ SKILL_ROOT = Path(__file__).resolve().parent.parent
 SCANNED_SUFFIXES = {".md", ".json", ".py", ".sh", ".txt"}
 
 # Domain packs live below the contract line and are exempt by construction.
-EXCLUDED_DIRS = {"domains", ".git", "__pycache__", ".venv", "node_modules"}
+EXCLUDED_DIRS = {"domains", ".git", "__pycache__", ".venv", "node_modules",
+                 # Documents this skill did not write, kept at a recorded hash so
+                 # a check can grade this frame against something outside itself.
+                 # Another skill's prose does not owe this frame's vocabulary rule.
+                 "vendored"}
 
 # Two files necessarily contain the vocabulary they are checked for.
 #

@@ -37,7 +37,9 @@ import sys
 from pathlib import Path
 
 SKILL_ROOT = Path(__file__).resolve().parent.parent
-SKIP_DIRS = {".git", "__pycache__", ".venv", "node_modules"}
+SKIP_DIRS = {".git", "__pycache__", ".venv", "node_modules",
+             # Foreign documents held for comparison — see check_frame_purity.
+             "vendored"}
 
 # A path-looking token: has a slash and a recognizable extension, or is a bare
 # directory reference under a known root.
