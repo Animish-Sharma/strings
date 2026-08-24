@@ -618,7 +618,14 @@ class Campaign:
                 return self.report("INCOMPLETE", pack=pack, ceiling=ceiling, receipt=receipt,
                                    missing_checks=missing)
 
-            ledger = self.dir / "failures.json"
+            # A streak that resets every attempt is not a streak. The ledger
+            # lived in the workdir, and a workdir is per-attempt — so three
+            # identical failures in a row each read "1 of 2" and the escalation
+            # ladder, which exists to hand a repeated obstruction to the
+            # Researcher, never fired in normal use. Persist it where the
+            # campaign's identity lives: beside the claim graph when there is
+            # one, else the shared store, else the workdir.
+            ledger = self.failure_ledger_path(state_in, target)
             code, out, err = run([
                 sys.executable, str(HERE / "failure_ledger.py"), "record",
                 "--ledger", str(ledger), "--target", target, "--claim", claim["claim_id"],
@@ -781,6 +788,16 @@ class Campaign:
                            pack=pack, ceiling=ceiling, granted=granted if applied else None,
                            receipt=receipt, refusals=outcome.get("refusals", []),
                            revision=outcome.get("revision"))
+
+    def failure_ledger_path(self, state_path: Path | None, target: str) -> Path:
+        key = (target or "unkeyed")[:16]
+        if state_path is not None:
+            return state_path.parent / f"failures-{key}.json"
+        store = os.environ.get("WITSOC2_SOC_STORE")
+        if store:
+            Path(store).mkdir(parents=True, exist_ok=True)
+            return Path(store) / f"failures-{key}.json"
+        return self.dir / "failures.json"
 
     def report(self, outcome: str, **extra) -> dict:
         # Tie the spend to what it bought. The charge was closed before the
