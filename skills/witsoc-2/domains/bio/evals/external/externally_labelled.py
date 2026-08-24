@@ -49,6 +49,26 @@ import classify_claim as cc      # noqa: E402
 
 PREDECESSOR = PACK.parent.parent.parent / "witsoc" / "references" / "witsoc-bio" / "fixtures"
 
+VENDORED = HERE / "vendored"
+
+
+def external_fixture(name: str) -> tuple[Path | None, str]:
+    """The sibling's copy when it is installed, else the vendored one.
+
+    Returns the path and which of the two it is, because a reader is entitled to
+    know whether the number came from the live source or from a copy taken at a
+    stated hash. A divergence between them is a finding, not a detail: the
+    vendored MANIFEST.json records what was copied.
+    """
+    live = PREDECESSOR / name
+    if live.exists():
+        return live, "sibling"
+    local = VENDORED / name
+    if local.exists():
+        return local, "vendored"
+    return None, "absent"
+
+
 # Their flag vocabulary -> the estimand it implies. One entry per flag that
 # carries a denominator meaning; flags about procedure ("control_required",
 # "design_ledger_required") imply no estimand and are ignored.
@@ -96,7 +116,7 @@ def main() -> int:
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
-    path = PREDECESSOR / "replicate_denominator_fixture.jsonl"
+    path, provenance = external_fixture("replicate_denominator_fixture.jsonl")
     if not path.exists():
         print(f"NOT_RUN: {path} is absent. An externally-labelled set is the only evidence "
               "this taxonomy has that it is not graded by its own author, so its absence is "

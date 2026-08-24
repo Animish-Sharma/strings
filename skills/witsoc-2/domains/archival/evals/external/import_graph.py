@@ -24,13 +24,22 @@ Three things, on a graph neither implementation was written against:
    sharing an author do. The reduction from roots to origins is the number this
    pack reports, so it is the number worth checking.
 
+With no `--library`, this uses the Python standard library that is running it.
+That is a real derivation DAG of thousands of modules, written over decades by
+people who had never heard of this pack, and it is present on every machine that
+can execute this file. Requiring the flag meant the one check here that grades
+the traversal against something nobody in this project authored reported
+NOT_RUN on every machine where nobody thought to pass a path.
+
 Usage:
-    import_graph.py --library <path/to/source> [--sample 400] [--json]
+    import_graph.py [--library <path/to/source>] [--sample 400] [--json]
 
 Exit: 0 the traversals agree everywhere, 1 they do not, 2 usage/IO
 """
 
 from __future__ import annotations
+
+import sysconfig
 
 import argparse
 import json
@@ -46,6 +55,10 @@ import archlib as al  # noqa: E402
 RE_IMPORT = re.compile(r"^\s*import\s+([\w.]+)", re.MULTILINE)
 
 
+RE_PY_IMPORT = re.compile(r"^\s*(?:from\s+([A-Za-z_][\w.]*)\s+import|import\s+([A-Za-z_][\w.]*))",
+                          re.MULTILINE)
+
+
 def build_sources(root: Path, limit: int | None = None) -> dict[str, dict]:
     sources: dict[str, dict] = {}
     # Take a SPREAD through the tree, not the alphabetical head. Slicing a
@@ -58,15 +71,23 @@ def build_sources(root: Path, limit: int | None = None) -> dict[str, dict]:
     # itself, so every chain terminates in one hop and the traversal is never
     # exercised — the test passed at depth 2 and would have passed with the
     # traversal removed.
-    for path in sorted(root.rglob("*.lean")):
-        module = str(path.relative_to(root)).replace("/", ".")[:-5]
+    # Two shapes of real library, because the point is an import DAG nobody in
+    # this project authored — not any particular language. The scanner read only
+    # one extension, so the default library (the Python that is running this)
+    # produced zero modules and the check quietly had nothing to test.
+    suffix, pattern = (".lean", RE_IMPORT) if any(root.rglob("*.lean")) else (".py", RE_PY_IMPORT)
+    for path in sorted(root.rglob(f"*{suffix}")):
+        module = str(path.relative_to(root)).replace("/", ".")[: -len(suffix)]
         try:
             text = path.read_text(encoding="utf-8", errors="ignore")
         except OSError:
             continue
         sources[module] = {
             "id": module, "kind": "primary", "date": "2020",
-            "derives_from": RE_IMPORT.findall(text),
+            # `findall` yields tuples when the pattern has more than one group
+            # (`from X import` / `import X`); keep whichever alternative matched.
+            "derives_from": [m if isinstance(m, str) else next(filter(None, m), "")
+                             for m in pattern.findall(text)],
             "origin": module.split(".")[0],
         }
     return sources
@@ -98,12 +119,14 @@ def independent_roots(node: str, sources: dict[str, dict]) -> set[str]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--library", required=True)
+    ap.add_argument("--library",
+                    help="default: the standard library of the running Python")
     ap.add_argument("--sample", type=int, default=400)
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
-    root = Path(args.library).expanduser()
+    root = (Path(args.library).expanduser() if args.library
+            else Path(sysconfig.get_paths()["stdlib"]))
     if not root.is_dir():
         print(f"ERROR: {root} is not a directory", file=sys.stderr)
         return 2

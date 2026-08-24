@@ -121,6 +121,13 @@ def main() -> int:
     source = Path(mapping["source"])
     if not source.is_absolute():
         source = (PACK.parent.parent.parent / mapping["source"]).resolve()
+    provenance = "sibling"
+    if not source.is_file():
+        # A copy taken at a stated hash, so this comparison runs on a checkout
+        # without the predecessor installed. See vendored/MANIFEST.json.
+        fallback = HERE / "vendored" / Path(mapping["source"]).name
+        if fallback.is_file():
+            source, provenance = fallback, "vendored"
     their_flags = {}
     if source.is_file():
         for line in source.read_text(encoding="utf-8").splitlines():
@@ -133,7 +140,8 @@ def main() -> int:
         # never measured — the flags they required simply were not there. This
         # evaluation exists to compare against someone else's labels; without
         # them it has nothing to say, and saying nothing is the honest result.
-        print(f"NOT_RUN: {source} is not present, so this pack's agreement with an "
+        print(f"NOT_RUN: neither the sibling nor a vendored copy of {source.name} is "
+              "present, so this pack's agreement with an "
               "independent author is unmeasured here. That is a gap and not a pass, and "
               "it is not a disagreement either — their required flags were never read.",
               file=sys.stderr)

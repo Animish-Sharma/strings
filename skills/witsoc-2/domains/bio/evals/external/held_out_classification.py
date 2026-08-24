@@ -44,6 +44,26 @@ import classify_claim as cc      # noqa: E402
 
 PREDECESSOR = PACK.parent.parent.parent / "witsoc" / "references" / "witsoc-bio" / "fixtures"
 
+VENDORED = HERE / "vendored"
+
+
+def external_fixture(name: str) -> tuple[Path | None, str]:
+    """The sibling's copy when it is installed, else the vendored one.
+
+    Returns the path and which of the two it is, because a reader is entitled to
+    know whether the number came from the live source or from a copy taken at a
+    stated hash. A divergence between them is a finding, not a detail: the
+    vendored MANIFEST.json records what was copied.
+    """
+    live = PREDECESSOR / name
+    if live.exists():
+        return live, "sibling"
+    local = VENDORED / name
+    if local.exists():
+        return local, "vendored"
+    return None, "absent"
+
+
 # The claim text is theirs; the expected class is mine. Keyed by their task_id so
 # the mapping is auditable against the source rather than restated from it.
 EXPECTED = {
@@ -92,8 +112,8 @@ def split(tasks: list[str]) -> tuple[set[str], set[str]]:
 def load_claims() -> list[tuple[str, str]]:
     out = []
     for name in ("replicate_denominator_fixture.jsonl", "real_claim_fixtures.jsonl"):
-        path = PREDECESSOR / name
-        if not path.exists():
+        path, provenance = external_fixture(name)
+        if path is None:
             continue
         for line in path.read_text(encoding="utf-8").splitlines():
             if not line.strip():

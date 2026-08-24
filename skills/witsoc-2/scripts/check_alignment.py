@@ -113,6 +113,14 @@ def main() -> int:
 
     mine_path = ROOT / "ARCHITECTURE.md"
     other_path = Path(args.other)
+    provenance = "sibling"
+    if not other_path.exists():
+        # A snapshot taken at a stated hash, so the divergence question can be
+        # asked on a checkout without the sibling installed. references/vendored
+        # records where it came from and what it hashed to.
+        fallback = ROOT / "references" / "vendored" / "predecessor-ARCHITECTURE.md"
+        if fallback.exists():
+            other_path, provenance = fallback, "vendored snapshot"
     if not other_path.exists():
         print(f"NOT_RUN: {other_path} is not present. The alignment claim cannot be checked "
               "here, which is a gap and not a pass — say so rather than reporting green.",
@@ -131,6 +139,8 @@ def main() -> int:
 
     known = {d["invariant"]: d for d in declared.get("declared_divergences", [])}
     findings = compare(mine, theirs)
+    if provenance != "sibling":
+        print(f"  (compared against a {provenance}; the installed sibling was not present)")
     undeclared = [f for f in findings if f["invariant"] not in known]
     accounted = [f for f in findings if f["invariant"] in known]
 
