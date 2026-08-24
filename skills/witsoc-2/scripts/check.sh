@@ -61,7 +61,11 @@ run_step() {
       mark="slow"
       SLOW_STEPS="${SLOW_STEPS}${label} (${elapsed_ms}ms) "
     fi
-    printf "  %s  %-22s %s\n" "$mark" "$label" "$(tail -1 /tmp/witsoc2-check.$$)"
+    # The display line is the last line that is not a machine marker. A check
+    # that ends with `NOT_RUN_COUNT=8` would otherwise show that variable where
+    # the sentence a reader needs should be.
+    printf "  %s  %-22s %s\n" "$mark" "$label" \
+      "$(grep -v '^NOT_RUN_COUNT=' /tmp/witsoc2-check.$$ | tail -1)"
     # A check can PASS and still have left work undone: `paths` reports how many
     # cases it could not run, `gate inertness` how many pairs it could not
     # measure. Their own lines said so and the SUMMARY said "all green" —
