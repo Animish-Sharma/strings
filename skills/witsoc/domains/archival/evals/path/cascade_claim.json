@@ -1,0 +1,31 @@
+{
+ "schema": "archival-claim-v1",
+ "claim_id": "Q5-THUGGA",
+ "exact_statement": "A municipal grain dole operated at Thugga continuously from 180 to 235 CE, funded by the ordo decurionum.",
+ "assertion_kind": "event",
+ "scope": {
+  "who": "the shipowner named in the register",
+  "what": "one grain shipment, Ostia to Alexandria",
+  "where": "Ostia and Alexandria",
+  "when": "spring 212"
+ },
+ "claimed_independent_support": 2,
+ "falsification_conditions": [
+  "every supporting source traces back to a single origin",
+  "the harbour register entry postdates the voyage by more than a generation",
+  "the shipowner named is attested only in sources with a stake in the shipment"
+ ],
+ "allowed_scope": "what the surviving harbour register and the letters record. Nothing about how typical such voyages were, and nothing about anyone's intentions.",
+ "target_sha256": "3a9c78bc12f4825bce20a18d6f4ce94c3b919a9632c988ffbacc5d410a1bf4bb",
+ "frozen_conditions": {
+  "scope": {
+   "who": "the shipowner named in the register",
+   "what": "one grain shipment, Ostia to Alexandria",
+   "where": "Ostia and Alexandria",
+   "when": "spring 212"
+  },
+  "assertion_kind": "event",
+  "claimed_independent_support": 2,
+  "allowed_scope": "what the surviving harbour register and the letters record. Nothing about how typical such voyages were, and nothing about anyone's intentions."
+ }
+}

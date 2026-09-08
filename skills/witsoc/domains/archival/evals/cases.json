@@ -1,0 +1,59 @@
+{
+  "description": "Outcome evals for the archival pack. Each asserts what the adapter CONCLUDED, never which code path it took. The pair `single_origin_is_documented` and `same_sources_as_attested_is_refuted` is the important one: the same dossier, the same chains, opposite verdicts \u2014 decided entirely by how many independent origins the claim ASSERTS. If both pass or both fail, the collapse is not doing any work and the pack is a spell-checker for bibliographies.",
+  "cases": [
+    {
+      "id": "two_origins_is_attested",
+      "dossier": "good_dossier.json",
+      "claim": "good_claim.json",
+      "tier": "triangulation",
+      "expect_verdict": "pass",
+      "expect_ceiling": "CHECKED_BOUNDED",
+      "why": "two genuinely distinct origins survive the collapse; chains in order; bounds stated"
+    },
+    {
+      "id": "same_sources_as_attested_is_refuted",
+      "dossier": "cascade_dossier.json",
+      "claim": "cascade_claim.json",
+      "tier": "triangulation",
+      "expect_verdict": "fail",
+      "expect_failure_contains": "CASCADE",
+      "why": "three agreeing sources that come home to one register. Refuted AS corroboration, which is not the same as refuted"
+    },
+    {
+      "id": "backwards_chain_blocked",
+      "dossier": "backwards_chain_dossier.json",
+      "claim": "backwards_chain_claim.json",
+      "tier": "structural",
+      "expect_verdict": "fail",
+      "expect_failed_gate": "dating-consistency",
+      "why": "a source deriving from something written later. A chain cannot run backwards"
+    },
+    {
+      "id": "uniform_interest_blocked",
+      "dossier": "all_interested_dossier.json",
+      "claim": "all_interested_claim.json",
+      "tier": "triangulation",
+      "expect_verdict": "fail",
+      "expect_failed_gate": "interest-audit",
+      "why": "every surviving origin shares one stake, so their agreement is explained by the stake and needs no other cause"
+    },
+    {
+      "id": "absence_without_survival_argument_blocked",
+      "dossier": "unsupported_absence_dossier.json",
+      "claim": "unsupported_absence_claim.json",
+      "tier": "structural",
+      "expect_verdict": "fail",
+      "expect_failed_gate": "survivorship",
+      "why": "an absence claim is about the archive until someone argues a record would have survived"
+    },
+    {
+      "id": "no_discriminator_blocked",
+      "dossier": "no_discriminator_dossier.json",
+      "claim": "no_discriminator_claim.json",
+      "tier": "structural",
+      "expect_verdict": "fail",
+      "expect_failed_gate": "survivorship",
+      "why": "a dossier that cannot say what falsity would look like has assembled material rather than tested anything"
+    }
+  ]
+}

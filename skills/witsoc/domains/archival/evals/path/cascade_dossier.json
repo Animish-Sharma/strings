@@ -1,0 +1,98 @@
+{
+ "schema": "archival-dossier-v1",
+ "claim_id": "Q5-THUGGA",
+ "target_sha256": "3a9c78bc12f4825bce20a18d6f4ce94c3b919a9632c988ffbacc5d410a1bf4bb",
+ "sources": [
+  {
+   "id": "INS",
+   "kind": "primary",
+   "date": "185",
+   "language": "latin",
+   "shelfmark": "CIL VIII 26591",
+   "origin": "municipal-inscription",
+   "interest": "civic self-presentation by the donor's family",
+   "derives_from": []
+  },
+  {
+   "id": "EPIT",
+   "kind": "later_chronicle",
+   "date": "390",
+   "language": "latin",
+   "shelfmark": "Cod. Paris. lat. 7900",
+   "origin": "epitomator",
+   "interest": "none",
+   "derives_from": [
+    "INS"
+   ]
+  },
+  {
+   "id": "COMP2",
+   "kind": "compilation",
+   "date": "820",
+   "language": "latin",
+   "shelfmark": "Cod. Sang. 733",
+   "origin": "carolingian-compiler",
+   "interest": "none",
+   "derives_from": [
+    "EPIT"
+   ]
+  },
+  {
+   "id": "MOD2",
+   "kind": "modern_scholarship",
+   "date": "1974",
+   "language": "french",
+   "identifier": "doi:10.0000/thugga",
+   "origin": "modern-editor",
+   "interest": "none",
+   "derives_from": [
+    "COMP2"
+   ],
+   "transformations": []
+  }
+ ],
+ "supporting_sources": [
+  "INS",
+  "EPIT",
+  "COMP2",
+  "MOD2"
+ ],
+ "archive_coverage": "the Ostia harbour material and the Alexandrian papyri catalogued to 1980 were searched; the Alexandrian customs series is lost, and two provincial archives were not consulted",
+ "what_the_record_would_look_like_if_false": "the register would carry no entry for this hull in that season, and the letter would not name the same consignment; both are checkable and both were checked",
+ "evidence_tiers_available": [
+  "independent_origins"
+ ],
+ "stated_bounds": "the surviving register and one contemporary letter",
+ "interpretation": "Two independent origins record the shipment: an administrative register and a merchant letter. Sources record the voyage; nothing here speaks to how typical it was.",
+ "collation": [
+  {
+   "locus": "hull-name",
+   "original": "Isis Geminiana",
+   "readings": {
+    "REG": "Isis Geminiana",
+    "LET": "Isis Geminiana",
+    "CHRON": "Isis Germiniana"
+   },
+   "note": "REG and LET agree in a CORRECT reading, which is evidence of nothing"
+  },
+  {
+   "locus": "consignment",
+   "original": "modios CC",
+   "readings": {
+    "REG": "modios CC",
+    "LET": "modios CCC",
+    "CHRON": "modios CC"
+   }
+  },
+  {
+   "locus": "month",
+   "original": "Aprilis",
+   "readings": {
+    "REG": "Apriles",
+    "LET": "Aprilis",
+    "CHRON": "Aprilis"
+   },
+   "note": "each errs on its own"
+  }
+ ]
+}

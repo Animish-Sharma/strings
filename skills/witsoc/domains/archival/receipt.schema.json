@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "archival-receipt-v1",
+  "title": "Archival verification receipt",
+  "description": "Extends frame-receipt-v1 — this declares only what documentary evidence adds. The field to read is `independence`: how many sources agreed, and how many were left after the chains were followed home. The gap between those two numbers is the whole of what this pack contributes.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "schema": { "const": "archival-receipt-v1" },
+    "documentary": {
+      "description": "Always true. It is the flag that stops a documentary receipt being read alongside a computational one as though they were the same kind of evidence.",
+      "const": true
+    },
+    "supports_status": {
+      "description": "What this receipt establishes. Null unless the verdict is a pass — a check that failed or did not run supports nothing.",
+      "type": ["string", "null"]
+    },
+    "independence": {
+      "description": "The collapse: supporting sources in, distinct origins out, and which sources folded into which chain.",
+      "type": "object",
+      "properties": {
+        "supporting_sources": { "type": "integer" },
+        "independent_support": { "type": "integer" },
+        "collapsed": { "type": "integer" },
+        "distinct_origins": { "type": "array", "items": { "type": "string" } },
+        "per_source_roots": { "type": "object" },
+        "cycles": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "adversarial": { "type": "boolean" },
+    "gates": { "type": "array", "items": { "type": "object" } },
+    "failed_gates": { "type": "array", "items": { "type": "string" } },
+    "failure_class": { "type": ["string", "null"] },
+    "scope_note": { "type": "string" },
+    "problems": { "type": "array", "items": { "type": "string" } },
+    "notes": { "type": "array", "items": { "type": "string" } }
+  }
+}

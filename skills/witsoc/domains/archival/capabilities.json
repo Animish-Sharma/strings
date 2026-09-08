@@ -1,0 +1,52 @@
+{
+  "schema": "witsoc.capability-manifest.v1",
+  "owner": "archival",
+  "version": 1,
+  "capabilities": [
+    {
+      "id": "source-lineage",
+      "summary": "Trace documentary claims to independent origins and preserve transmission context.",
+      "modes": ["SOURCE_SYNTHESIS", "OPEN_DISCOVERY", "CLAIM_VERIFICATION"],
+      "roles": ["explorer", "researcher"],
+      "default": true,
+      "triggers": [],
+      "inputs": ["witsoc.target.v2"],
+      "outputs": ["witsoc.source-map.v2", "witsoc.obstruction.v2", "witsoc.candidate.v2"],
+      "requires": ["resolvable source records"],
+      "load": ["domains/archival/doctrine/independence.md", "domains/archival/doctrine/transmission.md"],
+      "commands": ["python3 \"$WITSOC_ROOT/domains/archival/scripts/check.py\" --help"],
+      "cost_class": "small",
+      "priority": 90
+    },
+    {
+      "id": "documentary-adapter",
+      "summary": "Collapse citation cascades and enforce dating, survivorship, interest, and scope gates.",
+      "modes": ["CLAIM_VERIFICATION", "ARTIFACT_PRODUCTION", "REPAIR"],
+      "roles": ["generator", "explorer"],
+      "default": true,
+      "triggers": [],
+      "inputs": ["witsoc.candidate.v2", "witsoc.target.v2"],
+      "outputs": ["witsoc.receipt.v2", "witsoc.obstruction.v2"],
+      "requires": ["source lineage dossier"],
+      "load": ["domains/archival/doctrine/report_language.md", "domains/archival/doctrine/survivorship.md"],
+      "commands": ["python3 \"$WITSOC_ROOT/domains/archival/scripts/check.py\" --help"],
+      "cost_class": "medium",
+      "priority": 85
+    },
+    {
+      "id": "cross-domain-source-audit",
+      "summary": "Expose source dependence and transmission assumptions to another capability.",
+      "modes": ["CROSS_DOMAIN"],
+      "roles": ["explorer", "researcher"],
+      "default": true,
+      "triggers": [],
+      "inputs": ["witsoc.source-map.v2", "witsoc.candidate.v2"],
+      "outputs": ["witsoc.source-map.v2", "witsoc.obstruction.v2"],
+      "requires": [],
+      "load": ["domains/archival/doctrine/independence.md", "domains/archival/doctrine/transmission.md"],
+      "commands": [],
+      "cost_class": "small",
+      "priority": 80
+    }
+  ]
+}

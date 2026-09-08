@@ -1,0 +1,61 @@
+{
+  "description": "Known-bad dossiers the adapter must reject, and one it must accept. Registered so `adversarial: true` in the manifest is a test rather than a self-report.",
+  "reject": [
+    {
+      "dossier": "cascade_dossier.json",
+      "claim": "cascade_claim.json",
+      "tier": "triangulation",
+      "why": "four agreeing sources, one origin"
+    },
+    {
+      "dossier": "backwards_chain_dossier.json",
+      "claim": "backwards_chain_claim.json",
+      "tier": "structural",
+      "why": "a source derives from something written later"
+    },
+    {
+      "dossier": "all_interested_dossier.json",
+      "claim": "all_interested_claim.json",
+      "tier": "triangulation",
+      "why": "every origin has the same stake"
+    },
+    {
+      "dossier": "translation_drift_dossier.json",
+      "claim": "translation_drift_claim.json",
+      "tier": "triangulation",
+      "why": "three language hops, no original wording quoted"
+    },
+    {
+      "dossier": "scope_escalation_dossier.json",
+      "claim": "scope_escalation_claim.json",
+      "tier": "structural",
+      "why": "occurrence, motive, and typicality from two documents"
+    },
+    {
+      "dossier": "unsupported_absence_dossier.json",
+      "claim": "unsupported_absence_claim.json",
+      "tier": "structural",
+      "why": "an absence claim with no survival argument"
+    },
+    {
+      "dossier": "no_discriminator_dossier.json",
+      "claim": "no_discriminator_claim.json",
+      "tier": "structural",
+      "why": "no statement of what falsity would look like"
+    },
+    {
+      "dossier": "shared_error_dossier.json",
+      "claim": "good_claim.json",
+      "tier": "triangulation",
+      "why": "two declared origins whose readings share two errors \u2014 one voice counted as two"
+    }
+  ],
+  "accept": [
+    {
+      "dossier": "good_dossier.json",
+      "claim": "good_claim.json",
+      "tier": "triangulation",
+      "why": "two genuinely distinct origins, chains in order, bounds stated"
+    }
+  ]
+}

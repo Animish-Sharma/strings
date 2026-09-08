@@ -1,0 +1,41 @@
+{
+  "description": "Documentary and historical questions phrased as a historian would put them, not as this pack's signal list was written. The pack's own declared examples measure whether the terms match the examples the terms came from, which is not a measurement.",
+  "expect_domain": "archival",
+  "cases": [
+    {
+      "statement": "Three chronicles report the same battle in nearly identical words. Are these three witnesses or one?",
+      "source": "ordinary historical prose",
+      "why": "the pack's core question, plainly put"
+    },
+    {
+      "statement": "Does the surviving charter evidence establish that the abbey held the mill before 1150?",
+      "source": "ordinary historical prose",
+      "why": "a documentary claim with no jargon"
+    },
+    {
+      "statement": "Assess whether this eyewitness account is contemporary or a later interpolation into the manuscript tradition.",
+      "source": "ordinary historical prose",
+      "why": "dating and transmission"
+    },
+    {
+      "statement": "No cartulary mentions the settlement before the twelfth century. Does that show it did not exist?",
+      "source": "ordinary historical prose",
+      "why": "an argument from silence, stated as historians state it"
+    },
+    {
+      "statement": "Trace this attested quotation back through the manuscript tradition to a primary source.",
+      "source": "ordinary historical prose",
+      "why": "provenance"
+    },
+    {
+      "statement": "Two scribes copying the same exemplar share an obvious error at the same place. What does that tell us about their relationship?",
+      "source": "ordinary historical prose",
+      "why": "shared error, the pack's new method, phrased without its vocabulary"
+    },
+    {
+      "statement": "The prosopographical identification rests on the editor's conjecture alone. Is it supported?",
+      "source": "ordinary historical prose",
+      "why": "the pack's own example area, differently worded"
+    }
+  ]
+}

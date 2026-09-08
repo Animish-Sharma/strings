@@ -1,0 +1,21 @@
+{
+  "description": "Role evals for the archival pack: the DECISIONS, scored. The adapter self-test asks whether a bad dossier is refused; nothing asked whether the Explorer read a collapse correctly, whether the Generator's producer derives the roots rather than accepting them, or whether the Researcher's shared-error analysis groups on error and not on agreement. A role eval is writable exactly where the judgement has machinery under it, so this is also the map of which judgements do.",
+  "explorer": [
+    {"id": "cascade_collapses", "sources": "cascade", "expect_support": 1, "why": "four agreeing sources copying one register are one voice; reading the count off the bibliography is the field's characteristic error"},
+    {"id": "two_real_origins", "sources": "two_origins", "expect_support": 2, "why": "a register and an independent letter are two, and refusing them would teach people the audit is noise"},
+    {"id": "chain_length_does_not_add", "sources": "long_chain", "expect_support": 1, "why": "a chain of five copies is still one observation; length is not corroboration"}
+  ],
+  "generator": [
+    {"id": "roots_are_derived", "sources": "cascade", "expect_roots": ["REG"], "why": "supporting_sources is a consequence of the graph, never a list the author chose"},
+    {"id": "cycle_refused", "sources": "cycle", "expect_refused": true, "why": "two sources each citing the other have no root, and a graph that cannot be walked cannot be collapsed"},
+    {"id": "dangling_refused", "sources": "dangling", "expect_refused": true, "why": "a derivation pointing at nothing breaks the one operation this pack performs"}
+  ],
+  "researcher": [
+    {"id": "shared_error_groups", "collation": "shared", "expect": "contradiction", "why": "two witnesses sharing two errors are one voice, whatever the dossier declares"},
+    {"id": "agreement_groups_nothing", "collation": "agree", "expect": "consistent", "why": "THE discriminating case: correct readings are most of every text, and a similarity measure gets this backwards"},
+    {"id": "no_collation_abstains", "collation": "none", "expect": "not_computable", "why": "an unchecked declaration is not a finding of independence"},
+    {"id": "silence_priced_informative", "silence": [0.3, 0.5, 20], "expect": "informative", "why": "many opportunities at a decent survival rate: the silence is evidence"},
+    {"id": "silence_priced_uninformative", "silence": [0.02, 0.1, 3], "expect": "uninformative", "why": "the archive is silent about plenty of things that happened"},
+    {"id": "silence_needs_optimistic_end", "silence": [0.05, 0.6, 5], "expect": "uninformative", "why": "a conclusion that needs the favourable end of a guessed rate is a conclusion about the guess"}
+  ]
+}
