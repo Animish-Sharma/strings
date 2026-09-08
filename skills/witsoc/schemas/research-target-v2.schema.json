@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "witsoc.target.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "target_id", "statement", "intent", "constraints", "mode", "domains", "scope", "content_sha256", "payload_sha256"],
+  "properties": {
+    "schema": {"const": "witsoc.target.v2"},
+    "target_id": {"$ref": "#/$defs/nonempty"},
+    "statement": {"$ref": "#/$defs/nonempty"},
+    "intent": {"type": "string"},
+    "constraints": {"$ref": "#/$defs/strings"},
+    "mode": {"enum": ["SOURCE_SYNTHESIS", "OPEN_DISCOVERY", "CLAIM_VERIFICATION", "ARTIFACT_PRODUCTION", "REPAIR", "CROSS_DOMAIN"]},
+    "domains": {"$ref": "#/$defs/strings"},
+    "scope": {"type": "object"},
+    "content_sha256": {"$ref": "#/$defs/sha"},
+    "payload_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {
+    "nonempty": {"type": "string", "minLength": 1},
+    "strings": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

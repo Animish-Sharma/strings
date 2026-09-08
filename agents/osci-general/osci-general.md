@@ -57,19 +57,20 @@ Deep runs are autonomous agent sessions that execute work on their own, in an is
 
 The script always runs in your **local frame** — it spawns a deep run on the host that invoked it. There is no `--machine` flag. If the user wants a deep run on a different machine, they pick it in the renderer and Electron orchestrates the SSH-exec on the target host.
 
-**Provider selection — `--provider` is which CLI runs the orchestrator, not a model.** Three valid values:
+**Provider selection — `--provider` is which CLI runs the orchestrator, not a model.** Four valid values:
 
 - `gecko` — built-in kimi-server orchestrator. Always available. The default for any run that doesn't ask for something else.
 - `claudecode` — Anthropic's Claude Code CLI. Use when the user says "use claude code", "run with claude code", "with claude", etc.
 - `codex` — OpenAI's Codex CLI. Use when the user says "use codex", "with codex", etc.
+- `commandcode` — Command Code CLI. Use when the user says "use command code", "with command code", or selects Command Code in the deep-run picker.
 
-When the user names a provider, pass it as `--provider claudecode` or `--provider codex` — **do not** put "claude code" or "codex" into the prompt as if it were a model name. If `claudecode` or `codex` isn't installed on this host, tell the user and offer to fall back to `gecko`.
+When the user names a provider, pass the literal provider id as `--provider gecko`, `--provider claudecode`, `--provider codex`, or `--provider commandcode` — **do not** put "claude code", "codex", or "command code" into the prompt as if it were a model name. If `claudecode`, `codex`, or `commandcode` isn't installed on this host, tell the user and offer to fall back to `gecko`.
 
 **Spawn:**
 ```bash
 SCRIPTS=$(curl -fsS "$PLANE_SERVER_URL/skills-resolve/machine-use/scripts" | jq -r .absolutePath)
 bash $SCRIPTS/trigger-deep-run.sh \
-  --provider <gecko|claudecode|codex> \
+  --provider <gecko|claudecode|codex|commandcode> \
   --prompt   "<task>" \
   --path     "$PWD" \
   --agent    osci-orchestrator \
@@ -142,7 +143,7 @@ If the user asks a one-shot question that needs a sandboxed tool and doesn't war
 
 `machine-setup` is the lifecycle + recovery skill: `add.sh`, `setup.sh`, `install.sh`, `reconnect-ssh.sh`, `uninstall.sh`, `remove.sh`. Reach for it whenever the user asks to **add, connect, provision, set up, install, bring up, retire, debug, fix, repair, reconnect, or bring back** a machine — including when the user says a named machine "isn't working", "can't connect", "is broken", or "is unreachable". Read its SKILL.md (`curl -fsS "$PLANE_SERVER_URL/skills/machine-setup/SKILL.md"`) for the script contracts and the **"Bring back a machine"** diagnostic playbook (verify → reconnect-ssh → restart services → install).
 
-Provider-CLI installs on a remote (`install-claude.sh`, `install-codex.sh`) live in `machine-use/scripts/`; agents on the laptop can drive these against named remotes when the user asks.
+Provider-CLI installs on a remote (`install-claude.sh`, `install-codex.sh`, `install-commandcode.sh`) live in `machine-use/scripts/`; agents on the laptop can drive these against named remotes when the user asks.
 
 ## Partitioning rule
 
@@ -151,7 +152,7 @@ You operate in a single machine's frame. Concretely:
 - **You do not select machines or query which machine the user has selected.** That's a UI concern — the renderer holds the active selection in memory; there is no `.active` field in `index.json`.
 - **Deep runs you spawn execute on your own host.** `trigger-deep-run.sh` has no `--machine` flag. If the user wants a run on a different machine, they pick it in the renderer and Electron orchestrates the cross-host work.
 - **You do not enumerate machines or probe their reachability speculatively.** Do not run `verify.sh` or `reconnect-ssh.sh` against arbitrary remotes on your own initiative. **But when the user names a specific machine and reports it isn't working**, switch into `machine-setup`'s "Bring back a machine" playbook — diagnose with `verify.sh <name>`, then take the cheapest fix that addresses what's broken.
-- **Cross-machine work limited to**: `machine-setup` (registering, provisioning, **debugging, or repairing** a named machine — all on explicit user request), `install-claude.sh` / `install-codex.sh` (installing provider CLIs — explicit user request), and `fetch-session-branch.sh` (claiming a deep run's result back into the laptop's git, with the machine name passed by the user).
+- **Cross-machine work limited to**: `machine-setup` (registering, provisioning, **debugging, or repairing** a named machine — all on explicit user request), `install-claude.sh` / `install-codex.sh` / `install-commandcode.sh` (installing provider CLIs — explicit user request), and `fetch-session-branch.sh` (claiming a deep run's result back into the laptop's git, with the machine name passed by the user).
 
 Sandboxes answer *what tools* are available once a run is executing; don't conflate them with machines.
 

@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "witsoc.activation-receipt.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "receipt_id", "ok", "status", "target", "route",
+    "packages", "resources", "skill_view_argv", "load_plan", "workspace", "plane_resolution",
+    "coordination", "protocol_resource", "side_effects", "dispatch_gate",
+    "may_create_run_artifacts", "next_stage", "problems", "status_authority",
+    "payload_sha256"
+  ],
+  "properties": {
+    "schema": {"const": "witsoc.activation-receipt.v1"},
+    "receipt_id": {"$ref": "#/$defs/nonempty"},
+    "ok": {"type": "boolean"},
+    "status": {"enum": ["PREFLIGHT_READY", "ACTIVATION_FAILED"]},
+    "target": {"$ref": "#/$defs/target"},
+    "route": {"$ref": "#/$defs/route"},
+    "packages": {"type": "array", "items": {"$ref": "#/$defs/package"}},
+    "resources": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/resource"}},
+    "skill_view_argv": {"type": "array", "items": {"type": "array", "items": {"type": "string"}}},
+    "load_plan": {"type": "object"},
+    "workspace": {"$ref": "#/$defs/workspace"},
+    "plane_resolution": {"type": "object"},
+    "coordination": {"type": ["object", "null"]},
+    "protocol_resource": {"$ref": "#/$defs/locator"},
+    "side_effects": {"$ref": "#/$defs/strings"},
+    "dispatch_gate": {"type": "object"},
+    "may_create_run_artifacts": {"type": "boolean"},
+    "next_stage": {"type": ["string", "null"]},
+    "problems": {"$ref": "#/$defs/strings"},
+    "status_authority": {"const": false},
+    "payload_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {
+    "nonempty": {"type": "string", "minLength": 1},
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "strings": {"type": "array", "items": {"type": "string"}},
+    "locator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["local_path", "skill_locator"],
+      "properties": {
+        "local_path": {"$ref": "#/$defs/nonempty"},
+        "skill_locator": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statement", "intent", "constraints", "content_sha256", "canonical_sha256"],
+      "properties": {
+        "statement": {"$ref": "#/$defs/nonempty"},
+        "intent": {"type": "string"},
+        "constraints": {"$ref": "#/$defs/strings"},
+        "content_sha256": {"$ref": "#/$defs/sha"},
+        "canonical_sha256": {"$ref": "#/$defs/sha"}
+      }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "activation", "decision", "mode", "mode_basis", "domains", "sticky",
+        "role", "projection", "route_sha256"
+      ],
+      "properties": {
+        "activation": {"const": "WITSOC"},
+        "decision": {"enum": ["SELECTED", "AMBIGUOUS", "NO_MATCH", "UNRESOLVABLE"]},
+        "mode": {"type": ["string", "null"]},
+        "mode_basis": {"$ref": "#/$defs/strings"},
+        "domains": {"$ref": "#/$defs/strings"},
+        "sticky": {"const": true},
+        "role": {"enum": ["explorer", "generator", "researcher"]},
+        "projection": {"type": "object"},
+        "route_sha256": {"$ref": "#/$defs/sha"}
+      }
+    },
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "domain", "distribution", "version", "core_api",
+        "domain_contract_version", "payload_sha256", "payload_files",
+        "payload_bytes", "install_receipt_sha256", "activation_sha256", "status"
+      ],
+      "properties": {
+        "domain": {"$ref": "#/$defs/nonempty"},
+        "distribution": {"$ref": "#/$defs/nonempty"},
+        "version": {"$ref": "#/$defs/nonempty"},
+        "core_api": {"type": "integer", "minimum": 1},
+        "domain_contract_version": {"type": "integer", "minimum": 1},
+        "payload_sha256": {"$ref": "#/$defs/sha"},
+        "payload_files": {"type": "integer", "minimum": 1},
+        "payload_bytes": {"type": "integer", "minimum": 1},
+        "install_receipt_sha256": {
+          "oneOf": [{"$ref": "#/$defs/sha"}, {"type": "null"}]
+        },
+        "activation_sha256": {"$ref": "#/$defs/sha"},
+        "status": {"enum": ["ACTIVE", "DEVELOPMENT_SOURCE"]}
+      }
+    },
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "local_path", "skill_locator", "sha256", "size"],
+      "properties": {
+        "kind": {"$ref": "#/$defs/nonempty"},
+        "local_path": {"$ref": "#/$defs/nonempty"},
+        "skill_locator": {"$ref": "#/$defs/nonempty"},
+        "sha256": {"$ref": "#/$defs/sha"},
+        "size": {"type": "integer", "minimum": 1}
+      }
+    },
+    "workspace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "root", "task_dir", "task_dir_relative", "task_dir_existed_before_preflight",
+        "worker_mode", "base_revision", "artifact_returns", "user_bound_paths_are_immutable"
+      ],
+      "properties": {
+        "root": {"$ref": "#/$defs/nonempty"},
+        "task_dir": {"$ref": "#/$defs/nonempty"},
+        "task_dir_relative": {"type": ["string", "null"]},
+        "task_dir_existed_before_preflight": {"type": "boolean"},
+        "worker_mode": {"enum": ["INHERIT_BOUND", "ISOLATED_RETURN"]},
+        "base_revision": {"type": ["string", "null"]},
+        "artifact_returns": {"$ref": "#/$defs/strings"},
+        "user_bound_paths_are_immutable": {"const": true}
+      }
+    }
+  }
+}

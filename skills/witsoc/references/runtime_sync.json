@@ -1,0 +1,39 @@
+{
+  "schema": "witsoc.runtime-sync-policy.v1",
+  "source_of_truth": "witsoc",
+  "active_runtime": "~/.openscientist/strings/skills/witsoc",
+  "mode": "verified-atomic-replacement",
+  "runtime_only_disposition": "retire-after-content-addressed-inventory-and-backup",
+  "candidate_only_disposition": "publish",
+  "divergent_disposition": "replace-with-candidate-after-gates-pass",
+  "excluded_patterns": [
+    ".git/**",
+    ".mypy_cache/**",
+    ".pytest_cache/**",
+    ".ruff_cache/**",
+    ".venv/**",
+    "__pycache__/**",
+    "*.pyc",
+    "*.pyo",
+    ".DS_Store",
+    ".witsoc-manifest.json"
+  ],
+  "required_entrypoints": [
+    "SKILL.md",
+    "scripts/witsoc.sh",
+    "scripts/witsoc.py",
+    "scripts/route.py",
+    "scripts/check.sh",
+    "scripts/resolve.sh",
+    "scripts/campaign.sh",
+    "scripts/scaffold.sh",
+    "scripts/release.sh",
+    "scripts/sync_runtime.py",
+    "scripts/generate_contracts.py",
+    "scripts/witsoc_core/domain_packages.py",
+    "contracts/domain-packages.json",
+    "references/runtime_budgets.json",
+    "references/runtime_contracts.json"
+  ],
+  "post_publish_resolution": "plane-tool skill-which validates witsoc/SKILL.md, scripts/route.py, explorer/SKILL.md, and researcher/SKILL.md plus skills-list singleton, collision, and exact-description validation"
+}

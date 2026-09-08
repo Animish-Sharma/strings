@@ -1,9 +1,0 @@
-{"id":"false_02_all_primes_odd","expected":"FALSE_REFUTABLE",
- "statement":"every prime is odd",
- "why_false":"2 is prime and even",
- "claim":{"claim_id":"false_02","exact_statement":"every prime is odd",
-  "success_condition":"no even prime","failure_condition":"an even prime",
-  "frozen_conditions":{"bounded_search":{"variable":"n","lower":2,"upper":40,
-    "predicate":"(not all(n % d for d in range(2, n))) or (n % 2 == 1)"}},
-  "target_sha256":"f02","status":"CONJECTURE"},
- "must":["bounded tier finds n=2","no progress toward proving it is reported"]}

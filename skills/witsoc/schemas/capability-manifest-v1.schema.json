@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "witsoc.capability-manifest.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "owner", "version", "capabilities"],
+  "properties": {
+    "schema": {"const": "witsoc.capability-manifest.v1"},
+    "owner": {"type": "string", "minLength": 1},
+    "version": {"type": "integer", "minimum": 1},
+    "capabilities": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/capability"}
+    }
+  },
+  "$defs": {
+    "strings": {"type": "array", "items": {"type": "string"}},
+    "capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "summary", "modes", "roles", "default", "triggers", "inputs",
+        "outputs", "requires", "load", "commands", "cost_class", "priority"
+      ],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1},
+        "modes": {"$ref": "#/$defs/strings"},
+        "roles": {"$ref": "#/$defs/strings"},
+        "default": {"type": "boolean"},
+        "triggers": {"$ref": "#/$defs/strings"},
+        "inputs": {"$ref": "#/$defs/strings"},
+        "outputs": {"$ref": "#/$defs/strings"},
+        "requires": {"$ref": "#/$defs/strings"},
+        "load": {"$ref": "#/$defs/strings"},
+        "commands": {"$ref": "#/$defs/strings"},
+        "cost_class": {"enum": ["tiny", "small", "medium", "large"]},
+        "priority": {"type": "integer"}
+      }
+    }
+  }
+}

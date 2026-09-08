@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "witsoc.discovery-proposal.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "proposal_id", "target_sha256", "base_state_sha256", "node_id",
+    "lane", "route", "operator_id", "invariant", "failure_signature",
+    "failure_domain", "question", "objective", "evaluator", "expected_delta",
+    "return_condition", "changed_axis", "fixed_axes", "revival_evidence",
+    "revival_predicate", "branches", "evidence_ceiling", "target_path",
+    "prerequisites", "cost_class", "max_attempts", "resource_keys",
+    "novelty_refs", "payload_sha256"
+  ],
+  "properties": {
+    "schema": {"const": "witsoc.discovery-proposal.v2"},
+    "proposal_id": {"$ref": "#/$defs/nonempty"},
+    "target_sha256": {"$ref": "#/$defs/sha"},
+    "base_state_sha256": {"$ref": "#/$defs/sha"},
+    "node_id": {"$ref": "#/$defs/nonempty"},
+    "lane": {"enum": ["RETRIEVE", "REFUTE", "REDUCE", "CONSTRUCT", "TRANSFER", "MEASURE", "VERIFY"]},
+    "route": {"$ref": "#/$defs/route"},
+    "operator_id": {"$ref": "#/$defs/nonempty"},
+    "invariant": {"$ref": "#/$defs/nonempty"},
+    "failure_signature": {"$ref": "#/$defs/nonempty"},
+    "failure_domain": {"$ref": "#/$defs/nonempty"},
+    "question": {"$ref": "#/$defs/nonempty"},
+    "objective": {"$ref": "#/$defs/nonempty"},
+    "evaluator": {"$ref": "#/$defs/nonempty"},
+    "expected_delta": {"$ref": "#/$defs/nonempty"},
+    "return_condition": {"$ref": "#/$defs/nonempty"},
+    "stop_condition": {"$ref": "#/$defs/nonempty", "deprecated": true},
+    "changed_axis": {"type": "string"},
+    "fixed_axes": {"$ref": "#/$defs/strings"},
+    "revival_evidence": {"type": "string"},
+    "revival_predicate": {"type": "string"},
+    "branches": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 6,
+      "items": {"$ref": "#/$defs/branch"}
+    },
+    "evidence_ceiling": {"enum": ["EXACT", "SOURCE_VERIFIED", "COMPUTATIONAL_BOUNDED", "EMPIRICAL", "SEARCH_BOUNDED"]},
+    "target_path": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}, "uniqueItems": true},
+    "prerequisites": {"type": "array", "items": {"$ref": "#/$defs/prerequisite"}},
+    "cost_class": {"enum": ["tiny", "small", "medium", "large", "external"]},
+    "max_attempts": {"type": "integer", "minimum": 1, "maximum": 12},
+    "resource_keys": {"$ref": "#/$defs/strings"},
+    "novelty_refs": {"$ref": "#/$defs/strings"},
+    "payload_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {
+    "nonempty": {"type": "string", "minLength": 1},
+    "strings": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}, "uniqueItems": true},
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method_family", "mechanism", "structural_object", "required_result", "target_effect", "assumptions"],
+      "properties": {
+        "method_family": {"$ref": "#/$defs/nonempty"},
+        "mechanism": {"$ref": "#/$defs/nonempty"},
+        "structural_object": {"$ref": "#/$defs/nonempty"},
+        "required_result": {"$ref": "#/$defs/nonempty"},
+        "target_effect": {"$ref": "#/$defs/nonempty"},
+        "assumptions": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "branch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outcome", "condition", "frontier_effect"],
+      "properties": {
+        "outcome": {"enum": ["ADMITTED_PRODUCT", "CANDIDATE_PRODUCT", "STRICT_REDUCTION", "FALSIFICATION", "TARGET_FALSIFIED", "ROUTE_REFUTED", "NEW_OBSTRUCTION", "METHOD_BARRIER", "CORE_SHARPENED", "POSITIVE_SIGNAL", "NO_PROGRESS", "NO_DELTA", "SESSION_CHECKPOINT", "WAITING_EXTERNAL"]},
+        "condition": {"$ref": "#/$defs/nonempty"},
+        "frontier_effect": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "prerequisite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statement", "status", "evidence_ref"],
+      "properties": {
+        "statement": {"$ref": "#/$defs/nonempty"},
+        "status": {"enum": ["VERIFIED", "SOURCE_VERIFIED", "ASSUMED", "OPEN", "UNAVAILABLE"]},
+        "evidence_ref": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

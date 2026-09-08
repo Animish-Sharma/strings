@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "witsoc.memory-entry.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "kind", "target_sha256", "domain", "scope", "status", "admission_ref", "evidence_refs", "content", "tags", "created_at", "invalidated_by", "entry_id"],
+  "properties": {
+    "schema": {"const": "witsoc.memory-entry.v1"},
+    "kind": {"enum": ["FAILURE", "ADMITTED_PRODUCT", "OBSTRUCTION", "SOURCE", "ROUTE", "INVALIDATION"]},
+    "target_sha256": {"$ref": "#/$defs/sha"},
+    "domain": {"type": "string", "minLength": 1},
+    "scope": {"type": "object"},
+    "status": {"type": "string", "minLength": 1},
+    "admission_ref": {"oneOf": [{"type": "string"}, {"type": "null"}]},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}},
+    "content": {"type": "object"},
+    "tags": {"type": "array", "items": {"type": "string"}},
+    "created_at": {"type": "string", "minLength": 1},
+    "invalidated_by": {"oneOf": [{"type": "string"}, {"type": "null"}]},
+    "entry_id": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

@@ -1,0 +1,29 @@
+{
+  "schema": "witsoc.research-episode.v1",
+  "episode_id": "episode-example",
+  "target_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "base_revision": 0,
+  "base_state_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "node_id": "CORE",
+  "claim": "Resolve the synthetic open core.",
+  "lane": "REFUTE",
+  "route": {
+    "method_family": "adversarial model",
+    "mechanism": "separate alternatives",
+    "structural_object": "synthetic core",
+    "required_result": "strict reduction",
+    "target_effect": "advance the target",
+    "assumptions": []
+  },
+  "route_fingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
+  "core_fingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
+  "objective": "separate two alternatives",
+  "evaluator": "one exact discriminator",
+  "expected_delta": "a smaller frontier",
+  "return_condition": "return after one evaluator decision",
+  "campaign_authority": false,
+  "changed_axis": "",
+  "revival_evidence": "",
+  "adjudication": {},
+  "payload_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+}

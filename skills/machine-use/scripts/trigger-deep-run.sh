@@ -19,7 +19,7 @@
 #     [--spawned-by-session SID] [--spawned-by-role ROLE]
 #
 # Required:
-#   --provider   gecko | claudecode | codex
+#   --provider   gecko | claudecode | codex | commandcode
 #                (`gecko` is the built-in kimi-server orchestrator that
 #                machine-setup/install.sh provisions on every machine. Legacy
 #                aliases `kimi` and `openscientist-gecko` accepted; all
@@ -99,8 +99,10 @@ done
 # format is `kimi`. claudecode/codex pass through verbatim.
 case "$provider" in
   gecko|openscientist-gecko) provider="kimi" ;;
-  kimi|claudecode|codex)     ;;
-  *) die "--provider must be one of: gecko, claudecode, codex (got: $provider)" ;;
+  "claude code"|claude-code|claude) provider="claudecode" ;;
+  "command code"|command-code|cmd|cmdc) provider="commandcode" ;;
+  kimi|claudecode|codex|commandcode)     ;;
+  *) die "--provider must be one of: gecko, claudecode, codex, commandcode (got: $provider)" ;;
 esac
 
 session_id="$(rand_hex 4)"

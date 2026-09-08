@@ -1,0 +1,39 @@
+{
+  "schema": "witsoc.bridge-adapters.v1",
+  "version": 1,
+  "adapters": [
+    {
+      "id": "candidate-to-transfer-v1",
+      "from_type": "witsoc.candidate.v2",
+      "to_type": "witsoc.transfer.v2",
+      "required_invariants": ["target_sha256", "source_content_sha256", "scope"],
+      "losses": ["destination interpretation remains an unverified candidate"],
+      "embedding_field": "candidate",
+      "transform": "embed-source-v1",
+      "verification": ["validate source type", "preserve frozen target", "embed exact source bytes", "seal translated packet"],
+      "loss_units": 1
+    },
+    {
+      "id": "obstruction-to-transfer-v1",
+      "from_type": "witsoc.obstruction.v2",
+      "to_type": "witsoc.transfer.v2",
+      "required_invariants": ["target_sha256", "source_content_sha256", "revival_condition"],
+      "losses": ["destination relevance is not established by translation"],
+      "embedding_field": "candidate",
+      "transform": "embed-source-v1",
+      "verification": ["validate source type", "preserve frozen target", "embed exact source bytes", "seal translated packet"],
+      "loss_units": 1
+    },
+    {
+      "id": "source-map-to-transfer-v1",
+      "from_type": "witsoc.source-map.v2",
+      "to_type": "witsoc.transfer.v2",
+      "required_invariants": ["target_sha256", "source_content_sha256", "source provenance"],
+      "losses": ["source support does not establish destination-domain implication"],
+      "embedding_field": "candidate",
+      "transform": "embed-source-v1",
+      "verification": ["validate source type", "preserve frozen target", "embed exact source bytes", "seal translated packet"],
+      "loss_units": 1
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "witsoc.obstruction.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "obstruction_id", "target_sha256", "statement", "mechanism", "threatened_item", "route_fingerprint", "core_fingerprint", "evidence_refs", "tests", "bypasses", "revival_condition", "payload_sha256"],
+  "properties": {
+    "schema": {"const": "witsoc.obstruction.v2"},
+    "obstruction_id": {"$ref": "#/$defs/nonempty"},
+    "target_sha256": {"$ref": "#/$defs/sha"},
+    "statement": {"$ref": "#/$defs/nonempty"},
+    "mechanism": {"$ref": "#/$defs/nonempty"},
+    "threatened_item": {"$ref": "#/$defs/nonempty"},
+    "route_fingerprint": {"$ref": "#/$defs/sha"},
+    "core_fingerprint": {"$ref": "#/$defs/sha"},
+    "evidence_refs": {"$ref": "#/$defs/strings"},
+    "tests": {"$ref": "#/$defs/strings"},
+    "bypasses": {"$ref": "#/$defs/strings"},
+    "revival_condition": {"$ref": "#/$defs/nonempty"},
+    "payload_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {
+    "nonempty": {"type": "string", "minLength": 1},
+    "strings": {"type": "array", "items": {"type": "string"}},
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

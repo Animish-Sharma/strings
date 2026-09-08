@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "witsoc.projection.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "view", "source_state_sha256", "target_sha256", "revision", "status_authority", "status", "outcome", "claims", "active", "obstructions", "payload_sha256"],
+  "properties": {
+    "schema": {"const": "witsoc.projection.v1"},
+    "view": {"enum": ["FRAME_COMPATIBILITY", "CAMPAIGN_COMPATIBILITY", "RESEARCH_SUMMARY"]},
+    "source_state_sha256": {"$ref": "#/$defs/sha"},
+    "target_sha256": {"$ref": "#/$defs/sha"},
+    "revision": {"type": "integer", "minimum": 0},
+    "status_authority": {"const": false},
+    "status": {"type": "string", "minLength": 1},
+    "outcome": {"type": "string", "minLength": 1},
+    "claims": {"type": "object"},
+    "active": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "obstructions": {"type": "array", "items": {"type": "object"}},
+    "payload_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "witsoc.reasoning-state.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "reasoning_id", "target_sha256", "episode_id", "episode_sha256",
+    "route_fingerprint", "phase", "route_compliance", "claims", "hypotheses", "attacks",
+    "attempts", "contradictions", "obligations", "subgoals", "invariants",
+    "pivotal_claim_ids", "closure_candidate_ids", "target_fidelity",
+    "requested_outcome", "reduction_certificate", "obstruction_certificate",
+    "first_failing_gate", "payload_sha256"
+  ],
+  "properties": {
+    "schema": {"const": "witsoc.reasoning-state.v1"},
+    "reasoning_id": {"$ref": "#/$defs/nonempty"},
+    "target_sha256": {"$ref": "#/$defs/sha"},
+    "episode_id": {"$ref": "#/$defs/nonempty"},
+    "episode_sha256": {"$ref": "#/$defs/sha"},
+    "route_fingerprint": {"$ref": "#/$defs/sha"},
+    "phase": {"enum": ["SCREENING", "DEEP_ATTACK", "RETURN"]},
+    "route_compliance": {"$ref": "#/$defs/route_compliance"},
+    "claims": {"type": "array", "minItems": 1, "maxItems": 32, "items": {"$ref": "#/$defs/claim"}},
+    "hypotheses": {"type": "array", "maxItems": 4, "items": {"$ref": "#/$defs/hypothesis"}},
+    "attacks": {"type": "array", "maxItems": 24, "items": {"$ref": "#/$defs/attack"}},
+    "attempts": {"type": "array", "maxItems": 16, "items": {"$ref": "#/$defs/attempt"}},
+    "contradictions": {"type": "array", "maxItems": 16, "items": {"$ref": "#/$defs/contradiction"}},
+    "obligations": {"type": "array", "maxItems": 32, "items": {"$ref": "#/$defs/obligation"}},
+    "subgoals": {"type": "array", "minItems": 1, "maxItems": 24, "items": {"$ref": "#/$defs/subgoal"}},
+    "invariants": {"type": "array", "minItems": 1, "maxItems": 16, "items": {"$ref": "#/$defs/invariant"}},
+    "pivotal_claim_ids": {"$ref": "#/$defs/strings"},
+    "closure_candidate_ids": {"$ref": "#/$defs/strings"},
+    "target_fidelity": {"$ref": "#/$defs/target_fidelity"},
+    "requested_outcome": {"enum": ["ADMITTED_PRODUCT", "CANDIDATE_PRODUCT", "STRICT_REDUCTION", "FALSIFICATION", "TARGET_FALSIFIED", "ROUTE_REFUTED", "NEW_OBSTRUCTION", "METHOD_BARRIER", "CORE_SHARPENED", "POSITIVE_SIGNAL", "NO_PROGRESS", "NO_DELTA", "SESSION_CHECKPOINT", "WAITING_EXTERNAL"]},
+    "reduction_certificate": {"oneOf": [{"$ref": "#/$defs/reduction_certificate"}, {"type": "null"}]},
+    "obstruction_certificate": {"oneOf": [{"$ref": "#/$defs/obstruction_certificate"}, {"type": "null"}]},
+    "first_failing_gate": {"type": "string", "maxLength": 2048},
+    "payload_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {
+    "nonempty": {"type": "string", "minLength": 1},
+    "short": {"type": "string", "minLength": 1, "maxLength": 2048},
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "strings": {"type": "array", "items": {"type": "string", "minLength": 1, "maxLength": 2048}, "uniqueItems": true},
+    "route_compliance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "changed_axis", "preserved_route_fields", "reframe_request", "side_result_claim_ids"],
+      "properties": {
+        "status": {"enum": ["ASSIGNED", "LOCAL_MUTATION", "REFRAME_REQUIRED"]},
+        "changed_axis": {"type": "string", "maxLength": 2048},
+        "preserved_route_fields": {"$ref": "#/$defs/strings"},
+        "reframe_request": {"type": "string", "maxLength": 2048},
+        "side_result_claim_ids": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "statement", "kind", "epistemic_class", "status", "depends_on", "inference", "warrant", "evidence_refs", "defeaters", "target_link", "route_scope"],
+      "properties": {
+        "claim_id": {"$ref": "#/$defs/nonempty"},
+        "statement": {"$ref": "#/$defs/nonempty"},
+        "kind": {"enum": ["TARGET", "ROUTE_OBJECTIVE", "PREMISE", "INTERMEDIATE", "CONCLUSION", "SIDE_RESULT"]},
+        "epistemic_class": {"enum": ["EXACT", "SOURCE_VERIFIED", "COMPUTATIONAL_BOUNDED", "EMPIRICAL", "HEURISTIC", "CONJECTURAL", "SEARCH_BOUNDED", "UNKNOWN"]},
+        "status": {"enum": ["OPEN", "SUPPORTED", "REFUTED", "CONFLICTED"]},
+        "depends_on": {"$ref": "#/$defs/strings"},
+        "inference": {"enum": ["GIVEN", "DEDUCTION", "EQUIVALENCE", "REDUCTION", "SOURCE_IMPORT", "BOUNDED_CHECK", "OBSERVATION", "ANALOGY", "SEARCH_SCOPE"]},
+        "warrant": {"type": "string", "maxLength": 2048},
+        "evidence_refs": {"$ref": "#/$defs/strings"},
+        "defeaters": {"$ref": "#/$defs/strings"},
+        "target_link": {"enum": ["DIRECT", "REQUIRED", "SUPPORTING", "SIDE"]},
+        "route_scope": {"enum": ["ASSIGNED", "LOCAL_MUTATION", "OFF_ROUTE"]}
+      }
+    },
+    "hypothesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hypothesis_id", "statement", "mechanism", "discriminator", "predicted_failure", "claim_ids", "status"],
+      "properties": {
+        "hypothesis_id": {"$ref": "#/$defs/nonempty"},
+        "statement": {"$ref": "#/$defs/short"},
+        "mechanism": {"$ref": "#/$defs/short"},
+        "discriminator": {"$ref": "#/$defs/short"},
+        "predicted_failure": {"$ref": "#/$defs/short"},
+        "claim_ids": {"$ref": "#/$defs/strings"},
+        "status": {"enum": ["ACTIVE", "FALLBACK", "REJECTED", "SUPPORTED"]}
+      }
+    },
+    "attack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attack_id", "claim_id", "objection", "test", "result", "repair", "evidence_refs"],
+      "properties": {
+        "attack_id": {"$ref": "#/$defs/nonempty"},
+        "claim_id": {"$ref": "#/$defs/nonempty"},
+        "objection": {"$ref": "#/$defs/short"},
+        "test": {"$ref": "#/$defs/short"},
+        "result": {"enum": ["SURVIVED", "FAILED", "OPEN", "NOT_RUN"]},
+        "repair": {"type": "string", "maxLength": 2048},
+        "evidence_refs": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "attempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attempt_id", "hypothesis_id", "method_family", "changed_axis", "fixed_axes", "result", "failure_class", "failure_domain", "diagnostic", "obligation_delta", "evidence_refs"],
+      "properties": {
+        "attempt_id": {"$ref": "#/$defs/nonempty"},
+        "hypothesis_id": {"$ref": "#/$defs/nonempty"},
+        "method_family": {"$ref": "#/$defs/short"},
+        "changed_axis": {"$ref": "#/$defs/short"},
+        "fixed_axes": {"$ref": "#/$defs/strings"},
+        "result": {"enum": ["SUPPORTED", "REFUTED", "INCONCLUSIVE", "BLOCKED"]},
+        "failure_class": {"enum": ["NONE", "target_drift", "missing_dependency", "unmet_precondition", "out_of_scope_reference", "false_statement", "hidden_assumption", "circularity", "step_too_compressed", "forbidden_escape", "computational_obstruction", "genuine_obstruction", "toolchain_unavailable"]},
+        "failure_domain": {"$ref": "#/$defs/short"},
+        "diagnostic": {"$ref": "#/$defs/short"},
+        "obligation_delta": {"enum": ["REDUCED", "SAME", "WORSE", "UNKNOWN"]},
+        "evidence_refs": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "contradiction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contradiction_id", "left_claim_id", "right_claim_id", "incompatible_assumptions", "status", "resolution", "evidence_refs"],
+      "properties": {
+        "contradiction_id": {"$ref": "#/$defs/nonempty"},
+        "left_claim_id": {"$ref": "#/$defs/nonempty"},
+        "right_claim_id": {"$ref": "#/$defs/nonempty"},
+        "incompatible_assumptions": {"$ref": "#/$defs/strings"},
+        "status": {"enum": ["OPEN", "RESOLVED", "CONDITIONALIZED"]},
+        "resolution": {"type": "string", "maxLength": 2048},
+        "evidence_refs": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "obligation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["obligation_id", "claim_id", "kind", "statement", "status", "discharge", "evidence_refs"],
+      "properties": {
+        "obligation_id": {"$ref": "#/$defs/nonempty"},
+        "claim_id": {"$ref": "#/$defs/nonempty"},
+        "kind": {"enum": ["ASSUMPTION", "SOURCE_TRANSFER", "DERIVATION", "FORMALIZATION", "EMPIRICAL_LIMIT", "EXTERNAL_REVIEW", "TARGET_FIDELITY"]},
+        "statement": {"$ref": "#/$defs/short"},
+        "status": {"enum": ["OPEN", "DISCHARGED", "CONDITIONAL"]},
+        "discharge": {"type": "string", "maxLength": 2048},
+        "evidence_refs": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "subgoal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subgoal_id", "claim_id", "statement", "status", "dependencies", "method", "failure_condition", "evidence_refs"],
+      "properties": {
+        "subgoal_id": {"$ref": "#/$defs/nonempty"},
+        "claim_id": {"$ref": "#/$defs/nonempty"},
+        "statement": {"$ref": "#/$defs/short"},
+        "status": {"enum": ["OPEN", "BLOCKED", "DISCHARGED", "REFUTED"]},
+        "dependencies": {"$ref": "#/$defs/strings"},
+        "method": {"$ref": "#/$defs/short"},
+        "failure_condition": {"type": "string", "maxLength": 2048},
+        "evidence_refs": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "invariant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["invariant_id", "statement", "scope", "status", "evidence_refs"],
+      "properties": {
+        "invariant_id": {"$ref": "#/$defs/nonempty"},
+        "statement": {"$ref": "#/$defs/short"},
+        "scope": {"enum": ["ASSIGNED_ROUTE", "LOCAL_MUTATION", "CLAIM_SUBGRAPH"]},
+        "status": {"enum": ["ASSUMED", "PRESERVED", "BROKEN", "UNKNOWN"]},
+        "evidence_refs": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "target_fidelity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target_contract_sha256", "claim_checks", "distinction_checks"],
+      "properties": {
+        "target_contract_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "claim_checks": {"type": "array", "maxItems": 32, "items": {"$ref": "#/$defs/fidelity_claim_check"}},
+        "distinction_checks": {"type": "array", "maxItems": 16, "items": {"$ref": "#/$defs/fidelity_distinction_check"}}
+      }
+    },
+    "fidelity_claim_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "relation", "clause_results", "scope_limit"],
+      "properties": {
+        "claim_id": {"$ref": "#/$defs/nonempty"},
+        "relation": {"enum": ["EXACT_TARGET", "SUFFICIENT_FOR_TARGET", "REFUTES_TARGET", "NECESSARY_FOR_TARGET", "ROUTE_LOCAL", "SIDE_RESULT"]},
+        "clause_results": {"type": "array", "minItems": 1, "maxItems": 32, "items": {"$ref": "#/$defs/fidelity_clause_result"}},
+        "scope_limit": {"type": "string"}
+      }
+    },
+    "fidelity_clause_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["clause_id", "status", "rationale", "evidence_refs"],
+      "properties": {
+        "clause_id": {"$ref": "#/$defs/nonempty"},
+        "status": {"enum": ["SATISFIED", "VIOLATED", "OPEN", "NOT_APPLICABLE"]},
+        "rationale": {"$ref": "#/$defs/short"},
+        "evidence_refs": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "fidelity_distinction_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["distinction_id", "status", "rationale", "evidence_refs"],
+      "properties": {
+        "distinction_id": {"$ref": "#/$defs/nonempty"},
+        "status": {"enum": ["PRESERVED", "VIOLATED", "OPEN"]},
+        "rationale": {"$ref": "#/$defs/short"},
+        "evidence_refs": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "burden_change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["axis", "before", "after", "strict", "reason"],
+      "properties": {
+        "axis": {"enum": ["QUANTIFIERS", "ASSUMPTIONS", "DEPENDENCIES", "SCOPE", "ESTIMATE", "OPEN_CORE"]},
+        "before": {"$ref": "#/$defs/short"},
+        "after": {"$ref": "#/$defs/short"},
+        "strict": {"type": "boolean"},
+        "reason": {"$ref": "#/$defs/short"}
+      }
+    },
+    "reduction_certificate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_claim_id", "residual_claim_ids", "implication_claim_id", "direction", "coverage", "burden_changes"],
+      "properties": {
+        "source_claim_id": {"$ref": "#/$defs/nonempty"},
+        "residual_claim_ids": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}, "uniqueItems": true},
+        "implication_claim_id": {"$ref": "#/$defs/nonempty"},
+        "direction": {"enum": ["RESIDUAL_IMPLIES_SOURCE", "EQUIVALENT"]},
+        "coverage": {"enum": ["COMPLETE", "CONDITIONAL"]},
+        "burden_changes": {"type": "array", "minItems": 1, "maxItems": 6, "items": {"$ref": "#/$defs/burden_change"}}
+      }
+    },
+    "obstruction_certificate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope_statement", "blocked_claim_ids", "covered_method_families", "no_go_basis", "decisive_claim_ids", "failure_domains", "surviving_alternatives", "limits", "revival_condition"],
+      "properties": {
+        "scope_statement": {"$ref": "#/$defs/short"},
+        "blocked_claim_ids": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}, "uniqueItems": true},
+        "covered_method_families": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/short"}, "uniqueItems": true},
+        "no_go_basis": {"enum": ["DEDUCTIVE", "EXHAUSTIVE_DECLARED_SCOPE", "REPEATED_INDEPENDENT_FAILURE"]},
+        "decisive_claim_ids": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}, "uniqueItems": true},
+        "failure_domains": {"$ref": "#/$defs/strings"},
+        "surviving_alternatives": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/short"}, "uniqueItems": true},
+        "limits": {"$ref": "#/$defs/short"},
+        "revival_condition": {"$ref": "#/$defs/short"}
+      }
+    }
+  }
+}

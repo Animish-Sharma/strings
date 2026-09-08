@@ -1,6 +1,6 @@
 ---
 name: machine-use
-description: Spawn deep-run orchestrators on the host you're running on, claim a run's result back into the laptop's git, and (laptop-only) install provider CLIs on registered remotes. This skill is the **agent's** machine-touching surface; cross-machine routing — selecting which machine, opening tunnels, probing reachability, syncing space repos — is the renderer's job and is not exposed here. Use this skill when the user wants to trigger a deep run, claim a finished run's branch, or install Claude / Codex on a remote.
+description: Spawn deep-run orchestrators on the host you're running on, claim a run's result back into the laptop's git, and (laptop-only) install provider CLIs on registered remotes. This skill is the **agent's** machine-touching surface; cross-machine routing — selecting which machine, opening tunnels, probing reachability, syncing space repos — is the renderer's job and is not exposed here. Use this skill when the user wants to trigger a deep run, claim a finished run's branch, or install Claude / Codex / Command Code on a remote.
 metadata:
   skill-author: OpenScientist
 category: infrastructure
@@ -17,7 +17,7 @@ This is the most important constraint in this skill. **Each gecko operates in it
 - You do **not** select which machine the user is targeting. There is no `.active` field in `index.json`. The renderer holds the selection in memory; you don't read or set it.
 - `trigger-deep-run.sh` is **local-only**. It spawns a run on the host that invoked it. There is no `--machine` flag. If the user wants a run on a different machine, they pick it in the renderer; Electron orchestrates the SSH-exec on the target and runs the same script there in *its* local frame.
 - You do **not** enumerate machines or probe their reachability. Boot probe, periodic probe, dropdown gate — all renderer-only. Don't invoke `verify.sh`, `sync-space.sh`, or `reconnect-ssh.sh` (against arbitrary remotes) on your own initiative.
-- Cross-machine work the agent *can* do (laptop only, explicit user request): `install-claude.sh`, `install-codex.sh`, `fetch-session-branch.sh`. These are scoped, named-machine operations the user explicitly asks for.
+- Cross-machine work the agent *can* do (laptop only, explicit user request): `install-claude.sh`, `install-codex.sh`, `install-commandcode.sh`, `fetch-session-branch.sh`. These are scoped, named-machine operations the user explicitly asks for.
 
 If the user reports a machine isn't reachable: tell them to use the in-app machine controls. Do not attempt cross-machine repair from this session.
 
@@ -39,6 +39,7 @@ For setup-side paths (cloud-run bundle, remote install dir, systemd units, `~/.o
 | `fetch-session-branch.sh --session-id SID --path LAPTOP_REPO --machine M` | The user wants to claim a finished deep run's result back into the laptop's git | Laptop-only. `--machine M` names which remote (or `local`) the run lived on. Creates `osci/<sid>` in the laptop `.git`. |
 | `install-claude.sh <name> [--token-stdin \| --token-file PATH]` | The user asks to install Claude Code on a registered remote | Laptop-only. Auth-required; see "Provider installs" below. |
 | `install-codex.sh <name>` | The user asks to install Codex on a registered remote | Laptop-only. Auth via separate rsync of `~/.codex/` (see below). |
+| `install-commandcode.sh <name>` | The user asks to install Command Code on a registered remote | Laptop-only. Auth via rsync of `~/.commandcode/` (see below). |
 
 ## Electron-internal scripts (do not invoke from agent)
 
@@ -84,15 +85,16 @@ Stderr is a human progress log. Tell the user the short orchestrator id; everyth
 
 ### Provider selection
 
-`--provider` picks which CLI runs the orchestrator (not which model). Three valid values:
+`--provider` picks which CLI runs the orchestrator (not which model). Four valid values:
 
 - `gecko` — built-in kimi-server orchestrator. Always available after `machine-setup/install.sh`. The default for any run that doesn't ask for something else.
 - `claudecode` — Anthropic's Claude Code CLI.
 - `codex` — OpenAI's Codex CLI.
+- `commandcode` — Command Code CLI. Runs in headless mode (`-p`) for OSci-compatible operation. Requires a separate install (see below).
 
 Legacy aliases `kimi` and `openscientist-gecko` canonicalize to `gecko`'s wire form (`kimi`).
 
-If the user names `claudecode` or `codex` and it isn't installed on this host (`jq '.machines["<name>"]?.services.providers' ~/.openscientist/machines/index.json` — but only consult this on the laptop), tell them and offer to fall back to `gecko`. Don't put "claude code" or "codex" into the prompt as if it were a model name.
+If the user names `claudecode`, `codex`, or `commandcode` and it isn't installed on this host (`jq '.machines["<name>"]?.services.providers' ~/.openscientist/machines/index.json` — but only consult this on the laptop), tell them and offer to fall back to `gecko`. Don't put "claude code", "codex", or "command code" into the prompt as if it were a model name.
 
 ## Claim a deep run's result
 
@@ -138,6 +140,19 @@ ssh osci-math 'mkdir -p ~/.codex'
 rsync -az ~/.codex/ osci-math:.codex/
 ssh osci-math 'codex login status'   # confirm
 ```
+
+### Command Code (`install-commandcode.sh`)
+
+Command Code stores auth in `~/.commandcode/auth.json`. Install via npm global, then rsync auth and config from the laptop:
+
+```bash
+bash $SCRIPTS/install-commandcode.sh osci-math
+ssh osci-math 'mkdir -p ~/.commandcode'
+rsync -az ~/.commandcode/ osci-math:.commandcode/
+ssh osci-math 'commandcode --version'   # confirm
+```
+
+Command Code runs in headless (`-p`) mode when spawned by plane, so it works fully non-interactively with OSci. No OAuth or interactive login needed on the remote — the rsync'd `auth.json` contains the API key.
 
 ## Conventions for new scripts
 

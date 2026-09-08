@@ -1,0 +1,22 @@
+{
+  "schema": "witsoc.research-delta.v1",
+  "delta_id": "delta-example",
+  "episode_id": "episode-example",
+  "episode_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "target_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "base_revision": 1,
+  "base_state_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "outcome": "NO_PROGRESS",
+  "evidence_refs": [],
+  "frontier_measure_before": 1,
+  "frontier_measure_after": 1,
+  "new_frontier": [],
+  "new_obstruction": null,
+  "admission_ref": null,
+  "independent_review": null,
+  "remaining_obstruction": "the alternatives remain coupled",
+  "revival_condition": "a new discriminator is available",
+  "next_proposals": [],
+  "changed_axis": "",
+  "payload_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+}

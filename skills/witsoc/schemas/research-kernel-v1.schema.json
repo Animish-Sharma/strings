@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "witsoc.kernel-state.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "kernel_id", "genesis", "target", "mode", "domains", "ceiling",
+    "revision", "previous_state_sha256", "status", "outcome", "frontier",
+    "evidence", "decisions", "route_attempts", "pending_episode",
+    "frame_projection", "events", "state_sha256"
+  ],
+  "properties": {
+    "schema": {"const": "witsoc.kernel-state.v1"},
+    "kernel_id": {"type": "string", "minLength": 1},
+    "genesis": {"type": "object"},
+    "target": {"$ref": "#/$defs/target"},
+    "mode": {"enum": ["SOURCE_SYNTHESIS", "OPEN_DISCOVERY", "CLAIM_VERIFICATION", "ARTIFACT_PRODUCTION", "REPAIR", "CROSS_DOMAIN"]},
+    "domains": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "ceiling": {"$ref": "#/$defs/status"},
+    "revision": {"type": "integer", "minimum": 0},
+    "previous_state_sha256": {"oneOf": [{"$ref": "#/$defs/sha"}, {"type": "null"}]},
+    "status": {"$ref": "#/$defs/status"},
+    "outcome": {"type": "string", "minLength": 1},
+    "frontier": {"type": "object"},
+    "evidence": {"type": "array", "items": {"type": "object"}},
+    "decisions": {"type": "array", "items": {"type": "object"}},
+    "route_attempts": {"type": "array", "items": {"type": "object"}},
+    "pending_episode": {"oneOf": [{"type": "object"}, {"type": "null"}]},
+    "frame_projection": {"oneOf": [{"type": "object"}, {"type": "null"}]},
+    "events": {"type": "array", "items": {"type": "object"}},
+    "state_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "status": {"enum": ["OPEN", "CONJECTURE", "GAP", "FAILED_ATTEMPT", "REJECTED", "CHECKED_BOUNDED", "SKETCH", "PARTIAL", "CONDITIONAL", "VERIFIED"]},
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statement", "intent", "constraints", "content_sha256", "canonical_sha256"],
+      "properties": {
+        "statement": {"type": "string", "minLength": 1},
+        "intent": {"type": "string"},
+        "constraints": {"type": "array", "items": {"type": "string"}},
+        "content_sha256": {"$ref": "#/$defs/sha"},
+        "canonical_sha256": {"$ref": "#/$defs/sha"}
+      }
+    }
+  }
+}

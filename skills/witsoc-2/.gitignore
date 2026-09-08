@@ -1,7 +1,0 @@
-# Governance rule 8: cruft has no home in the frame tree. Build artifacts
-# accumulate and then obscure real structural drift in a diff, and this repo is
-# git-cloned onto every client machine — anything tracked here is bytes on
-# someone else's disk.
-__pycache__/
-*.pyc
-.pytest_cache/

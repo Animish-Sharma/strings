@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "witsoc.receipt.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "receipt_id", "target_sha256", "candidate_sha256", "domain", "adapter", "tier", "verdict", "max_status", "artifact_sha256", "input_refs", "checks", "evidence_refs", "created_at", "payload_sha256"],
+  "properties": {
+    "schema": {"const": "witsoc.receipt.v2"},
+    "receipt_id": {"$ref": "#/$defs/nonempty"},
+    "target_sha256": {"$ref": "#/$defs/sha"},
+    "candidate_sha256": {"$ref": "#/$defs/sha"},
+    "domain": {"$ref": "#/$defs/nonempty"},
+    "adapter": {"$ref": "#/$defs/nonempty"},
+    "tier": {"$ref": "#/$defs/nonempty"},
+    "verdict": {"enum": ["PASS", "FAIL", "NOT_RUN", "INCONCLUSIVE"]},
+    "max_status": {"enum": ["CONJECTURE", "SKETCH", "CHECKED_BOUNDED", "PARTIAL", "CONDITIONAL", "VERIFIED"]},
+    "artifact_sha256": {"$ref": "#/$defs/sha"},
+    "input_refs": {"$ref": "#/$defs/strings"},
+    "checks": {"type": "object", "minProperties": 1},
+    "evidence_refs": {"$ref": "#/$defs/strings"},
+    "created_at": {"$ref": "#/$defs/nonempty"},
+    "payload_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {
+    "nonempty": {"type": "string", "minLength": 1},
+    "strings": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

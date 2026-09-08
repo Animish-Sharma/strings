@@ -1,9 +1,0 @@
-{"id":"true_01_square_ge","expected":"TRUE_BOUNDED_ONLY",
- "statement":"n^2 >= n for every natural number n",
- "why":"true, but a finite search establishes only the range it covered",
- "claim":{"claim_id":"true_01","exact_statement":"n^2 >= n for every natural number n",
-  "success_condition":"no counterexample in the stated range","failure_condition":"any n with n^2 < n",
-  "frozen_conditions":{"bounded_search":{"variable":"n","lower":0,"upper":500,"predicate":"n*n >= n"}},
-  "target_sha256":"t01","status":"CONJECTURE"},
- "must":["bounded tier passes","ceiling is CHECKED_BOUNDED",
-         "CHECKED_BOUNDED -> VERIFIED_LEAN is refused by the status lattice"]}

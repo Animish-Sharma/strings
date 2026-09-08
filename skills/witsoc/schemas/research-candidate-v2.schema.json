@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "witsoc.candidate.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "candidate_id", "target_sha256", "domain", "claim", "claim_class", "scope", "dependencies", "evidence_refs", "limitations", "ceiling", "artifact_ref", "producer", "payload_sha256"],
+  "properties": {
+    "schema": {"const": "witsoc.candidate.v2"},
+    "candidate_id": {"$ref": "#/$defs/nonempty"},
+    "target_sha256": {"$ref": "#/$defs/sha"},
+    "domain": {"$ref": "#/$defs/nonempty"},
+    "claim": {"$ref": "#/$defs/nonempty"},
+    "claim_class": {"$ref": "#/$defs/nonempty"},
+    "scope": {"type": "object"},
+    "dependencies": {"$ref": "#/$defs/strings"},
+    "evidence_refs": {"$ref": "#/$defs/strings"},
+    "limitations": {"$ref": "#/$defs/strings"},
+    "ceiling": {"enum": ["CONJECTURE", "SKETCH", "CHECKED_BOUNDED", "PARTIAL", "CONDITIONAL", "VERIFIED"]},
+    "artifact_ref": {"type": ["string", "null"]},
+    "producer": {"$ref": "#/$defs/nonempty"},
+    "payload_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {
+    "nonempty": {"type": "string", "minLength": 1},
+    "strings": {"type": "array", "items": {"type": "string"}},
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "schema": "witsoc.capability-policy.v1",
+  "version": 1,
+  "routes": [
+    {"mode": "SOURCE_SYNTHESIS", "role": "explorer", "available": ["witsoc.request.v2"], "goals": ["witsoc.source-map.v2"]},
+    {"mode": "SOURCE_SYNTHESIS", "role": "researcher", "available": ["witsoc.target.v2"], "goals": ["witsoc.source-map.v2"]},
+    {"mode": "SOURCE_SYNTHESIS", "role": "generator", "available": ["witsoc.target.v2", "witsoc.source-map.v2"], "goals": ["witsoc.source-map.v2"]},
+    {"mode": "OPEN_DISCOVERY", "role": "explorer", "available": ["witsoc.request.v2"], "goals": ["witsoc.decision.v2"]},
+    {"mode": "OPEN_DISCOVERY", "role": "researcher", "available": ["witsoc.target.v2", "witsoc.target-acceptance.v1", "witsoc.frontier.v2", "witsoc.research-episode.v1", "witsoc.reasoning-contract.v1"], "goals": ["witsoc.research-delta.v2"]},
+    {"mode": "OPEN_DISCOVERY", "role": "generator", "available": ["witsoc.target.v2", "witsoc.research-episode.v1"], "goals": ["witsoc.candidate.v2"]},
+    {"mode": "CLAIM_VERIFICATION", "role": "explorer", "available": ["witsoc.target.v2", "witsoc.candidate.v2", "witsoc.receipt.v2"], "goals": ["witsoc.admission.v2"]},
+    {"mode": "CLAIM_VERIFICATION", "role": "generator", "available": ["witsoc.target.v2", "witsoc.candidate.v2"], "goals": ["witsoc.receipt.v2"]},
+    {"mode": "CLAIM_VERIFICATION", "role": "researcher", "available": ["witsoc.target.v2", "witsoc.research-episode.v1"], "goals": ["witsoc.candidate.v2"]},
+    {"mode": "ARTIFACT_PRODUCTION", "role": "explorer", "available": ["witsoc.target.v2", "witsoc.candidate.v2", "witsoc.receipt.v2"], "goals": ["witsoc.admission.v2"]},
+    {"mode": "ARTIFACT_PRODUCTION", "role": "generator", "available": ["witsoc.target.v2", "witsoc.research-episode.v1"], "goals": ["witsoc.candidate.v2"]},
+    {"mode": "ARTIFACT_PRODUCTION", "role": "researcher", "available": ["witsoc.target.v2", "witsoc.research-episode.v1"], "goals": ["witsoc.candidate.v2"]},
+    {"mode": "REPAIR", "role": "explorer", "available": ["witsoc.target.v2", "witsoc.candidate.v2", "witsoc.receipt.v2"], "goals": ["witsoc.admission.v2"]},
+    {"mode": "REPAIR", "role": "generator", "available": ["witsoc.target.v2", "witsoc.research-episode.v1", "witsoc.obstruction.v2"], "goals": ["witsoc.candidate.v2"]},
+    {"mode": "REPAIR", "role": "researcher", "available": ["witsoc.target.v2", "witsoc.research-episode.v1", "witsoc.obstruction.v2"], "goals": ["witsoc.candidate.v2"]},
+    {"mode": "CROSS_DOMAIN", "role": "explorer", "available": ["witsoc.target.v2", "witsoc.source-map.v2", "witsoc.obstruction.v2"], "goals": ["witsoc.discovery-proposal.v2"]},
+    {"mode": "CROSS_DOMAIN", "role": "researcher", "available": ["witsoc.target.v2", "witsoc.source-map.v2", "witsoc.obstruction.v2"], "goals": ["witsoc.transfer.v2"]},
+    {"mode": "CROSS_DOMAIN", "role": "generator", "available": ["witsoc.target.v2", "witsoc.obstruction.v2"], "goals": ["witsoc.candidate.v2"]}
+  ],
+  "optional_inputs": {
+    "archival:cross-domain-source-audit": ["witsoc.candidate.v2"],
+    "bio:causal-perturbation": ["witsoc.candidate.v2"],
+    "bio:cross-domain-transfer": ["witsoc.transfer.v2", "witsoc.candidate.v2"],
+    "bio:discriminating-design": ["witsoc.obstruction.v2"],
+    "bio:genetics-to-function": ["witsoc.transfer.v2"],
+    "bio:durbin-deep-attack": ["witsoc.obstruction.v2"],
+    "bio:open-frontier": ["witsoc.research-delta.v2", "witsoc.obstruction.v2"],
+    "bio:structure-function": ["witsoc.transfer.v2"],
+    "bio:systems-context": ["witsoc.candidate.v2"],
+    "frame:artifact-control": ["witsoc.obstruction.v2"],
+    "frame:bridge-mesh": ["witsoc.source-map.v2", "witsoc.obstruction.v2", "witsoc.candidate.v2"],
+    "frame:deep-attack": ["witsoc.obstruction.v2"],
+    "frame:evidence-admission": ["witsoc.research-delta.v2"],
+    "frame:explorer-reasoning-control": ["witsoc.research-delta.v2", "witsoc.round-delta.v1", "witsoc.source-map.v2", "witsoc.obstruction.v2"],
+    "frame:frontier-control": ["witsoc.research-delta.v2", "witsoc.obstruction.v2"],
+    "frame:research-memory": ["witsoc.admission.v2"],
+    "maths:conjecture-discovery": ["witsoc.source-map.v2"],
+    "maths:normalized-problem-ir": ["witsoc.math-problem.v2"],
+    "maths:lovasz-deep-attack": ["witsoc.obstruction.v2"],
+    "maths:open-frontier": ["witsoc.research-delta.v2", "witsoc.obstruction.v2"],
+    "maths:structural-reduction": ["witsoc.obstruction.v2"],
+    "maths:structural-transfer": ["witsoc.transfer.v2"],
+    "maths:wit-production": ["witsoc.candidate.v2"]
+  },
+  "evidence_ceiling_overrides": {
+    "frame:research-memory": "HINT"
+  },
+  "failure_domains": {
+    "frame": "coordination",
+    "maths": "mathematical-method",
+    "bio": "biological-method",
+    "archival": "source-lineage"
+  }
+}

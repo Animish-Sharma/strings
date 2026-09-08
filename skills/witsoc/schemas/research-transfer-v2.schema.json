@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "witsoc.transfer.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "transfer_id", "target_sha256", "source_domain", "destination_domain", "source_type", "destination_type", "preserved_invariants", "losses", "scope", "evidence_refs", "candidate", "payload_sha256"],
+  "properties": {
+    "schema": {"const": "witsoc.transfer.v2"},
+    "transfer_id": {"$ref": "#/$defs/nonempty"},
+    "target_sha256": {"$ref": "#/$defs/sha"},
+    "source_domain": {"$ref": "#/$defs/nonempty"},
+    "destination_domain": {"$ref": "#/$defs/nonempty"},
+    "source_type": {"$ref": "#/$defs/nonempty"},
+    "destination_type": {"$ref": "#/$defs/nonempty"},
+    "preserved_invariants": {"$ref": "#/$defs/strings"},
+    "losses": {"$ref": "#/$defs/strings"},
+    "scope": {"type": "object"},
+    "evidence_refs": {"$ref": "#/$defs/strings"},
+    "candidate": {"type": "object"},
+    "payload_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {
+    "nonempty": {"type": "string", "minLength": 1},
+    "strings": {"type": "array", "items": {"type": "string"}},
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
