@@ -1,8 +1,0 @@
-{
-  "schema": "witsoc2.vendored_reference.v1",
-  "origin": "skills/witsoc/ARCHITECTURE.md (the predecessor skill)",
-  "why": "check_alignment asks whether this frame has diverged from the predecessor without declaring it. Held only by reference, it reported NOT_RUN on every checkout without the sibling installed \u2014 and an undeclared divergence is exactly the thing that goes unnoticed when nobody can run the check.",
-  "rule": "The sibling is preferred when installed; this is the fallback and it is a SNAPSHOT. Drift in the sibling since this hash is invisible to a run that falls back, which is the honest cost of being able to run at all, and the reason the hash is here.",
-  "sha256": "b128c76439276bbe496fb2f25721f93e45f489ff8f37e9b4eb1a27f7f66411f5",
-  "bytes": 16702
-}

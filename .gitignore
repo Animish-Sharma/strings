@@ -29,3 +29,14 @@ desktop.ini
 *.bak
 *.orig
 *.rej
+
+# Witsoc package-owned runtime resources (hydrated by witsoc-core on first use)
+/skills/witsoc/.witsoc-core-runtime.json
+/skills/witsoc/.gitignore
+/skills/witsoc/capabilities/
+/skills/witsoc/contracts/
+/skills/witsoc/domains/
+/skills/witsoc/packages/
+/skills/witsoc/references/
+/skills/witsoc/schemas/
+/skills/witsoc/scripts/

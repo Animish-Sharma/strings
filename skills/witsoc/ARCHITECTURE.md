@@ -57,7 +57,7 @@ and twenty of twenty planted regressions lived in a SEAM: a receipt field the
 adapter never wrote and the reducer read as absent, a placeholder the renderer
 counted as filled, a memory store the revision could not reach.
 
-`scripts/check_paths.py` walks whole campaigns — claim in, admission decision
+`witsoc_core.tools.check_paths` walks whole campaigns — claim in, admission decision
 out — and asserts the outcome. The cases are DECLARED BY THE PACK, in
 `<pack>/evals/path/cases.json`, and walked by the frame: a case names the
 environment variables it needs and the frame checks they resolve without
@@ -168,7 +168,7 @@ So resolution is a mechanism, not an instruction. **Before any other work**, a
 run resolves the pack:
 
 ```bash
-python3 scripts/resolve_domain.py --statement "<the problem, verbatim>"
+witsoc-tool resolve-domain --statement "<the problem, verbatim>"
 ```
 
 It reads only contract item 6 from each manifest and scores the statement:
@@ -220,7 +220,7 @@ support, lowered further if the pack is provisional. Pass it to the reducer when
 the campaign is created:
 
 ```bash
-python3 scripts/reducer.py init --claim <claim.json> --out state.json \
+witsoc-tool reducer init --claim <claim.json> --out state.json \
     --ceiling <max_admissible_status>
 ```
 
@@ -252,7 +252,7 @@ looking at, and both are the only figures of the four that mean anything.
 orchestrator improvises a pack from the closest registered one:
 
 ```bash
-python3 scripts/scaffold_domain.py --domain <name> --from <closest> \
+witsoc-tool scaffold-domain --domain <name> --from <closest> \
     --statement "<the problem>"
 ```
 
@@ -395,7 +395,7 @@ in the frame. Each domain pack supplies only its own `N` and its own definition
 of "identical failure signature", as required fields of its manifest. See
 `references/failure_recovery.md`.
 
-**It is now counted rather than described.** `scripts/failure_ledger.py` records
+**It is now counted rather than described.** `witsoc_core.tools.failure_ledger` records
 each failure against `(target, claim)`, normalizes the diagnostic generically —
 stripping paths, numbers, quoted identifiers, and hex, all of which vary between
 two instances of the same failure — and fires at the pack's threshold. Every pack
@@ -457,7 +457,7 @@ one obstruction. One engine cannot be scheduled three ways.
 ### The reducer
 
 One piece of frame code is the **only** thing that may move a status
-(`scripts/reducer.py`, state shape in `schemas/frame-state-v1.schema.json`).
+(`witsoc_core.tools.reducer`, state shape in `schemas/frame-state-v1.schema.json`).
 
 This closes the gap at the centre of the design. The founding premise is that an
 agent cannot be trusted to self-report correctness — but for as long as the
@@ -543,7 +543,7 @@ The reducer refuses:
 | a delta adding a claim at anything but `OPEN` | otherwise a pre-established conclusion enters as a side effect |
 | `independent_review: PASS` with no distinct reviewer | self-review is not review |
 
-`scripts/reducer_selftest.py` is what makes that checkable. Eighteen adversarial
+`witsoc_core.tools.reducer_selftest` is what makes that checkable. Eighteen adversarial
 admissions — the first of them the forged-checks case that motivated all of
 this — must each be refused **for the stated reason**, and two honest chains
 must be accepted. The
@@ -556,7 +556,7 @@ the same admission is refused, because its base no longer matches.
 
 Two further shared services support the schedule and are frame-owned:
 
-- a **resource governor** (`scripts/governor.py`) — the single place that
+- a **resource governor** (`witsoc_core.tools.governor`) — the single place that
   answers "may another expensive worker start", and the only thing in the frame
   that can stop a run on cost. Saturation **queues**, because a refused
   expensive worker and a delayed one have very different consequences for a
@@ -610,7 +610,7 @@ memory both record a failure without being redundant.
 
 ## 5.2 The loop, end to end
 
-`scripts/campaign.py` drives one campaign through every packet the frame defines:
+`witsoc_core.tools.campaign` drives one campaign through every packet the frame defines:
 
 ```
 resolve pack -> freeze -> init state -> work item
@@ -684,7 +684,7 @@ assumptions until "domain-agnostic frame" is a fiction.
    copy loses.
 2. **Reference-direction enforcement.** Frame files must never reference
    `domains/<name>/` or carry field-specific vocabulary. This is mechanically
-   checked by `scripts/check_frame_purity.py`, which is the single cheapest
+   checked by `witsoc_core.tools.check_frame_purity`, which is the single cheapest
    guardrail against contract erosion. Run it on every change.
 3. **The contract is the only extension point.** If adding a domain seems to
    require a new frame capability, ask first: is this genuinely domain-neutral,
@@ -723,11 +723,11 @@ the manifest, implement the adapter, declare the refute-attempt gate, the
 escalation threshold, and the selection block, then run:
 
 ```bash
-python3 scripts/validate_domain_pack.py domains/<name>/domain.json
-python3 scripts/resolve_domain.py --self-test
-python3 scripts/check_frame_purity.py
-python3 scripts/package_domains.py registry
-python3 scripts/package_domains.py build
+witsoc-tool validate-domain-pack domains/<name>/domain.json
+witsoc-tool resolve-domain --self-test
+witsoc-tool check-frame-purity
+witsoc-tool package-domains registry
+witsoc-tool package-domains build
 ```
 
 All checks must pass before the pack is registered. Installable packs also need
@@ -744,7 +744,7 @@ resolves for nothing has been added to the tree and not to the system.
 11. **The contract line is regression-tested from both sides.** Static checks
    read a manifest and the files it points at; they cannot tell whether the
    frame can still CALL a pack, and they cannot tell whether today's boundary
-   is yesterday's. `scripts/check_bridge.py` invokes every pack the way
+   is yesterday's. `witsoc_core.tools.check_bridge` invokes every pack the way
    `campaign.py` does, compares the observable surface against a recorded
    baseline, and checks the documented calling convention against the argv the
    frame actually builds. A boundary tested from one side is not tested: the
